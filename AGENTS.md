@@ -18,6 +18,7 @@
 | guided bootstrap / scaffold / one-click deploy | [skills/project-bootstrap/SKILL.md](skills/project-bootstrap/SKILL.md) | `skills/project-bootstrap/` |
 | iteration close-out / changelog / archive / round wrap-up | [skills/iteration-close-loop/SKILL.md](skills/iteration-close-loop/SKILL.md) | `skills/iteration-close-loop/` |
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
+| project-type profiles / presets / dimensions | `skills/project-bootstrap/profiles/README.md` | `skills/project-bootstrap/profiles/` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
 | methodology / principles / migration guide | [docs/iteration-methodology.md](docs/iteration-methodology.md) | `docs/` |
 
@@ -31,7 +32,7 @@
 
 ## 3. Technical constraints (cheat sheet)
 
-- Pure Python 3.10+, standard library only; UTF-8;
+- Pure Python 3.11+ (tomllib for profiles), standard library only; UTF-8;
 - Paths resolve relative to the repo root (find README.md upward); no hardcoded absolute paths;
 - After doc-structure changes regenerate `llms.txt`: `python tools/gen_llms_txt.py --name "_bootstrap"`.
 

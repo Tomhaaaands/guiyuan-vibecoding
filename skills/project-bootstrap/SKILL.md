@@ -21,7 +21,17 @@ Reply (wording may vary, but must contain these three items):
 
 ## Stage 1 · Choices
 
-After the user replies, list default modules:
+After the user replies, first ask the project type:
+
+> Project type?
+> - default (recommended): generic
+> - saas: multi-tenant + idempotent billing
+> - c-end: auth / payment / compliance
+> - vector-db: embeddings / collections / index rebuilds
+> - cli-tool: minimal CLI surface
+> - custom: I'll ask a few dimensions (deploy / data / runtime / surface)
+
+Then list default modules:
 
 > Default modules (pick any, comma-separated):
 > - web: frontend pages
@@ -52,10 +62,12 @@ Then confirm the runtime (auto if unanswered):
 ```bash
 python <skill path>/scripts/bootstrap.py <folder> --name <project> \
     [--template default | --module web --module api ...] [--code "name=dir"] \
+    [--profile saas | --dimension "data=vector-db" ...] \
     [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip]
 ```
 
 - "default template" -> `--template default`;
+- project type -> `--profile saas` etc., or `--dimension "deploy=saas" --dimension "data=vector-db"` for custom;
 - named modules -> `--module web` etc. (catalog supplies keywords & code dir);
 - custom modules -> `--module "name=kw1,kw2" --code "name=dir"`;
 - env choice -> `--python` / `--env` per the user's answer;
@@ -64,6 +76,7 @@ python <skill path>/scripts/bootstrap.py <folder> --name <project> \
 
 The script: copies the skeleton (README / AGENTS.md / docs / tools / .gitignore) -> fills routing
 tables -> replaces system placeholders -> creates module placeholder dirs -> writes the R1 archive ->
+applies the project profile (extra modules, constraints, red-line stub, doc stubs, gitignore) ->
 generates llms.txt -> resolves the Python runtime (reuses the user's by default) -> handles .venv
 per policy -> git init -> installs iteration-close-loop if missing.
 

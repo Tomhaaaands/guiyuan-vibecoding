@@ -1,0 +1,8 @@
+name = "relational"
+description = "Relational DB first"
+
+constraints = [
+  "Schema changes land in database.md before migration",
+]
+
+docs_stubs = ["00-system/data-layer.md"]

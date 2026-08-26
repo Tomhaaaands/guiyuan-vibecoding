@@ -47,6 +47,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -54,7 +55,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 ASSETS = SKILL_ROOT / "assets" / "project"
 SKILL_ASSETS = SKILL_ROOT / "assets" / "skills" / "iteration-close-loop"
+PROFILES_DIR = SKILL_ROOT / "profiles"
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]+\}\}")
+LIST_KEYS = ("modules", "red_lines", "constraints", "docs_stubs", "gitignore_add")
 DEFAULT_MODULES = {
     "web": {"kw": "frontend,web", "code": "apps/web"},
     "api": {"kw": "backend,api", "code": "apps/api"},
@@ -263,6 +266,94 @@ def _parse_module(value: str) -> dict:
     }
 
 
+def _load_toml(path: Path) -> dict:
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def _merge_profile(merged: dict, part: dict) -> dict:
+    for key in LIST_KEYS:
+        merged.setdefault(key, [])
+        merged[key].extend(part.get(key, []) or [])
+    return merged
+
+
+def _load_profile(profile: str | None, dimensions: list[str]) -> tuple[dict, str]:
+    """Load a preset (or custom .toml path) + dimension overrides into one merged profile."""
+    merged: dict = {}
+    label = profile or "default"
+    if profile and profile != "default":
+        preset_path = PROFILES_DIR / "presets" / f"{profile}.toml"
+        if not preset_path.exists() and Path(profile).suffix == ".toml":
+            preset_path = Path(profile)
+        if preset_path.exists():
+            preset = _load_toml(preset_path)
+            for dim, val in preset.get("dimensions", {}).items():
+                dim_path = PROFILES_DIR / "dimensions" / dim / f"{val}.toml"
+                if dim_path.exists():
+                    _merge_profile(merged, _load_toml(dim_path))
+            _merge_profile(merged, preset)
+        else:
+            print(f"warning: profile not found: {profile} (continuing with defaults)")
+            label = "default"
+    for d in dimensions:
+        key, _, val = d.partition("=")
+        dim_path = PROFILES_DIR / "dimensions" / key.strip() / f"{val.strip()}.toml"
+        if dim_path.exists():
+            _merge_profile(merged, _load_toml(dim_path))
+            label = "+".join(filter(None, [label if label != "default" else "", key.strip() + "=" + val.strip()]))
+        else:
+            print(f"warning: dimension option not found: {d}")
+    return merged, label
+
+
+def _inject_constraints(agents_path: Path, constraints: list[str]) -> None:
+    lines = agents_path.read_text(encoding="utf-8").splitlines()
+    out: list[str] = []
+    inserted = False
+    for line in lines:
+        out.append(line)
+        if not inserted and line.startswith("## 3.") and ("Technical" in line or "技术" in line):
+            for c in constraints:
+                out.append(f"- {c}")
+            inserted = True
+    agents_path.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+def _apply_profile(target: Path, merged: dict) -> list[str]:
+    """Inject profile content: constraints, red-line stub, doc stubs, gitignore additions."""
+    created: list[str] = []
+    if merged.get("constraints"):
+        _inject_constraints(target / "AGENTS.md", merged["constraints"])
+    if merged.get("red_lines"):
+        red = target / "docs" / "00-system" / "constitution" / "red-lines.md"
+        red.parent.mkdir(parents=True, exist_ok=True)
+        if not red.exists():
+            red.write_text(
+                "# Red Lines (project)\n\n"
+                "> Irreversible constraints from incidents; never bypass. "
+                "Add new red lines here, never archive them.\n\n",
+                encoding="utf-8",
+            )
+        body = "\n".join(f"- {x}" for x in merged["red_lines"]) + "\n"
+        red.write_text(red.read_text(encoding="utf-8") + body, encoding="utf-8")
+        created.append(red.relative_to(target).as_posix())
+    for stub in merged.get("docs_stubs", []):
+        p = target / stub
+        if not p.exists():
+            p.parent.mkdir(parents=True, exist_ok=True)
+            title = Path(stub).stem.replace("-", " ").title()
+            p.write_text(f"# {title}\n\n> Placeholder — fill in per the project profile.\n", encoding="utf-8")
+            created.append(stub)
+    gi = target / ".gitignore"
+    if merged.get("gitignore_add") and gi.exists():
+        existing = gi.read_text(encoding="utf-8")
+        add = [x for x in merged["gitignore_add"] if x not in existing]
+        if add:
+            gi.write_text(existing.rstrip() + "\n" + "\n".join(add) + "\n", encoding="utf-8")
+    return created
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="One-click scaffold of the iteration system")
     ap.add_argument("target", nargs="?", default=".", help="target directory (default: current)")
@@ -283,6 +374,10 @@ def main() -> None:
                     help="dependency policy: auto=reuse existing/uv venv/project-local (default); "
                          "shared=--system-site-packages; isolated=clean local .venv; reuse=existing only; "
                          "skip=none (legacy create/uv mapped)")
+    ap.add_argument("--profile", default=None,
+                    help="project-type preset: default|saas|c-end|vector-db|cli-tool, or a custom .toml path")
+    ap.add_argument("--dimension", action="append", default=[], metavar="key=value",
+                    help="dimension override (repeatable): deploy/data/runtime/surface")
     ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
     args = ap.parse_args()
 
@@ -316,6 +411,15 @@ def main() -> None:
     for m in modules:
         m["code"] = code_map.get(m["name"], m["code"])
 
+    merged, profile_label = _load_profile(args.profile, args.dimension)
+    for pm in merged.get("modules", []):
+        modules.append({
+            "name": pm["name"],
+            "kw": pm.get("keywords", pm["name"]),
+            "code": pm.get("code", ""),
+        })
+    profile_created = _apply_profile(target, merged)
+
     _fill_routing_tables(target, modules)
     remaining = _replace_placeholders(target, name)
     arch = _write_r1_archive(target)
@@ -348,6 +452,12 @@ def main() -> None:
 
     print(f"Deployment complete: {target}")
     print(f"  copied {copied} files, skipped {skipped} existing")
+    if merged:
+        print(f"  profile: {profile_label} (+{len(merged.get('modules', []))} modules, "
+              f"+{len(merged.get('constraints', []))} constraints, "
+              f"+{len(merged.get('red_lines', []))} red lines)")
+        if profile_created:
+            print(f"  profile files: {'、'.join(profile_created)}")
     if created_dirs:
         print(f"  module placeholder dirs: {'、'.join(created_dirs)}")
     print(f"  init archive: {arch.relative_to(target).as_posix()}")

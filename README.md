@@ -60,6 +60,9 @@ heavier, more general tools; this kit deliberately isn't.
   doc sync, drift checks.
 - **Reusable project template** — `templates/iteration-methodology/`: AGENTS.md skeleton, docs
   five-piece skeleton, four tools, `.gitignore`.
+- **Project-type profiles** — built-in presets (`saas` / `c-end` / `vector-db` / `cli-tool`) and
+  four composable dimensions (`deploy` / `data` / `runtime` / `surface`) inject per-type modules,
+  red-line stubs, constraints, and doc placeholders; custom `.toml` profiles cover the long tail.
 - **Five deterministic tools** — install skills, roll up rounds, hydrate docs, check drift,
   generate `llms.txt`.
 
@@ -89,6 +92,8 @@ if it's missing, and tells you to open a new conversation for your first real ta
 python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
     [--template default] \
     [--module "name=keywords"] [--code "name=dir"] \
+    [--profile saas|c-end|vector-db|cli-tool|path/to/custom.toml] \
+    [--dimension "deploy=saas" --dimension "data=vector-db"] \
     [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
     [--force] [--no-venv] [--no-install-skill]
 ```
