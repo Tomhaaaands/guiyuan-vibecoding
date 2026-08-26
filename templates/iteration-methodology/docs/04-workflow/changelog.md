@@ -1,10 +1,10 @@
-# 变更记录（CHANGELOG · 一行台账）
+# Changelog (one-line round ledger)
 
-> 每轮一行，日常只读最近 1-3 行即可掌握进度；完整细节在 `archive/` 分卷（考古才读）。
-> 行格式：`| R101 | 08-27 | 模块 | 一句话结论（干什么/为什么/怎么验证） | [r101](archive/...) |`
+> One row per round; read the latest 1-3 rows for status; full details in `archive/` (archaeology only).
+> Row format: `| R101 | 08-27 | module | conclusion (what/why/verified) | [r101](archive/...) |`
 
 ## {{YYYY-MM-DD}}
 
-| 轮次 | 日期 | 模块 | 一句话结论 | 档案 |
+| Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
-| R1 | {{MM-DD}} | 初始化 | 项目初始化：搭建迭代闭环（启动契约/台账/档案/状态卡/自检），模板 + 工具链就位 | [r1](archive/{{YYYY-MM-DD}}-r1.md) |
+| R1 | {{MM-DD}} | init | Project initialized: iteration loop set up (startup contract / ledger / archive / state cards / self-check); template + toolchain ready | [r1](archive/{{YYYY-MM-DD}}-r1.md) |

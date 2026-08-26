@@ -1,39 +1,41 @@
 #!/usr/bin/env python3
-"""一键部署迭代管理系统骨架到新项目。
+"""One-click scaffold of the iteration-management skeleton into a new project.
 
-用法：
-  python bootstrap.py [target] --name "项目名" [--force] [--no-install-skill] \
-      --module "名称=关键词1,关键词2" --code "名称=代码目录" \
+Usage:
+  python bootstrap.py [target] --name "project" [--force] [--no-install-skill] \
+      --module "name=kw1,kw2" --code "name=dir" \
       [--template default] \
-      [--python auto|system|install|<路径>] [--env auto|shared|isolated|reuse|skip]
+      [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip]
 
-默认模块目录（--template default 或 --module 直接给目录名）：
+Default module catalog (used by --template default or bare --module names):
   web=apps/web · api=apps/api · db=data/db · worker=workers · tests=tests
-  模块名命中目录时自动使用目录内置的关键词与代码目录，可被 --code 覆盖。
+  A module name matching the catalog gets keywords and a code dir automatically;
+  override the code dir with --code.
 
-Python 运行时（--python，默认 auto）：
-  auto：检测用户已有 Python（py 启动器 → PATH python → uv python find），直接复用；
-        全无才回退当前解释器
-  system：同上但不回退，未检测到即报错
-  install：自动部署（优先 uv python install 3.12，否则 winget 非交互安装 Python 3.12）
-  直接传路径：使用指定解释器
+Python runtime (--python, default auto):
+  auto: detect the user's existing Python (py launcher -> PATH python -> uv python find)
+        and reuse it; fall back to the current interpreter only if none is found
+  system: same detection but no fallback; error if none found
+  install: auto-deploy (prefer `uv python install 3.12`, else non-interactive winget install)
+  explicit path: use that interpreter
 
-依赖方式（--env，默认 auto）：
-  auto：已有 .venv 直接复用；否则用 uv venv（共享依赖缓存）；uv 不可用则项目内 python -m venv
-  shared：项目 .venv 带 --system-site-packages，直接共用基础 Python 已装的包
-  isolated：项目内干净 .venv（--no-venv 等价 skip；旧值 create/uv 映射到 isolated/auto）
-  reuse：仅复用已有 .venv，缺失不创建
-  skip：跳过
+Dependency policy (--env, default auto):
+  auto: reuse an existing .venv; else `uv venv` (shared dependency cache);
+        else project-local `python -m venv`
+  shared: project .venv with --system-site-packages (sees the base Python's packages)
+  isolated: clean project-local .venv (--no-venv equals skip; legacy create/uv map to isolated/auto)
+  reuse: only reuse an existing .venv, never create
+  skip: do nothing
 
-交互式模块清单：
-  在对话中先向用户逐个确认业务模块（名称/关键词/代码目录），再以 --module / --code
-  传入脚本，自动填充 AGENTS.md 与 AGENTS_WORKFLOW.md 的路由表行；
-  未传 --module 时保留 {{模块A}} 等占位符供用户手填。
+Interactive module list:
+  Confirm modules with the user in conversation (name/keywords/code dir), then pass them via
+  --module / --code; the script fills the routing tables in AGENTS.md and AGENTS_WORKFLOW.md.
+  Without --module, the {{module}} placeholders are kept for manual filling.
 
-附加能力：
-  - 为每个模块创建占位目录（docs/01-product|02-technical/{name}/ 与代码目录，.gitkeep）；
-  - 运行环境处理：先解析 Python（默认复用用户已有），再按依赖策略处理 .venv；
-  - 自动 git init（已存在 .git 则跳过），提示提交命令。
+Extras:
+  - creates placeholder dirs per module (docs/01-product|02-technical/{name}/ + code dir, .gitkeep);
+  - resolves the Python runtime first, then handles .venv per policy;
+  - runs `git init` (skipped if .git exists) and prints the commit command.
 """
 
 from __future__ import annotations
@@ -54,12 +56,12 @@ ASSETS = SKILL_ROOT / "assets" / "project"
 SKILL_ASSETS = SKILL_ROOT / "assets" / "skills" / "iteration-close-loop"
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]+\}\}")
 DEFAULT_MODULES = {
-    "web": {"kw": "前端,页面", "code": "apps/web"},
-    "api": {"kw": "后端,接口", "code": "apps/api"},
-    "db": {"kw": "数据库,表", "code": "data/db"},
-    "worker": {"kw": "异步,队列", "code": "workers"},
-    "tests": {"kw": "测试", "code": "tests"},
-    "docs": {"kw": "文档", "code": "docs"},
+    "web": {"kw": "frontend,web", "code": "apps/web"},
+    "api": {"kw": "backend,api", "code": "apps/api"},
+    "db": {"kw": "database,schema", "code": "data/db"},
+    "worker": {"kw": "async,queue", "code": "workers"},
+    "tests": {"kw": "tests", "code": "tests"},
+    "docs": {"kw": "docs", "code": "docs"},
 }
 
 
@@ -88,17 +90,18 @@ def _write_r1_archive(root: Path) -> Path:
     if out.exists():
         return out
     out.write_text(
-        f"# R1 · 初始化（{date.isoformat()}）\n\n"
-        "## 背景\n\n新项目一键部署：迭代管理系统骨架（启动契约 / 台账 / 档案 / 状态卡 / 工具链）就位。\n\n"
-        "## 验证\n\n- `tools/check_drift.py` 通过；`llms.txt` 已生成。\n\n"
-        "## 后续\n\n- 填写 AGENTS.md 模块路由表与技术约束；按五步闭环推进后续轮次。\n",
+        f"# R1 · init ({date.isoformat()})\n\n"
+        "## Background\n\nOne-click deployment of the iteration-management skeleton "
+        "(startup contract / ledger / archive / state cards / tooling).\n\n"
+        "## Verification\n\n- `tools/check_drift.py` passes; `llms.txt` generated.\n\n"
+        "## Next\n\n- Fill in AGENTS.md technical constraints; continue rounds with the five-step loop.\n",
         encoding="utf-8",
     )
     return out
 
 
 def _fill_routing_tables(root: Path, modules: list[dict]) -> None:
-    """用模块清单替换 AGENTS.md / AGENTS_WORKFLOW.md 的路由表占位行。"""
+    """Replace the routing-table placeholder rows in AGENTS.md / AGENTS_WORKFLOW.md."""
     if not modules:
         return
 
@@ -116,12 +119,12 @@ def _fill_routing_tables(root: Path, modules: list[dict]) -> None:
         out: list[str] = []
         replaced = False
         for line in lines:
-            if line.startswith("| {{模块"):
+            if line.startswith("| {{") and ("MODULE" in line.upper() or "模块" in line):
                 if not replaced:
                     out.extend(rows)
                     replaced = True
                 continue
-            if drop_note and "按项目裁剪" in line:
+            if drop_note and ("按项目裁剪" in line or "Trim per project" in line):
                 continue
             out.append(line)
         path.write_text("\n".join(out) + "\n", encoding="utf-8")
@@ -158,36 +161,36 @@ def _run_quiet(cmd: list[str]) -> tuple[bool, str]:
 
 def _py_version(exe: str) -> str:
     ok, out = _run_quiet([exe, "--version"])
-    return out if ok else "版本未知"
+    return out if ok else "unknown version"
 
 
 def _find_python(mode: str) -> tuple[str | None, str]:
-    """解析用户 Python：py 启动器 → PATH python → uv python find → 兜底当前解释器。"""
+    """Resolve the user's Python: py launcher -> PATH python -> uv python find -> fallback."""
     ok, _ = _run_quiet(["py", "-3", "--version"])
     if ok:
         ok2, exe = _run_quiet(["py", "-3", "-c", "import sys; print(sys.executable)"])
         if ok2 and exe:
-            return exe, "py 启动器（用户已装）"
+            return exe, "py launcher (user-installed)"
     p = shutil.which("python")
     if p:
-        return p, "PATH 上的 python"
+        return p, "python on PATH"
     ok, exe = _run_quiet(["uv", "python", "find"])
     if ok and exe:
-        return exe, "uv 托管 Python"
+        return exe, "uv-managed Python"
     if mode == "system":
-        return None, "未检测到用户 Python"
-    return sys.executable, "当前解释器（未检测到独立用户 Python，兜底）"
+        return None, "no user Python detected"
+    return sys.executable, "current interpreter (fallback; no standalone user Python found)"
 
 
 def _install_python() -> tuple[str | None, str]:
-    """自动部署 Python：优先 uv python install，其次 winget 非交互安装。"""
+    """Auto-deploy Python: prefer `uv python install`, else non-interactive winget."""
     ok, _ = _run_quiet(["uv", "--version"])
     if ok:
         r = subprocess.run(["uv", "python", "install", "3.12"], capture_output=True, text=True)
         if r.returncode == 0:
             ok2, exe = _run_quiet(["uv", "python", "find"])
             if ok2 and exe:
-                return exe, "uv 已安装 Python 3.12"
+                return exe, "uv installed Python 3.12"
     ok, _ = _run_quiet(["winget", "--version"])
     if ok:
         r = subprocess.run(
@@ -198,8 +201,8 @@ def _install_python() -> tuple[str | None, str]:
         if r.returncode == 0:
             exe, source = _find_python("system")
             if exe:
-                return exe, f"{source}（winget 已安装 Python 3.12）"
-    return None, "自动安装失败：无 uv 且无 winget（可手动安装后重跑）"
+                return exe, f"{source} (winget installed Python 3.12)"
+    return None, "auto-install failed: no uv and no winget (install manually and rerun)"
 
 
 def _handle_venv(root: Path, mode: str, python_exe: str) -> str:
@@ -261,27 +264,26 @@ def _parse_module(value: str) -> dict:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="一键部署迭代管理系统骨架")
-    ap.add_argument("target", nargs="?", default=".", help="目标目录（默认当前目录）")
-    ap.add_argument("--name", default=None, help="项目名（默认取目标目录名）")
-    ap.add_argument("--force", action="store_true", help="覆盖已存在文件")
-    ap.add_argument("--no-install-skill", action="store_true", help="跳过 iteration-close-loop 安装")
-    ap.add_argument("--module", action="append", default=[], metavar="名称=关键词1,关键词2",
-                    help="业务模块（可重复；关键词逗号分隔，省略时用模块名）")
-    ap.add_argument("--code", action="append", default=[], metavar="名称=代码目录",
-                    help="模块代码目录（可重复，如 suanming=apps/web）")
+    ap = argparse.ArgumentParser(description="One-click scaffold of the iteration system")
+    ap.add_argument("target", nargs="?", default=".", help="target directory (default: current)")
+    ap.add_argument("--name", default=None, help="project name (default: target dir name)")
+    ap.add_argument("--force", action="store_true", help="overwrite existing files")
+    ap.add_argument("--no-install-skill", action="store_true", help="skip iteration-close-loop install")
+    ap.add_argument("--module", action="append", default=[], metavar="name=kw1,kw2",
+                    help="business modules (repeatable; keywords comma-separated; catalog defaults)")
+    ap.add_argument("--code", action="append", default=[], metavar="name=dir",
+                    help="module code dir (repeatable, e.g. myapp=apps/web)")
     ap.add_argument("--template", choices=["default"], default=None,
-                    help="默认模板：web + api + db + worker + tests")
-    ap.add_argument("--python", default="auto", metavar="auto|system|install|<路径>",
-                    help="Python 运行时：auto=检测用户已有（默认）；system=仅用已检测不回退；"
-                         "install=自动部署（uv/winget）；或直接给解释器路径")
+                    help="default template: web + api + db + worker + tests")
+    ap.add_argument("--python", default="auto", metavar="auto|system|install|<path>",
+                    help="Python runtime: auto=detect user's existing (default); system=no fallback; "
+                         "install=auto-deploy (uv/winget); or an explicit interpreter path")
     ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
                     default="auto",
-                    help="依赖方式：auto=已有 .venv 复用/uv venv/项目内创建（默认）；"
-                         "shared=共用基础 Python 已装包（--system-site-packages）；"
-                         "isolated=项目内干净 .venv；reuse=仅复用已有；skip=跳过"
-                         "（旧值 create/uv 兼容映射）")
-    ap.add_argument("--no-venv", action="store_true", help="等价 --env skip")
+                    help="dependency policy: auto=reuse existing/uv venv/project-local (default); "
+                         "shared=--system-site-packages; isolated=clean local .venv; reuse=existing only; "
+                         "skip=none (legacy create/uv mapped)")
+    ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
     args = ap.parse_args()
 
     target = Path(args.target).resolve()
@@ -329,7 +331,7 @@ def main() -> None:
     elif args.python == "install":
         python_exe, py_source = _install_python()
     else:
-        python_exe, py_source = args.python, "用户指定路径"
+        python_exe, py_source = args.python, "user-specified path"
     py_version = _py_version(python_exe) if python_exe else "-"
 
     venv_status = "no-python" if python_exe is None else "skipped"
@@ -344,43 +346,43 @@ def main() -> None:
     if not args.no_install_skill:
         installed = _install_skill(args.force)
 
-    print(f"部署完成：{target}")
-    print(f"  复制 {copied} 个文件，跳过已存在 {skipped} 个")
+    print(f"Deployment complete: {target}")
+    print(f"  copied {copied} files, skipped {skipped} existing")
     if created_dirs:
-        print(f"  创建模块占位目录：{'、'.join(created_dirs)}")
-    print(f"  初始化档案：{arch.relative_to(target).as_posix()}")
+        print(f"  module placeholder dirs: {'、'.join(created_dirs)}")
+    print(f"  init archive: {arch.relative_to(target).as_posix()}")
     status_text = {
-        "reused": "已存在，复用（--env auto/reuse）",
-        "created": "已创建（本机 Python）",
-        "created-uv": "已创建（uv venv）",
-        "created-shared": "已创建（共用系统依赖 --system-site-packages）",
-        "missing": "未找到已有环境且策略为仅复用（reuse），未创建",
-        "skipped": "跳过（--env skip）",
-        "failed": "创建失败（可手动 python -m venv .venv）",
-        "no-python": "未找到 Python，未创建环境",
+        "reused": "existing, reused (--env auto/reuse)",
+        "created": "created (local Python)",
+        "created-uv": "created (uv venv)",
+        "created-shared": "created (shared system packages, --system-site-packages)",
+        "missing": "no existing env and policy is reuse-only; not created",
+        "skipped": "skipped (--env skip)",
+        "failed": "creation failed (run manually: python -m venv .venv)",
+        "no-python": "no Python found; env not created",
     }
-    print(f"  Python：{py_version}（{py_source}）")
+    print(f"  Python: {py_version} ({py_source})")
     if python_exe:
-        print(f"    路径：{python_exe}")
-    print(f"  .venv：{status_text[venv_status]}")
+        print(f"    path: {python_exe}")
+    print(f"  .venv: {status_text[venv_status]}")
     if venv_status == "no-python":
-        print("  提示：可加 --python install 自动部署（uv python install / winget Python 3.12）")
+        print("  hint: rerun with --python install to auto-deploy (uv python install / winget Python 3.12)")
     if git_inited:
-        print("  git：已 git init")
+        print("  git: initialized")
     elif (target / ".git").exists():
-        print("  git：已是 git 仓库")
+        print("  git: already a repository")
     else:
-        print("  git：不可用或已跳过")
-    print("  提交命令：git add -A && git commit -m \"chore: init\"")
+        print("  git: unavailable or skipped")
+    print("  commit: git add -A && git commit -m \"chore: init\"")
     if installed:
-        print(f"  已安装 skill：{installed}")
+        print(f"  installed skill: {installed}")
     else:
-        print("  iteration-close-loop 已存在，未重复安装")
+        print("  iteration-close-loop already present, not reinstalled")
     if remaining:
-        print("  待填占位符：" + "、".join(remaining))
+        print("  remaining placeholders: " + "、".join(remaining))
     else:
-        print("  占位符全部替换完毕")
-    print("  下一步：填写 AGENTS.md 模块路由表与技术约束；运行 tools/check_drift.py 验证")
+        print("  all placeholders replaced")
+    print("  next: fill AGENTS.md technical constraints; run tools/check_drift.py to verify")
 
 
 if __name__ == "__main__":

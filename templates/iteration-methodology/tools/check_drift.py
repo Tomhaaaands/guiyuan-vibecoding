@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""防文档腐烂：扫描过期标记 + 校验 llms.txt 链接。
+"""Doc-rot prevention: scan stale markers + validate llms.txt links.
 
-用法：
-  python tools/check_drift.py            # 全量扫描（过期标记 + llms.txt 链接）
-  python tools/check_drift.py --markers  # 只扫过期标记
-  python tools/check_drift.py --links    # 只校验 llms.txt 链接
+Usage:
+  python tools/check_drift.py            # full scan (markers + llms.txt links)
+  python tools/check_drift.py --markers  # markers only
+  python tools/check_drift.py --links    # llms.txt links only
 
-过期标记分级：
-  - 硬标记（失败）：`[OUTDATED]`、TODO、TBD、FIXME；
-  - 软标记（警告，不失败）：待补 / 待补充（常为刻意占位语义，人工判断）。
-教学类文件（讲解这些标记本身规则的文件）默认跳过，避免误报。
+Stale-marker levels:
+  - hard (fails): `[OUTDATED]`, TODO, TBD, FIXME;
+  - soft (warn only): 待补 / 待补充 (usually intentional placeholder wording; human judgment).
+Teaching files that explain these markers are skipped to avoid false positives.
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def check_markers() -> tuple[int, int]:
 
 def check_links() -> int:
     if not LLMS.exists():
-        print("  [info] 无 llms.txt，跳过链接校验（可运行 tools/gen_llms_txt.py 生成）")
+        print("  [info] no llms.txt; skipping link check (run tools/gen_llms_txt.py to generate)")
         return 0
     found = 0
     for i, line in enumerate(LLMS.read_text(encoding="utf-8").splitlines(), 1):
@@ -69,32 +69,32 @@ def check_links() -> int:
                 continue
             path = (ROOT / target).resolve()
             if not path.exists():
-                print(f"  [link] llms.txt:{i}: 链接不存在 -> {target}")
+                print(f"  [link] llms.txt:{i}: missing link -> {target}")
                 found += 1
     return found
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="扫描文档过期标记与 llms.txt 链接有效性")
-    ap.add_argument("--markers", action="store_true", help="只扫过期标记")
-    ap.add_argument("--links", action="store_true", help="只校验 llms.txt 链接")
+    ap = argparse.ArgumentParser(description="Scan doc stale markers and llms.txt link validity")
+    ap.add_argument("--markers", action="store_true", help="markers only")
+    ap.add_argument("--links", action="store_true", help="llms.txt links only")
     args = ap.parse_args()
 
     do_markers = args.markers or not args.links
     do_links = args.links or not args.markers
     total = 0
     if do_markers:
-        print("== 过期标记扫描 ==")
+        print("== stale-marker scan ==")
         hard, soft = check_markers()
         total += hard
-        print(f"  硬标记 {hard} 处 / 软标记 {soft} 处（软标记仅提示，不阻断）")
+        print(f"  hard {hard} / soft {soft} (soft markers are informational, not blocking)")
     if do_links:
-        print("== llms.txt 链接校验 ==")
+        print("== llms.txt link check ==")
         total += check_links()
     if total:
-        print(f"\n发现 {total} 处问题，请清理后重跑。")
+        print(f"\n{total} issue(s) found; clean them up and rerun.")
         sys.exit(1)
-    print("\n文档漂移检查通过 ✓")
+    print("\ndoc-drift check passed ✓")
 
 
 if __name__ == "__main__":

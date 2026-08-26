@@ -1,13 +1,12 @@
 # _bootstrap
 
 > Turn an empty folder into a production-ready single-agent project in one guided conversation.
-> 一键把空文件夹搭建成可直接投产的单 Agent 工程（引导式问答 + 迭代闭环）。
 
 _bootstrap_ is an open-source **iteration-management bootstrap kit for AI-driven development**.
-It packages a battle-tested methodology (born from the Creator OS project, rounds R102–R109)
-into installable skills, a reusable project template, and deterministic tooling — so any new
-project starts with the same discipline: single source of truth, traceable rounds, and gates
-that live in scripts instead of prompts.
+It packages a battle-tested methodology (born from the Creator OS project) into installable
+skills, a reusable project template, and deterministic tooling — so any new project starts with
+the same discipline: single source of truth, traceable rounds, and gates that live in scripts
+instead of prompts.
 
 ## Features
 
@@ -31,7 +30,7 @@ that live in scripts instead of prompts.
 git clone <your-repo-url> _bootstrap
 cd _bootstrap
 
-# 2. Install the skills for Codex (or Claude Code's skills dir, adjust if needed)
+# 2. Install the skills for Codex (or adjust the destination for other agents)
 python tools/install_skills.py
 
 # 3. Open a NEW empty project folder, start a new conversation, and invoke:
@@ -49,7 +48,7 @@ if it's missing, and tells you to open a new conversation for your first real ta
 ```bash
 python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
     [--template default] \
-    [--module "名称=关键词1,关键词2"] [--code "名称=代码目录"] \
+    [--module "name=keywords"] [--code "name=dir"] \
     [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
     [--force] [--no-venv] [--no-install-skill]
 ```
@@ -66,9 +65,9 @@ python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
 
 | Project | Approach | Our differentiator |
 | --- | --- | --- |
-| github/spec-kit (131k★) | Constitution + specify/plan/tasks/converge | We keep red lines & pitfalls resident and visible per round |
-| Fission-AI/OpenSpec (66k★) | propose → apply → archive change folders | Same loop, plus a three-layer record model (ledger / state card / archive) and deterministic gates |
-| obra/superpowers (278k★) | Skills loaded on demand | Same progressive-disclosure idea; ours ships a guided bootstrap + project skeleton |
+| github/spec-kit (131k★) | Constitution + specify/plan/tasks/converge | Red lines & pitfalls stay resident and visible per round |
+| Fission-AI/OpenSpec (66k★) | propose → apply → archive change folders | Same loop, plus a three-layer record model and deterministic gates |
+| obra/superpowers (278k★) | Skills loaded on demand | Same progressive disclosure, plus guided bootstrap + project skeleton |
 
 _bootstrap_ is smaller, conversation-first, and opinionated about record-keeping — built for one
 operator (or a few agents) who want traceability without ceremony.
@@ -101,20 +100,3 @@ _bootstrap/
 ## License
 
 MIT © 2026 Tomhands
-
----
-
-## 中文简介
-
-_bootstrap_ 是一套面向 AI 主导开发的**迭代管理引导套件**：把"空文件夹 → 可投产单 Agent 工程"
-变成一次引导式对话。核心三件：
-
-1. **引导式部署**（`$project-bootstrap`，显式触发）：问项目名/文件夹 → 选业务模块或默认模板 →
-   复用你已有的 Python（没有则自动装）→ 依赖能共用就共用、不能就项目内建 `.venv` → 生成
-   README/AGENTS/docs 骨架/工具链/.gitignore → git init，可直接提交；
-2. **迭代闭环**（`iteration-close-loop`）：每轮一行台账 + 档案分卷 + NOW 状态卡 + 文档同步 +
-   漂移检查，红线/坑位常驻可见；
-3. **省 token 设计**：AGENTS.md 只做启动契约+索引，其余按需检索（hydrate / llms.txt），
-   一次性技能全部显式触发，不参与自动匹配。
-
-使用：克隆本仓库 → `python tools/install_skills.py` → 新项目第一条对话输入 `$project-bootstrap`。

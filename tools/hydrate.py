@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""渐进检索：按关键词从 docs/ 拉取最相关章节，避免全量注入。
+"""Progressive retrieval: pull the most relevant docs sections by keyword, avoiding full injection.
 
-用法：
-  python tools/hydrate.py 灵感库 赛道统计
-  python tools/hydrate.py "api 契约" --top 5 --lines 3
+Usage:
+  python tools/hydrate.py inspiration niche
+  python tools/hydrate.py "api contract" --top 5 --lines 3
 
-行为：
-  1. 扫描 docs/**/*.md（跳过 archive/ 与 _archive/）；
-  2. 按关键词命中数排序，输出前 N 个文件及命中行；
-  3. 打印各文件近似 token 量（字符数/4），供上下文预算参考。
+Behavior:
+  1. Scan docs/**/*.md (skip archive/ and _archive/);
+  2. Rank files by keyword hit count, print top N files and their matching lines;
+  3. Print each file's approximate token size (chars/4) for context budgeting.
 """
 
 from __future__ import annotations
@@ -30,10 +30,10 @@ def _files():
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="按关键词检索 docs 相关章节")
-    ap.add_argument("keywords", nargs="+", help="检索关键词（多词按任一命中计）")
-    ap.add_argument("--top", type=int, default=8, help="最多输出文件数")
-    ap.add_argument("--lines", type=int, default=3, help="每个文件最多输出命中行数")
+    ap = argparse.ArgumentParser(description="Retrieve relevant docs sections by keyword")
+    ap.add_argument("keywords", nargs="+", help="search keywords (any match counts)")
+    ap.add_argument("--top", type=int, default=8, help="max files to print")
+    ap.add_argument("--lines", type=int, default=3, help="max matching lines per file")
     args = ap.parse_args()
 
     pats = [re.compile(re.escape(k), re.IGNORECASE) for k in args.keywords]
@@ -49,15 +49,15 @@ def main() -> None:
             hits.append((len(matched), p, matched[: args.lines]))
 
     if not hits:
-        print(f"未命中任何文档：{args.keywords}")
+        print(f"no docs matched: {args.keywords}")
         return
 
     hits.sort(key=lambda x: x[0], reverse=True)
-    print(f"命中 {len(hits)} 个文件（关键词：{' '.join(args.keywords)}），按相关度排序：\n")
+    print(f"{len(hits)} files matched (keywords: {' '.join(args.keywords)}), ranked by relevance:\n")
     for count, path, lines in hits[: args.top]:
         rel = path.relative_to(ROOT).as_posix()
         tokens = max(1, len(path.read_text(encoding="utf-8")) // 4)
-        print(f"== {rel}  [命中 {count} · ~{tokens} tokens]")
+        print(f"== {rel}  [{count} hits · ~{tokens} tokens]")
         for ln in lines:
             print(f"   - {ln[:120]}")
         print()

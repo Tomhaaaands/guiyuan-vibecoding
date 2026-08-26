@@ -1,10 +1,12 @@
-# 变更记录（CHANGELOG · 一行台账）
+# Changelog (one-line round ledger)
 
-> 每轮一行，日常只读最近 1-3 行；完整方法论见 [docs/iteration-methodology.md](docs/iteration-methodology.md)。
-> 行格式：`| R1 | MM-DD | 模块 | 一句话结论（干什么/为什么/怎么验证） |`
+> One row per round; read the latest 1-3 rows for status. Full methodology:
+> [docs/iteration-methodology.md](docs/iteration-methodology.md).
+> Row format: `| R1 | MM-DD | module | one-line conclusion (what/why/how-verified) |`
 
 ## 2026-08-27
 
-| 轮次 | 日期 | 模块 | 一句话结论 |
+| Round | Date | Module | One-line conclusion |
 | --- | --- | --- | --- |
-| R1 | 08-27 | 初始化 | v0.1.0 开源首版：从 Creator OS 迭代管理系统（R102–R109）提炼——引导式部署 skill（project-bootstrap，显式触发）+ 迭代闭环 skill（iteration-close-loop）+ 项目模板骨架 + 5 个确定性工具（install/rollup/hydrate/check_drift/gen_llms_txt）+ 完整方法论文档 + MIT 许可 |
+| R2 | 08-27 | i18n | Full English conversion for token efficiency and GitHub fit: README/AGENTS/CHANGELOG/methodology, both skills (scripts, guided stage scripts, openai.yaml), template skeleton, and all tool docstrings/outputs; English placeholders ({{MODULE_A}} etc.) with bootstrap matching both English and Chinese placeholder rows; verified end-to-end (English deploy, 0 hard markers, skills valid, no Chinese residuals except intentional dual-language matchers) |
+| R1 | 08-27 | init | v0.1.0 first open-source release, distilled from the Creator OS iteration system: guided scaffold skill (project-bootstrap, explicit-only) + close-loop skill (iteration-close-loop) + project template skeleton + 5 deterministic tools (install/rollup/hydrate/check_drift/gen_llms_txt) + full methodology doc + MIT license |

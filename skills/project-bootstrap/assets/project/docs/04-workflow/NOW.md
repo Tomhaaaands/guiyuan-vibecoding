@@ -1,16 +1,16 @@
-# NOW · 当前焦点状态卡
+# NOW · Current-Focus Card
 
-> 规则：≤20 行；每轮结束更新，只写当前事实；历史不保留（进 archive）。
-> 台账索引见 [changelog.md](changelog.md) 最近 1-3 行。
+> Rules: ≤20 lines; update at every round end; only current facts; history goes to archive.
+> Ledger index: latest 1-3 rows of [changelog.md](changelog.md).
 
-## 焦点（本轮在做）
+## Focus (this round)
 
-- {{当前焦点，1-3 条}}
+- {{FOCUS_1_3}}
 
-## 阻塞
+## Blockers
 
-- {{无 / 具体阻塞}}
+- {{BLOCKERS}}
 
-## 下一步
+## Next
 
-- {{下一步 1-3 条}}
+- {{NEXT_1_3}}

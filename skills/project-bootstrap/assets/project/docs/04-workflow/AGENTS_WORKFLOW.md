@@ -1,55 +1,56 @@
-# AI 操作总览 · 模块路由与开发总流程（AGENTS_WORKFLOW）
+# AI Operation Overview · Module Routing and Development Workflow
 
-> 本文件是开发流程的唯一入口：模块路由表 + 两条 Workflow + 每轮检查清单 + 变更映射。
+> Single entry point for the development process: module routing + two workflows +
+> per-round checklist + change mapping.
 
-## 1. 模块路由表（用户点明任务 → Agent 必读，按顺序）
+## 1. Module routing table (agent must read, in order)
 
-| 任务关键词 | 必读文档 | 代码目录 |
+| Keywords | Required reading | Code |
 | --- | --- | --- |
-| {{模块A}} | `01-product/{{模块A}}/` → `02-technical/{{模块A}}/iteration.md` | {{代码目录}} |
-| {{模块B}} | `01-product/{{模块B}}/` → `02-technical/{{模块B}}/iteration.md` | {{代码目录}} |
+| {{MODULE_A}} | `01-product/{{MODULE_A}}/` → `02-technical/{{MODULE_A}}/iteration.md` | {{CODE_DIR}} |
+| {{MODULE_B}} | `01-product/{{MODULE_B}}/` → `02-technical/{{MODULE_B}}/iteration.md` | {{CODE_DIR}} |
 
-## 2. 两条 Workflow
+## 2. Two workflows
 
-- **Workflow 1 后端业务落地**：PRD → 契约（`api.md` 先行）→ 数据 → 实现 → 自检 → changelog；
-- **Workflow 2 前端设计协同**：PRD → 路由 → Figma → 设计 → 代码（手动触发）；
-- 方法论与复用指南见 [iteration-methodology.md](iteration-methodology.md)。
+- **Workflow 1 backend**: PRD → contract (`api.md` first) → data → implement → self-check → changelog;
+- **Workflow 2 frontend**: PRD → routes → Figma → design → code (manual trigger);
+- Methodology and migration guide: [iteration-methodology.md](iteration-methodology.md).
 
-## 3. 文档地图（谁负责 · 何时更新）
+## 3. Document map (owner · when to update)
 
-| 文档 | 内容 | 更新时机 |
+| Doc | Content | Update timing |
 | --- | --- | --- |
-| `changelog.md` | 一行索引台账（强制每轮必写） | 每次改动顶部加一行 |
-| `NOW.md` | 当前焦点状态卡（≤20 行） | 每轮结束更新 |
-| `archive/` | 全量迭代档案分卷 | 每次改动详情追加对应卷 |
-| `roadmap.md` | 里程碑与验收一句话 | 里程碑变化 |
-| `iteration-methodology.md` | 可复用方法论 | 方法论演进 |
-| 根目录 `llms.txt` | 文档机器索引 | 文档结构变化（`tools/gen_llms_txt.py`） |
+| `changelog.md` | one-line ledger (mandatory every round) | append a row on every change |
+| `NOW.md` | current-focus card (≤20 lines) | every round end |
+| `archive/` | full archive volumes | every round detail |
+| `roadmap.md` | milestones + one-line acceptance | milestone changes |
+| `iteration-methodology.md` | reusable methodology | methodology evolution |
+| root `llms.txt` | machine-readable doc index | doc-structure changes (`tools/gen_llms_txt.py`) |
 
-> 职责边界：changelog=一行索引；NOW=当前焦点；archive=考古档案；各模块 iteration.md=滚动状态卡；
-> 红线/坑位/关键决策不归档。
+> Boundaries: changelog=one-line index; NOW=current focus; archive=archaeology; module
+> iteration.md=rolling state card; red lines/pitfalls/key decisions are never archived.
 
-## 4. 每次改动的标准动作（最小闭环）
+## 4. Standard actions for every change (minimal closure)
 
-1. 写 changelog 一行 + archive 分卷（可用 `tools/rollup_round.py`）；
-2. 更新 NOW.md（焦点/阻塞/下一步）；
-3. 增量更新对应文档（禁止整篇重写）；
-4. 反向同步 PRD「现状/阶段」；
-5. 红线检查；
-6. 收尾自检：无「待补/未同步」过期标记，结构校验通过。
+1. Append a changelog row + write the archive volume (`tools/rollup_round.py`);
+2. Update NOW.md (focus / blockers / next);
+3. Incrementally sync affected docs (no full rewrites);
+4. Back-sync the PRD "current/status" section;
+5. Red-line check;
+6. Final self-check: no stale "TBD / not-synced" markers; structural checks pass.
 
-## 5. 每轮对话开始检查清单
+## 5. Per-round opening checklist
 
-- [ ] 已读本文件
-- [ ] 已读 changelog 最近 1-3 行
-- [ ] 已读 NOW.md
-- [ ] 已读目标模块 iteration.md 卡
-- [ ] 涉及接口 → api.md 为最新；涉及红线 → red-lines 为最新
+- [ ] read this file
+- [ ] read the latest 1-3 changelog rows
+- [ ] read NOW.md
+- [ ] read the target module's iteration.md
+- [ ] interfaces → api.md is current; red lines → red-lines is current
 
-## 6. 变更类型 → 文档映射（速查）
+## 6. Change type → doc mapping (quick reference)
 
-| 变更 | 必更文档 |
+| Change | Docs to update |
 | --- | --- |
-| 任何代码/文档改动 | changelog（一行）+ archive（详情）+ 模块 iteration.md |
-| 新增/改 API | api.md + changelog |
-| 迭代系统自身改动 | iteration-methodology.md + templates/ + skill + llms.txt + changelog |
+| any code/doc change | changelog (row) + archive (detail) + module iteration.md |
+| new/changed API | api.md + changelog |
+| iteration-system changes | iteration-methodology.md + templates/ + skills + llms.txt + changelog |

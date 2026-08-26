@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""安装本仓库的 skills 到 Codex 技能目录。
+"""Install this repo's skills into the Codex skills directory.
 
-用法：
+Usage:
   python tools/install_skills.py [--force]
 
-行为：
-  把 skills/iteration-close-loop 与 skills/project-bootstrap 复制到
-  $CODEX_HOME/skills（默认 ~/.codex/skills）；已存在时跳过，--force 覆盖。
+Behavior:
+  Copies skills/iteration-close-loop and skills/project-bootstrap into
+  $CODEX_HOME/skills (default ~/.codex/skills); skips existing skills, --force overwrites.
 """
 
 from __future__ import annotations
@@ -24,8 +24,8 @@ SKILLS = ("iteration-close-loop", "project-bootstrap")
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="安装 skills 到 Codex 技能目录")
-    ap.add_argument("--force", action="store_true", help="覆盖已存在技能")
+    ap = argparse.ArgumentParser(description="Install skills into the Codex skills directory")
+    ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     args = ap.parse_args()
 
     home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
@@ -36,13 +36,13 @@ def main() -> None:
         src = ROOT / "skills" / name
         dst = dest_root / name
         if dst.exists() and not args.force:
-            print(f"已存在，跳过：{name}（--force 覆盖）")
+            print(f"already installed, skipped: {name} (--force to overwrite)")
             continue
         if dst.exists():
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
-        print(f"已安装：{dst}")
-    print(f"完成。新项目第一条对话输入 $project-bootstrap 即可开始。")
+        print(f"installed: {dst}")
+    print("done. In a new project's first conversation, invoke $project-bootstrap to start.")
 
 
 if __name__ == "__main__":
