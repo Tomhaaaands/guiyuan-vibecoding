@@ -1,0 +1,5 @@
+interface:
+  display_name: "Project Bootstrap"
+  short_description: "一键部署迭代管理系统骨架到新项目（仅显式调用 $project-bootstrap 触发）"
+policy:
+  allow_implicit_invocation: false

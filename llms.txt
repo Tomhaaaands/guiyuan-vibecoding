@@ -1,0 +1,8 @@
+# _bootstrap
+
+> 文档机器索引（由 tools/gen_llms_txt.py 生成，文档结构变化后重新生成）。
+
+## 项目入口
+
+- [README.md](README.md): 项目根说明
+- [AGENTS.md](AGENTS.md): Agent 启动契约 + 模块路由表
