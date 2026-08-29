@@ -24,6 +24,7 @@
 | `NOW.md` | current-focus card (≤20 lines) | every round end |
 | `archive/` | full archive volumes | every round detail |
 | `roadmap.md` | milestones + one-line acceptance | milestone changes |
+| `review-checklist.md` | per-round self-check gates | every round close |
 | `iteration-methodology.md` | reusable methodology | methodology evolution |
 | root `llms.txt` | machine-readable doc index | doc-structure changes (`tools/gen_llms_txt.py`) |
 

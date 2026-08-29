@@ -12,6 +12,8 @@ docs/04-workflow/
   AGENTS_WORKFLOW.md            # process skeleton (routing/two workflows/five-step closure/mapping)
   changelog.md                  # one-line ledger skeleton
   NOW.md                        # current-focus card skeleton (focus/blockers/next)
+  roadmap.md                    # milestones + one-line acceptance skeleton
+  review-checklist.md           # per-round self-check gate skeleton
   iteration-methodology.md      # the full methodology (reusable as-is)
   archive/README.md             # archive-volume rules
 tools/

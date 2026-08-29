@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""One-click installer for the _bootstrap kit (鲁班 V1.0).
+
+Usage:
+  python tools/one_click_install.py                 # install skills + doctor
+  python tools/one_click_install.py --target <dir>  # ... then scaffold that project
+  install.bat  (Windows) / ./install.sh (macOS/Linux)
+
+Behavior:
+  1. Verifies Python >= 3.11 (tomllib needed by profile loading);
+  2. Installs both skills into $CODEX_HOME/skills (idempotent; --force overwrites);
+  3. Runs the built-in --doctor self-check (no writes);
+  4. With --target: scaffolds that project via bootstrap.py (pass-through args);
+  5. Prints next steps.
+"""
+
+from __future__ import annotations
+
+import argparse
+import subprocess
+import sys
+from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
+
+ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
+INSTALL = ROOT / "tools" / "install_skills.py"
+BOOTSTRAP = ROOT / "skills" / "project-bootstrap" / "scripts" / "bootstrap.py"
+MIN_PY = (3, 11)
+
+
+def version() -> str:
+    v = ROOT / "VERSION"
+    return v.read_text(encoding="utf-8").strip() if v.exists() else "unknown"
+
+
+def check_python() -> None:
+    if sys.version_info < MIN_PY:
+        print(f"[error] Python {MIN_PY[0]}.{MIN_PY[1]}+ required (found {sys.version.split()[0]}).")
+        print("        Install Python 3.11+ first: https://www.python.org/downloads/")
+        sys.exit(1)
+
+
+def run(args: list[str]) -> None:
+    print(f"$ python {' '.join(args)}")
+    subprocess.run([sys.executable, *args], check=True)
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(description="One-click install + optional project scaffold for _bootstrap")
+    ap.add_argument("--target", default=None, help="project folder to scaffold after install (optional)")
+    ap.add_argument("--name", default=None, help="project name (default: target folder name)")
+    ap.add_argument("--profile", default=None, help="project-type preset or custom .toml path")
+    ap.add_argument("--dimension", action="append", default=[], metavar="key=value",
+                    help="dimension override (repeatable): deploy/data/runtime/surface")
+    ap.add_argument("--module", action="append", default=[], metavar="name=kw1,kw2",
+                    help="business module (repeatable)")
+    ap.add_argument("--code", action="append", default=[], metavar="name=dir",
+                    help="module code dir (repeatable)")
+    ap.add_argument("--template", choices=["default"], default=None,
+                    help="default template: web + api + db + worker + tests")
+    ap.add_argument("--python", default="auto", metavar="auto|system|install|<path>",
+                    help="Python runtime for the scaffolded project (default: auto)")
+    ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
+                    default="auto", help="dependency policy for the scaffolded project (default: auto)")
+    ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
+    ap.add_argument("--force", action="store_true", help="overwrite existing skills")
+    ap.add_argument("--no-doctor", action="store_true", help="skip the post-install doctor")
+    args = ap.parse_args()
+
+    check_python()
+    print(f"_bootstrap one-click installer v{version()}")
+    print(f"kit root : {ROOT}")
+    print("skills   : $CODEX_HOME/skills (default ~/.codex/skills)")
+    print()
+
+    run([str(INSTALL), *(["--force"] if args.force else [])])
+
+    if not args.no_doctor:
+        run([str(INSTALL), "--doctor"])
+
+    if args.target:
+        bootstrap_args = [str(BOOTSTRAP), args.target]
+        if args.name:
+            bootstrap_args += ["--name", args.name]
+        if args.profile:
+            bootstrap_args += ["--profile", args.profile]
+        for d in args.dimension:
+            bootstrap_args += ["--dimension", d]
+        for m in args.module:
+            bootstrap_args += ["--module", m]
+        for c in args.code:
+            bootstrap_args += ["--code", c]
+        if args.template:
+            bootstrap_args += ["--template", args.template]
+        if args.python != "auto":
+            bootstrap_args += ["--python", args.python]
+        if args.env != "auto":
+            bootstrap_args += ["--env", args.env]
+        if args.no_venv:
+            bootstrap_args.append("--no-venv")
+        run(bootstrap_args)
+
+    print()
+    print("one-click install complete ✓")
+    if args.target:
+        print("  next: open a NEW conversation in that project and start your first real task.")
+    else:
+        print("  next: invoke $project-bootstrap in a new project conversation, or")
+        print("        rerun with --target <folder> to scaffold an existing project.")
+
+
+if __name__ == "__main__":
+    main()

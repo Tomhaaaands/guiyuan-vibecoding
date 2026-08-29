@@ -74,8 +74,9 @@ heavier, more general tools; this kit deliberately isn't.
 git clone <your-repo-url> _bootstrap
 cd _bootstrap
 
-# 2. Install the skills for Codex (or adjust the destination for other agents)
-python tools/install_skills.py
+# 2. One-click install (skills + self-check; add `--target <folder>` to scaffold a project)
+install.bat            # Windows
+./install.sh           # macOS / Linux
 
 # 3. Open a NEW empty project folder, start a new conversation, and invoke:
 $project-bootstrap
@@ -102,6 +103,7 @@ python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
 | Tool | Purpose |
 | --- | --- |
 | `tools/install_skills.py` | Install skills into `$CODEX_HOME/skills`; `--doctor` self-checks the kit |
+| `tools/one_click_install.py` | One-click install: skills + doctor + optional project scaffold (`install.bat` / `install.sh` wrappers) |
 | `tools/rollup_round.py` | Create an archive round file + insert the changelog row |
 | `tools/hydrate.py` | Keyword-retrieve relevant docs; reserved `--semantic` backend |
 | `tools/distill.py` | Project-memory distillation (pitfalls → red-lines implemented; others stubbed) |

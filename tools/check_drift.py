@@ -15,6 +15,7 @@ Teaching files that explain these markers are skipped to avoid false positives.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import sys
 from pathlib import Path
@@ -25,6 +26,12 @@ ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().pare
 DOCS = ROOT / "docs"
 LLMS = ROOT / "llms.txt"
 SKIP_PARTS = {"archive", "_archive"}
+SYNC_PAIRS = (
+    (ROOT / "templates" / "iteration-methodology",
+     ROOT / "skills" / "project-bootstrap" / "assets" / "project"),
+    (ROOT / "skills" / "iteration-close-loop",
+     ROOT / "skills" / "project-bootstrap" / "assets" / "skills" / "iteration-close-loop"),
+)
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",
     "docs/04-workflow/product-update-protocol.md",
@@ -74,6 +81,43 @@ def check_links() -> int:
     return found
 
 
+def _relative_map(root: Path) -> dict[str, str]:
+    """Return {relative_posix_path: sha256} for every file under root."""
+    out: dict[str, str] = {}
+    if not root.is_dir():
+        return out
+    for p in root.rglob("*"):
+        if p.is_file():
+            out[p.relative_to(root).as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
+    return out
+
+
+def check_sync() -> int:
+    """Distribution sync gate: the template and its asset copies must stay identical."""
+    issues = 0
+    for a, b in SYNC_PAIRS:
+        if not a.exists() and not b.exists():
+            print(f"  [skip] sync pair not present here: {a.name} <-> {b.name}")
+            continue
+        ma, mb = _relative_map(a), _relative_map(b)
+        label_a, label_b = a.name, b.name
+        for rel in sorted(set(ma) | set(mb)):
+            if rel not in ma:
+                print(f"  [sync] missing in {label_a}: {rel}")
+                issues += 1
+            elif rel not in mb:
+                print(f"  [sync] missing in {label_b}: {rel}")
+                issues += 1
+            elif ma[rel] != mb[rel]:
+                print(f"  [sync] differs: {rel} ({label_a} vs {label_b})")
+                issues += 1
+    if issues:
+        print("  [fail] template/asset copies are out of sync")
+    else:
+        print("  [ok] template + asset copies are in sync")
+    return issues
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Scan doc stale markers and llms.txt link validity")
     ap.add_argument("--markers", action="store_true", help="markers only")
@@ -82,6 +126,7 @@ def main() -> None:
 
     do_markers = args.markers or not args.links
     do_links = args.links or not args.markers
+    do_sync = not (args.markers or args.links)
     total = 0
     if do_markers:
         print("== stale-marker scan ==")
@@ -91,6 +136,9 @@ def main() -> None:
     if do_links:
         print("== llms.txt link check ==")
         total += check_links()
+    if do_sync:
+        print("== template/asset sync check ==")
+        total += check_sync()
     if total:
         print(f"\n{total} issue(s) found; clean them up and rerun.")
         sys.exit(1)

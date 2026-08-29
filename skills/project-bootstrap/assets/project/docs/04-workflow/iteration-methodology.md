@@ -173,6 +173,7 @@ reference instead of copy.
 | `tools/check_drift.py` | stale markers + llms.txt link validation | periodic / closure |
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
 | `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
+| `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
 | skill `project-bootstrap` | one-click guided scaffold (explicit-only) | new project's first conversation |
 | skill `iteration-close-loop` | round close-out | every round wrap-up |
 
