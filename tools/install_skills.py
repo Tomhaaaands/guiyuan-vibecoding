@@ -24,7 +24,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-SKILLS = ("iteration-close-loop", "project-bootstrap")
+SKILLS = ("iteration-close-loop", "project-bootstrap", "luban-install")
 VERSION_FILE = ROOT / "VERSION"
 
 

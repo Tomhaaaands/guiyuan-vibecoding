@@ -1,0 +1,3 @@
+name = "c-end"
+description = "Consumer app: auth, payment, compliance, web surface"
+dimensions = { deploy = "c-end", data = "relational", runtime = "python", surface = "web" }

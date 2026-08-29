@@ -46,3 +46,4 @@
 | Current focus / blockers / next | [NOW.md](docs/04-workflow/NOW.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |
 | Round close-out (skill) | `$iteration-close-loop` |
+| One-click install (skill) | `$luban-install` |

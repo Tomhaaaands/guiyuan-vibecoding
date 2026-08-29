@@ -8,7 +8,8 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
-  2. Installs both skills into $CODEX_HOME/skills (idempotent; --force overwrites);
+  2. Installs the three kit skills (iteration-close-loop, project-bootstrap, luban-install)
+     into $CODEX_HOME/skills (idempotent; --force overwrites);
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
   5. Prints next steps.

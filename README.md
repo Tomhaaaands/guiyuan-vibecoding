@@ -66,6 +66,9 @@ heavier, more general tools; this kit deliberately isn't.
 - **Six deterministic tools** — install skills (with `--doctor` self-check), roll up rounds,
   hydrate docs (keyword + reserved semantic backend), check drift, generate `llms.txt`, and a
   working pitfalls→red-lines distillation (other directions stubbed).
+- **Installable as a skill** — `$luban-install` (explicit-only) installs/updates the kit from
+  inside Codex and can scaffold an existing project; `install.bat` / `install.sh` are the
+  one-command entry outside Codex.
 
 ## Quick start
 
@@ -80,6 +83,9 @@ install.bat            # Windows
 
 # 3. Open a NEW empty project folder, start a new conversation, and invoke:
 $project-bootstrap
+
+Already installed? Inside Codex, invoke `$luban-install` anytime to update the skills,
+run the doctor self-check, or scaffold an existing project folder.
 ```
 
 Answer the guided questions. The skill scaffolds the project, installs `iteration-close-loop`
