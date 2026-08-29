@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-click installer bundled as the luban-install skill (self-contained).
+"""One-click installer bundled as the vibe-coding-install skill (self-contained).
 
 Usage:
   python <skill>/scripts/install.py                 # install/update skills + doctor
@@ -70,11 +70,11 @@ def install(dest: Path, force: bool) -> None:
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
         print(f"installed: {dst}")
-    print(f"luban-install v{VERSION} done.")
+    print(f"vibe-coding-install v{VERSION} done.")
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="One-click install of the _bootstrap kit skills")
+    ap = argparse.ArgumentParser(description="One-click install of the VibeCoding_Manager kit skills")
     ap.add_argument("--target", default=None, help="project folder to scaffold after install (optional)")
     ap.add_argument("--name", default=None, help="project name (default: target folder name)")
     ap.add_argument("--profile", default=None, help="project-type preset or custom .toml path")
@@ -95,7 +95,7 @@ def main() -> None:
         sys.exit(1)
 
     dest = codex_skills()
-    print(f"luban-install v{VERSION}")
+    print(f"vibe-coding-install v{VERSION}")
     print(f"skill root : {SKILL_ROOT}")
     print(f"skills dest: {dest}")
     print()

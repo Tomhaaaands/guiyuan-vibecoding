@@ -1,7 +1,7 @@
 # Fact ownership — which manager owns which memory
 
-> Shared boundary contract (2026-08-29) between **project-bootstrap** (the per-project "project
-> manager") and **memory-os** (the personal "life manager"). Mirrored in both repos and kept
+> Shared boundary contract (2026-08-29) between **VibeCoding_Manager** (repo `project_bootstrap`, the per-project "project
+> manager") and **Private_butler** (repo `memory-os`, the personal "life manager"). Mirrored in both repos and kept
 > identical; if the two copies drift, fix them here and re-sync.
 
 ## Purpose

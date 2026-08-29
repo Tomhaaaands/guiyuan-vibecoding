@@ -32,9 +32,9 @@ SYNC_PAIRS = (
     (ROOT / "skills" / "iteration-close-loop",
      ROOT / "skills" / "project-bootstrap" / "assets" / "skills" / "iteration-close-loop"),
     (ROOT / "skills" / "iteration-close-loop",
-     ROOT / "skills" / "luban-install" / "assets" / "skills" / "iteration-close-loop"),
+     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "iteration-close-loop"),
     (ROOT / "skills" / "project-bootstrap",
-     ROOT / "skills" / "luban-install" / "assets" / "skills" / "project-bootstrap"),
+     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "project-bootstrap"),
 )
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",

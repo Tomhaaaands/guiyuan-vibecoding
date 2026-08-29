@@ -24,7 +24,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-SKILLS = ("iteration-close-loop", "project-bootstrap", "luban-install")
+SKILLS = ("iteration-close-loop", "project-bootstrap", "vibe-coding-install")
 VERSION_FILE = ROOT / "VERSION"
 
 
@@ -39,7 +39,7 @@ def codex_home() -> Path:
 def doctor() -> int:
     home = codex_home()
     skills_root = home / "skills"
-    print(f"_bootstrap v{version()} · doctor")
+    print(f"VibeCoding_Manager v{version()} · doctor")
     ok = True
     for name in SKILLS:
         sk = skills_root / name / "SKILL.md"
@@ -71,12 +71,12 @@ def install(force: bool) -> None:
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
         print(f"installed: {dst}")
-    print(f"_bootstrap v{version()} installed.")
+    print(f"VibeCoding_Manager v{version()} installed.")
     print("next: open a NEW empty project folder, start a new conversation, invoke $project-bootstrap.")
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Install _bootstrap skills and self-check the kit")
+    ap = argparse.ArgumentParser(description="Install VibeCoding_Manager skills and self-check the kit")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--doctor", action="store_true", help="verify install + repo health (no writes)")
     args = ap.parse_args()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-click installer for the _bootstrap kit (鲁班 V1.0).
+"""One-click installer for the VibeCoding_Manager kit (V1.0).
 
 Usage:
   python tools/one_click_install.py                 # install skills + doctor
@@ -8,7 +8,7 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
-  2. Installs the three kit skills (iteration-close-loop, project-bootstrap, luban-install)
+  2. Installs the three kit skills (iteration-close-loop, project-bootstrap, vibe-coding-install)
      into $CODEX_HOME/skills (idempotent; --force overwrites);
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
@@ -48,7 +48,7 @@ def run(args: list[str]) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="One-click install + optional project scaffold for _bootstrap")
+    ap = argparse.ArgumentParser(description="One-click install + optional project scaffold for VibeCoding_Manager")
     ap.add_argument("--target", default=None, help="project folder to scaffold after install (optional)")
     ap.add_argument("--name", default=None, help="project name (default: target folder name)")
     ap.add_argument("--profile", default=None, help="project-type preset or custom .toml path")
@@ -70,7 +70,7 @@ def main() -> None:
     args = ap.parse_args()
 
     check_python()
-    print(f"_bootstrap one-click installer v{version()}")
+    print(f"VibeCoding_Manager one-click installer v{version()}")
     print(f"kit root : {ROOT}")
     print("skills   : $CODEX_HOME/skills (default ~/.codex/skills)")
     print()

@@ -1,4 +1,4 @@
-# _bootstrap Agent Rules (mandatory · startup contract + index)
+# VibeCoding_Manager Agent Rules (mandatory · startup contract + index)
 
 > Highest priority. This file holds only the required reading order, routing table, discipline,
 > constraints, and index pointers; methodology lives in
@@ -35,7 +35,7 @@
 
 - Pure Python 3.11+ (tomllib for profiles), standard library only; UTF-8;
 - Paths resolve relative to the repo root (find README.md upward); no hardcoded absolute paths;
-- After doc-structure changes regenerate `llms.txt`: `python tools/gen_llms_txt.py --name "_bootstrap"`.
+- After doc-structure changes regenerate `llms.txt`: `python tools/gen_llms_txt.py --name "VibeCoding_Manager"`.
 
 ## 4. Index pointers
 

@@ -1,7 +1,7 @@
 # Iteration Management Methodology
 
 > Status: effective (2026-08-27, v2.1). This document is a **reusable methodology** for
-> AI-driven development iteration management. The reference implementation is the Creator OS
+> AI-driven development iteration management. The reference implementation is Flash_assistant (tom_creator_os)
 > project; migrate to other projects using the minimal set in §11 — no dependency on this repo.
 
 ## 1. Purpose and design goals
@@ -174,7 +174,7 @@ reference instead of copy.
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
 | `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
-| skill `luban-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
+| skill `vibe-coding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
 | skill `project-bootstrap` | one-click guided scaffold (explicit-only) | new project's first conversation |
 | skill `iteration-close-loop` | round close-out | every round wrap-up |
 

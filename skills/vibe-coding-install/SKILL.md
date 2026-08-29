@@ -1,11 +1,11 @@
 ---
-name: luban-install
-description: One-click installer for the _bootstrap kit (鲁班 / coding-project manager). Installs or updates the iteration-close-loop and project-bootstrap skills into $CODEX_HOME/skills, runs a self-check, and can scaffold an existing project folder. Explicit-only: invoke with $luban-install.
+name: vibe-coding-install
+description: One-click installer for the VibeCoding_Manager kit (coding-project manager, repo project_bootstrap). Installs or updates the iteration-close-loop and project-bootstrap skills into $CODEX_HOME/skills, runs a self-check, and can scaffold an existing project folder. Explicit-only: invoke with $vibe-coding-install.
 ---
 
-# Luban One-Click Install
+# VibeCoding Manager One-Click Install
 
-Use when the user wants to install, update, self-check, or redeploy the _bootstrap kit skills,
+Use when the user wants to install, update, self-check, or redeploy the VibeCoding_Manager kit skills,
 or scaffold an existing project folder with the iteration system.
 
 ## Workflow
@@ -22,7 +22,7 @@ or scaffold an existing project folder with the iteration system.
 
 ## Rules
 
-- Explicit-only: never auto-trigger on ordinary tasks; run only when invoked via `$luban-install`.
+- Explicit-only: never auto-trigger on ordinary tasks; run only when invoked via `$vibe-coding-install`.
 - Installation writes only to `$CODEX_HOME/skills`; scaffolding touches only the target folder.
 - `--target` scaffolds via the installed project-bootstrap skill's `bootstrap.py`
   (pass-through: `--name/--profile/--module/--dimension/--python/--env/--no-venv`).

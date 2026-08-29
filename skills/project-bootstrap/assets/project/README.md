@@ -1,6 +1,6 @@
 # Iteration Methodology Template (templates/iteration-methodology)
 
-> Source: the _bootstrap open-source kit. Copy into any new project, replace the placeholders,
+> Source: the VibeCoding_Manager open-source kit. Copy into any new project, replace the placeholders,
 > and you get an AI-driven development iteration loop: startup contract + one-line ledger +
 > archive volumes + state cards + deterministic gates.
 

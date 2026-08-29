@@ -1,9 +1,10 @@
-# _bootstrap
+# VibeCoding_Manager
 
 > Turn an empty folder into a production-ready single-agent project in one guided conversation.
 > One scaffold. One loop. Zero context rot.
 
-_bootstrap_ is an open-source **iteration-management bootstrap kit for AI-driven development**:
+VibeCoding_Manager (repo `project_bootstrap`, previously `_bootstrap`) is an open-source
+**iteration-management bootstrap kit for AI-driven development**:
 installable skills + a reusable project template + deterministic tooling, so every new project
 starts with the same discipline — single source of truth, traceable rounds, and gates that live
 in scripts instead of prompts.
@@ -38,7 +39,7 @@ Not for you? If you run a large org with compliance teams, 30+ tool integrations
 spec-driven process spanning every assistant on the market — spec-kit and OpenSpec are the
 heavier, more general tools; this kit deliberately isn't.
 
-## Why _bootstrap (differentiators)
+## Why VibeCoding_Manager (differentiators)
 
 1. **Conversation-first, not command-first** — a guided Q&A deploys the full project (modules,
    routing, red-line stubs, environment, git) in one session. No CLI incantations to learn.
@@ -66,7 +67,7 @@ heavier, more general tools; this kit deliberately isn't.
 - **Six deterministic tools** — install skills (with `--doctor` self-check), roll up rounds,
   hydrate docs (keyword + reserved semantic backend), check drift, generate `llms.txt`, and a
   working pitfalls→red-lines distillation (other directions stubbed).
-- **Installable as a skill** — `$luban-install` (explicit-only) installs/updates the kit from
+- **Installable as a skill** — `$vibe-coding-install` (explicit-only) installs/updates the kit from
   inside Codex and can scaffold an existing project; `install.bat` / `install.sh` are the
   one-command entry outside Codex.
 
@@ -84,7 +85,7 @@ install.bat            # Windows
 # 3. Open a NEW empty project folder, start a new conversation, and invoke:
 $project-bootstrap
 
-Already installed? Inside Codex, invoke `$luban-install` anytime to update the skills,
+Already installed? Inside Codex, invoke `$vibe-coding-install` anytime to update the skills,
 run the doctor self-check, or scaffold an existing project folder.
 ```
 
@@ -118,14 +119,14 @@ python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
 
 ## How we compare
 
-| Project | Approach | Why _bootstrap instead |
+| Project | Approach | Why VibeCoding_Manager instead |
 | --- | --- | --- |
 | github/spec-kit (131k★) | Constitution + specify/plan/tasks/converge, CLI + extension ecosystem | We're conversation-first, no CLI ceremony; red lines stay resident; three-layer records |
 | Fission-AI/OpenSpec (66k★) | propose → apply → archive change folders, 30+ assistant support | Same loop spirit, plus guided bootstrap, deterministic gates, and explicit-only skills |
 | obra/superpowers (278k★) | Skills loaded on demand | Same progressive disclosure; we add a guided scaffold + project skeleton + red-line residency |
 | gsd-build/get-shit-done (64k★) | Meta-prompting + context engineering + hooks/SDK | We're doc-loop-focused and dependency-free (stdlib only) |
 
-_bootstrap_ is smaller, conversation-first, and opinionated about record-keeping — built for one
+VibeCoding_Manager is smaller, conversation-first, and opinionated about record-keeping — built for one
 operator (or a few agents) who want traceability without ceremony.
 
 ## Project layout
