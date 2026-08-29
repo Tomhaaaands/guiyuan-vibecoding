@@ -63,8 +63,9 @@ heavier, more general tools; this kit deliberately isn't.
 - **Project-type profiles** — built-in presets (`saas` / `c-end` / `vector-db` / `cli-tool`) and
   four composable dimensions (`deploy` / `data` / `runtime` / `surface`) inject per-type modules,
   red-line stubs, constraints, and doc placeholders; custom `.toml` profiles cover the long tail.
-- **Five deterministic tools** — install skills, roll up rounds, hydrate docs, check drift,
-  generate `llms.txt`.
+- **Six deterministic tools** — install skills (with `--doctor` self-check), roll up rounds,
+  hydrate docs (keyword + reserved semantic backend), check drift, generate `llms.txt`, and a
+  working pitfalls→red-lines distillation (other directions stubbed).
 
 ## Quick start
 
@@ -100,9 +101,10 @@ python skills/project-bootstrap/scripts/bootstrap.py <folder> --name <project> \
 
 | Tool | Purpose |
 | --- | --- |
-| `tools/install_skills.py` | Install skills into `$CODEX_HOME/skills` |
+| `tools/install_skills.py` | Install skills into `$CODEX_HOME/skills`; `--doctor` self-checks the kit |
 | `tools/rollup_round.py` | Create an archive round file + insert the changelog row |
-| `tools/hydrate.py` | Keyword-retrieve relevant docs (progressive disclosure) |
+| `tools/hydrate.py` | Keyword-retrieve relevant docs; reserved `--semantic` backend |
+| `tools/distill.py` | Project-memory distillation (pitfalls → red-lines implemented; others stubbed) |
 | `tools/check_drift.py` | Scan stale markers (hard/soft) + validate `llms.txt` links |
 | `tools/gen_llms_txt.py` | Generate the root `llms.txt` doc index |
 
@@ -142,6 +144,8 @@ _bootstrap/
 - [docs/iteration-methodology.md](docs/iteration-methodology.md) — seven core principles, the
   five-layer doc system, two workflows, the three-layer record model, goal-locking, output rules,
   token-saving design, and a migration guide (minimal set → standard set → full set).
+- [docs/distillation.md](docs/distillation.md) — the self-iteration distillation loop (four lift
+  directions; the pitfalls direction is implemented).
 
 ## License
 

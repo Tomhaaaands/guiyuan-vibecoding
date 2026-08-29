@@ -168,10 +168,11 @@ reference instead of copy.
 | Tool | Responsibility | Trigger |
 | --- | --- | --- |
 | `tools/rollup_round.py` | archive volume + ledger row | every round closure |
-| `tools/hydrate.py` | keyword retrieval of relevant docs | before work |
+| `tools/hydrate.py` | keyword retrieval; reserved `--semantic` backend | before work |
+| `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
 | `tools/check_drift.py` | stale markers + llms.txt link validation | periodic / closure |
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
-| `tools/install_skills.py` | install skills into $CODEX_HOME/skills | first setup |
+| `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
 | skill `project-bootstrap` | one-click guided scaffold (explicit-only) | new project's first conversation |
 | skill `iteration-close-loop` | round close-out | every round wrap-up |
 
@@ -223,4 +224,7 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 - changes to AGENTS.md / workflows / this doc -> sync `templates/iteration-methodology/` and
   `skills/project-bootstrap/assets/project/` in the same round;
 - tool changes -> sync template copies and re-run tests;
+- the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
+  consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.
+  Distillation reads project archives only — no memory-os dependency;
 - every round ends with: changelog row + archive volume + NOW.md update.

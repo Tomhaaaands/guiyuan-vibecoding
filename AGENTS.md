@@ -21,6 +21,7 @@
 | project-type profiles / presets / dimensions | `skills/project-bootstrap/profiles/README.md` | `skills/project-bootstrap/profiles/` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
 | methodology / principles / migration guide | [docs/iteration-methodology.md](docs/iteration-methodology.md) | `docs/` |
+| fact ownership / which manager / boundary | [docs/fact-ownership.md](docs/fact-ownership.md) | `docs/` |
 
 ## 2. Documentation discipline (non-negotiable)
 
@@ -42,5 +43,6 @@
 | --- | --- |
 | Quick start / usage | [README.md](README.md) |
 | Full methodology | [docs/iteration-methodology.md](docs/iteration-methodology.md) |
+| Fact ownership boundary (vs memory-os) | [docs/fact-ownership.md](docs/fact-ownership.md) |
 | Iteration progress | [CHANGELOG.md](CHANGELOG.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |
