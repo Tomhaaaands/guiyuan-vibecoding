@@ -21,6 +21,9 @@ tools/
   hydrate.py                    # keyword retrieval over docs
   check_drift.py                # stale markers + llms.txt link validation
   gen_llms_txt.py               # generate root llms.txt
+scripts/
+  hooks/pre-commit              # commit gate: runs check_drift before every commit
+  install_hooks.py              # install the gate into .git/hooks (idempotent)
 ```
 
 ## Three steps to go live
@@ -30,7 +33,8 @@ tools/
    constraints in AGENTS.md; write the R1 init row into changelog
    (or run `python tools/rollup_round.py --round R1 ...`);
 3. **Generate + verify**: `python tools/gen_llms_txt.py` for llms.txt, then
-   `python tools/check_drift.py` plus the project's own structural checks.
+   `python tools/check_drift.py` plus the project's own structural checks; install the
+   commit gate once: `python scripts/install_hooks.py` (bootstrap installs it automatically).
 
 ## Optional: behavior packaging
 

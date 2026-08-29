@@ -36,6 +36,8 @@
 - build/test commands: {{FILL_PER_PROJECT}};
 - paths/storage/dependency constraints: {{FILL_PER_PROJECT}};
 - every change must pass the project's structural check (e.g. `tools/check_structure.py` when present).
+- a pre-commit gate runs `tools/check_drift.py` before every commit (bypass only with
+  `git commit --no-verify`); reinstall with `python scripts/install_hooks.py`.
 
 ## 4. Index pointers
 

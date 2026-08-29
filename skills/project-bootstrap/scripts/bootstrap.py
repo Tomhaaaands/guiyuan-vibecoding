@@ -237,7 +237,16 @@ def _git_init(root: Path) -> bool:
         return False
     try:
         subprocess.run(["git", "init"], cwd=root, capture_output=True, check=True)
-        return True
+    return True
+
+
+def _install_precommit_gate(root: Path) -> None:
+    """Copy the bundled pre-commit hook into .git/hooks (idempotent)."""
+    src = ASSETS / "scripts" / "hooks" / "pre-commit"
+    dst = root / ".git" / "hooks" / "pre-commit"
+    if src.exists() and dst.parent.exists() and not dst.exists():
+        shutil.copy2(src, dst)
+        print(f"  pre-commit gate: installed ({dst.relative_to(root).as_posix()})")
     except (FileNotFoundError, subprocess.CalledProcessError):
         return False
 
@@ -445,6 +454,8 @@ def main() -> None:
         except (subprocess.CalledProcessError, OSError):
             venv_status = "failed"
     git_inited = _git_init(target)
+    if git_inited:
+        _install_precommit_gate(target)
 
     installed = None
     if not args.no_install_skill:
