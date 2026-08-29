@@ -13,7 +13,7 @@ are stubs pending their own work.
   promote     私有 → 共性：lift a reusable lesson from one project into the shared kit. (stub)
 
 Distillation reads the project's own archive/state files only. It does NOT depend on
-memory-os or any external memory/embedding service — that coupling was a mistake and is removed.
+Private_butler or any external memory/embedding service — that coupling was a mistake and is removed.
 """
 
 from __future__ import annotations
@@ -163,7 +163,7 @@ def main() -> None:
     print(f"distill/{args.direction}: {meta['desc']}")
     print(f"  inputs : {', '.join(meta['inputs'])}")
     print(f"  output : {meta['output']}")
-    print("  status : stub — implement next; not blocked on memory-os")
+    print("  status : stub — implement next; not blocked on Private_butler")
 
 
 if __name__ == "__main__":

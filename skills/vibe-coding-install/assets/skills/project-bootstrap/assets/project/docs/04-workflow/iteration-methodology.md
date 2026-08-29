@@ -228,5 +228,5 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 - tool changes -> sync template copies and re-run tests;
 - the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
   consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.
-  Distillation reads project archives only — no memory-os dependency;
+  Distillation reads project archives only — no Private_butler dependency;
 - every round ends with: changelog row + archive volume + NOW.md update.

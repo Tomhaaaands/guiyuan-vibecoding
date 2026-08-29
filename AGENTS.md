@@ -43,6 +43,6 @@
 | --- | --- |
 | Quick start / usage | [README.md](README.md) |
 | Full methodology | [docs/iteration-methodology.md](docs/iteration-methodology.md) |
-| Fact ownership boundary (vs memory-os) | [docs/fact-ownership.md](docs/fact-ownership.md) |
+| Fact ownership boundary (vs Private_butler) | [docs/fact-ownership.md](docs/fact-ownership.md) |
 | Iteration progress | [CHANGELOG.md](CHANGELOG.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |
