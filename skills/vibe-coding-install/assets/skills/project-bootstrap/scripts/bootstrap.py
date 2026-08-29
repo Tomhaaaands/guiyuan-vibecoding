@@ -339,7 +339,7 @@ def _apply_profile(target: Path, merged: dict) -> list[str]:
         red.write_text(red.read_text(encoding="utf-8") + body, encoding="utf-8")
         created.append(red.relative_to(target).as_posix())
     for stub in merged.get("docs_stubs", []):
-        p = target / stub
+        p = target / "docs" / stub
         if not p.exists():
             p.parent.mkdir(parents=True, exist_ok=True)
             title = Path(stub).stem.replace("-", " ").title()
