@@ -8,6 +8,7 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R13 | 08-30 | 骨架 | 脚手架骨架升级：根 `pyproject.toml`（Python 依赖管理，占位符替换扩展到 .toml）；web/admin 模块默认生成 Next.js 16 + React 19 + TS 骨架（assets/frontend/{web,admin}，含 package.json/tsconfig/next.config rewrites）；修复 R12 引入的 `_git_init` try 块语法 bug（bootstrap 此前无法运行）；临时目录实测骨架生成 + 占位符替换 | [r13](docs/04-workflow/archive/2026-08-30-r13.md) |
 | R12 | 08-30 | gate | pre-commit 闸机：模板新增 `scripts/hooks/pre-commit`（sh，跑 check_drift，失败 exit 1）+ `scripts/install_hooks.py`（幂等）；bootstrap.py 在 git init 后自动装闸机；模板 AGENTS.md 技术约束补闸机说明；同步三副本 + $CODEX_HOME；kit 自身与 suanming_os 实测：TODO 文档提交被拒、干净提交放行 | [r12](docs/04-workflow/archive/2026-08-30-r12.md) |
 | R11 | 08-30 | profile | 修复 profile `docs_stubs` 路径 bug：`target / stub` 缺 `docs/` 前缀导致 c-end 等 profile 的文档占位写到根目录（如根 `00-system/data-layer.md`、`01-product/compliance.md`）→ 改 `target / "docs" / stub`；suanming_os 端到端测试暴露；同步三副本 + $CODEX_HOME；check_drift 绿 | [r11](docs/04-workflow/archive/2026-08-30-r11.md) |
 | R10 | 08-30 | naming | 技术名显示层统一（用户拍板）：文档/工具里对私人管家的引用 `memory-os` → **Private_butler**（AGENTS/distill×3/方法论×3/distillation/fact-ownership 双镜像）；vibe-coding-install 内置副本随门禁刷新；check_drift 4 对全绿 | [r10](docs/04-workflow/archive/2026-08-30-r10.md) |

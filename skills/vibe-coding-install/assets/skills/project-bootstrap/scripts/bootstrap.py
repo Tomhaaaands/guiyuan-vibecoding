@@ -55,6 +55,10 @@ sys.stdout.reconfigure(encoding="utf-8")
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 ASSETS = SKILL_ROOT / "assets" / "project"
 SKILL_ASSETS = SKILL_ROOT / "assets" / "skills" / "iteration-close-loop"
+FRONTEND_SKELETONS = {
+    "web": SKILL_ROOT / "assets" / "frontend" / "web",
+    "admin": SKILL_ROOT / "assets" / "frontend" / "admin",
+}
 PROFILES_DIR = SKILL_ROOT / "profiles"
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]+\}\}")
 LIST_KEYS = ("modules", "red_lines", "constraints", "docs_stubs", "gitignore_add")
@@ -76,7 +80,7 @@ def _replace_placeholders(root: Path, name: str) -> list[str]:
         "{{MM-DD}}": today.strftime("%m-%d"),
     }
     remaining: set[str] = set()
-    for p in root.rglob("*.md"):
+    for p in list(root.rglob("*.md")) + list(root.rglob("*.toml")):
         text = p.read_text(encoding="utf-8")
         for k, v in mapping.items():
             text = text.replace(k, v)
@@ -148,8 +152,18 @@ def _ensure_module_dirs(root: Path, modules: list[dict]) -> list[str]:
         if m["code"] and not (root / m["code"]).exists():
             d = root / m["code"]
             d.mkdir(parents=True, exist_ok=True)
-            (d / ".gitkeep").write_text("", encoding="utf-8")
-            created.append(m["code"] + "/")
+            skeleton = FRONTEND_SKELETONS.get(m["name"])
+            if skeleton and skeleton.exists():
+                for f in skeleton.rglob("*"):
+                    if f.is_file():
+                        rel = f.relative_to(skeleton)
+                        dst = d / rel
+                        dst.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(f, dst)
+                created.append(m["code"] + "/ (next.js + ts skeleton)")
+            else:
+                (d / ".gitkeep").write_text("", encoding="utf-8")
+                created.append(m["code"] + "/")
     return created
 
 
@@ -237,7 +251,9 @@ def _git_init(root: Path) -> bool:
         return False
     try:
         subprocess.run(["git", "init"], cwd=root, capture_output=True, check=True)
-    return True
+        return True
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return False
 
 
 def _install_precommit_gate(root: Path) -> None:
@@ -247,8 +263,6 @@ def _install_precommit_gate(root: Path) -> None:
     if src.exists() and dst.parent.exists() and not dst.exists():
         shutil.copy2(src, dst)
         print(f"  pre-commit gate: installed ({dst.relative_to(root).as_posix()})")
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        return False
 
 
 def _install_skill(force: bool) -> Path | None:
