@@ -62,14 +62,28 @@ def main() -> None:
         "- [AGENTS.md](AGENTS.md): agent startup contract + module routing",
     ]
     for rel, desc in (
+        ("NOW.md", "current product focus / blockers / next"),
+        ("CHANGELOG.md", "one-line iteration ledger"),
         ("docs/04-workflow/NOW.md", "current focus / blockers / next"),
         ("docs/04-workflow/changelog.md", "one-line iteration ledger"),
     ):
         if (ROOT / rel).exists():
             lines.append(f"- [{Path(rel).name}]({rel}): {desc}")
     lines.append("")
+    root_docs = [p for p in files if len(p.relative_to(ROOT).parts) == 2]
+    if root_docs:
+        lines.append("## Project docs")
+        lines.append("")
+        for p in root_docs:
+            rel = p.relative_to(ROOT).as_posix()
+            desc = _desc(p)
+            lines.append(f"- [{p.name}]({rel}): {desc}" if desc else f"- [{p.name}]({rel})")
+        lines.append("")
     for group in GROUPS:
-        group_files = [p for p in files if p.parts[1] == group]
+        group_files = [
+            p for p in files
+            if len(p.relative_to(ROOT).parts) > 2 and p.relative_to(ROOT).parts[1] == group
+        ]
         if not group_files:
             continue
         lines.append(f"## {group}")

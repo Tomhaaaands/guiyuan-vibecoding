@@ -149,19 +149,19 @@ Goal-locking prevents context drift: at task start, lock the target in three lay
 
 ## 9. Token-saving design (progressive disclosure in practice)
 
-Core strategy: **minimize what every round must read; retrieve everything else on demand.**
+Core strategy: **zero-history startup, then compile exact fields/spans under a hard budget.**
 
 | Layer | Resident/on-demand | Content | Size |
 | --- | --- | --- | --- |
-| resident | every conversation | AGENTS.md startup contract + NOW focus card | ~1-2k tokens |
-| on-demand | module hit | _module.yaml + iteration.md via routing table | ~1-2k tokens/module |
-| on-demand | before work | hydrate retrieval of relevant sections | on demand |
+| resident | every conversation | thin AGENTS contract + NOW pointer card | target <=1.8k; hard <=2.5k |
+| on-demand | module hit | exact authority fields/spans via routing table | ~100-600 tokens/slice |
+| on-demand | before work | hydrate or indexed field retrieval | budgeted |
 | triggered | skill hit | skill frontmatter resident (~tens of tokens); body loads on trigger | <5k |
 | external | tools/crawlers | llms.txt machine index (a few hundred tokens) | optional |
 
-Companion tools: `tools/hydrate.py` (keyword retrieval), `llms.txt` (doc index), skills
-(behavior loaded on trigger). Rules: retrieve instead of inject; script instead of prompt;
-reference instead of copy.
+Companion tools: hydrate (keyword retrieval), llms.txt (doc index), context_budget (blocking
+estimator), and skills loaded only on trigger. Rules: fields instead of documents; receipt excerpts
+instead of logs; delta instead of replay; script instead of prompt; reference instead of copy.
 
 ## 10. Toolchain (deterministic first)
 
@@ -169,13 +169,16 @@ reference instead of copy.
 | --- | --- | --- |
 | `tools/rollup_round.py` | archive volume + ledger row | every round closure |
 | `tools/hydrate.py` | keyword retrieval; reserved `--semantic` backend | before work |
+| `tools/context_budget.py` | estimate selected context; block hard-ceiling regressions | every full drift check / runtime assembly |
 | `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
-| `tools/check_drift.py` | stale markers + llms.txt link validation | periodic / closure |
+| `tools/check_drift.py` | markers + links + startup budget + distribution sync | periodic / closure |
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
 | `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
+| `tools/workflow_optimize.py` | receipt-backed workflow suggestion bundle; never applies changes | milestone review |
+| `tools/check_package.py` | tracked source/history secret scan before public release | release gate |
 | skill `vibe-coding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
-| skill `project-bootstrap` | one-click guided scaffold (explicit-only) | new project's first conversation |
+| skill `vibe-coding-manager` | guided manager: assess an existing project before confirmed, scoped adoption; scaffold a new one | any project's first conversation |
 | skill `iteration-close-loop` | round close-out | every round wrap-up |
 
 ## 11. Reuse & migration guide (how to apply elsewhere)
@@ -195,8 +198,10 @@ rollup/hydrate/check_drift/gen_llms_txt scripts; replace placeholders and you're
 
 ### Full set (+ behavior packaging)
 
-Install the skills: `iteration-close-loop` closes rounds in any project; `project-bootstrap`
-one-click deploys the kit into new projects and auto-installs the close-loop skill.
+Install the skills: `iteration-close-loop` closes rounds in any project; `vibe-coding-manager`
+first assesses an existing project without writing it, then applies only user-confirmed workflow
+layers, or deploys the kit into a new project. Existing-project adoption does not auto-install the
+close-loop skill.
 
 ### Steps
 
@@ -224,7 +229,7 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 ## 13. Iterating on this system itself
 
 - changes to AGENTS.md / workflows / this doc -> sync `templates/iteration-methodology/` and
-  `skills/project-bootstrap/assets/project/` in the same round;
+  `skills/vibe-coding-manager/assets/project/` in the same round;
 - tool changes -> sync template copies and re-run tests;
 - the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
   consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VibeCoding_Manager · 用户体验地图（现状 v1.2）</title>
+<style>
+  :root{
+    --bg:#f5f7fa; --card:#ffffff; --ink:#1f2937; --ink2:#6b7280;
+    --line:#e5e7eb; --primary:#0e7490; --primary-soft:#ecfeff;
+    --pain:#b45309; --pain-soft:#fffbeb; --ok:#047857;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink); line-height:1.55;}
+  .page{max-width:1180px; margin:0 auto; padding:28px 20px 48px;}
+  header h1{font-size:22px; letter-spacing:.5px;}
+  header .sub{color:var(--ink2); font-size:13.5px; margin-top:8px; max-width:960px;}
+  .badge{display:inline-block; font-size:12px; padding:2px 10px; border-radius:999px; background:var(--primary-soft); color:var(--primary); border:1px solid #a5f3fc; margin-left:8px; vertical-align:middle;}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; margin:14px 0 4px; font-size:12.5px; color:var(--ink2);}
+  .legend span b{color:var(--ink);}
+  .swatch{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+  /* 情绪曲线 */
+  .curve-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 14px 6px; margin-top:16px;}
+  .curve-title{font-size:13px; color:var(--ink2); padding-left:4px;}
+  svg{width:100%; height:auto; display:block;}
+  .axis-label{font-size:10.5px; fill:var(--ink2); text-anchor:middle;}
+  .stage-dot{cursor:pointer;}
+  .stage-dot circle{transition:r .15s, fill .15s;}
+  .stage-dot.active circle{r:6.5; fill:var(--primary);}
+  .curve-note{font-size:11.5px; color:var(--ink2); padding:4px 4px 8px;}
+
+  /* 阶段卡片 */
+  .stages{display:grid; grid-template-columns:repeat(8,1fr); gap:8px; margin-top:14px;}
+  .stage-btn{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 6px; text-align:center; cursor:pointer; transition:.15s; min-height:64px;}
+  .stage-btn:hover{border-color:var(--primary); transform:translateY(-1px);}
+  .stage-btn.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .stage-btn .n{font-size:10.5px; opacity:.75; display:block;}
+  .stage-btn .t{font-size:12.5px; font-weight:600; display:block; margin-top:3px;}
+
+  /* 详情面板 */
+  .detail{background:var(--card); border:1px solid var(--line); border-radius:12px; margin-top:12px; padding:18px 20px; min-height:250px;}
+  .detail h2{font-size:16px; display:flex; align-items:center; gap:8px;}
+  .detail h2 .n{background:var(--primary); color:#fff; border-radius:6px; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:12px;}
+  .lanes{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:14px;}
+  .lane{background:var(--bg); border-radius:8px; padding:10px 12px;}
+  .lane h3{font-size:11.5px; color:var(--primary); margin-bottom:5px; letter-spacing:.3px;}
+  .lane ul{list-style:none;}
+  .lane li{font-size:13px; color:var(--ink); margin-bottom:5px; padding-left:12px; position:relative;}
+  .lane li:before{content:"·"; position:absolute; left:2px; color:var(--primary);}
+  .lane.pain{background:var(--pain-soft);}
+  .lane.pain h3{color:var(--pain);}
+  .lane.pain li:before{color:var(--pain);}
+  .emotion-tag{margin-top:12px; font-size:13px; color:var(--ink2);}
+  .emotion-tag b{color:var(--primary);}
+
+  /* 痛点 & 差距 */
+  .gaps{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+  .box{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px;}
+  .box h3{font-size:14px; margin-bottom:10px;}
+  .box ul{list-style:none;}
+  .box li{font-size:13px; color:var(--ink); margin-bottom:7px; padding-left:16px; position:relative;}
+  .box li:before{content:"▸"; position:absolute; left:0; color:var(--primary);}
+  .box.gap{border-color:#cbd5e1;}
+  .foot{margin-top:16px; font-size:11.5px; color:var(--ink2);}
+
+  @media (max-width:900px){
+    .stages{grid-template-columns:repeat(4,1fr);}
+    .lanes{grid-template-columns:1fr 1fr;}
+    .gaps{grid-template-columns:1fr;}
+  }
+  @media (max-width:520px){
+    .stages{grid-template-columns:repeat(2,1fr);}
+    .lanes{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>VibeCoding_Manager 用户体验地图<span class="badge">现状 · 已发布 v1.2</span></h1>
+    <p class="sub">基于当前已实现能力（引导式管理 skill + 确定性工具 + 迭代 close-loop）绘制的完整用户旅程。vNext 的"研发管家"契约（四平面状态机、运行时上下文编译器、自动收据）尚未发布，仅作为底部差距对照。</p>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--primary)"></i><b>情绪曲线</b>（定性示意，非实测）</span>
+      <span><i class="swatch" style="background:var(--pain)"></i><b>痛点</b></span>
+      <span><b>点击阶段卡片</b>查看该阶段详情</span>
+    </div>
+  </header>
+
+  <section class="curve-card">
+    <div class="curve-title">情绪曲线（纵轴 = 体验强度 · 定性）</div>
+    <div id="curve"></div>
+    <div class="curve-note">曲线为<b>定性示意</b>，用于呈现旅程起伏，不代表任何实测数据。</div>
+  </section>
+
+  <section class="stages" id="stages"></section>
+
+  <section class="detail" id="detail"></section>
+
+  <section class="gaps">
+    <div class="box">
+      <h3>当前痛点（按阶段）</h3>
+      <ul>
+        <li>获取安装：要求 Python ≥3.11 与命令行操作，零基础用户有门槛</li>
+        <li>进入会话：每个项目都要<b>手动新开会话 + 显式调用</b>，无跨会话常驻管家</li>
+        <li>状态识别：指纹规则有限（manifest/package.json/pyproject/单脚本），冷门类型可能识别不准</li>
+        <li>环境披露：三选一选项对小白略重，但"先披露后安装"是安全底线</li>
+        <li>执行输出：仍偏"管理机制"细节，用户需要看 CLI/预检信息</li>
+        <li>日常迭代：纪律靠 skill 引导 + pre-commit 门禁，<b>无自动执行收据/状态推进</b>；新会话恢复依赖 agent 读文件</li>
+        <li>长期维护：版本/副本同步是维护者职责（已脚本化 sync_copies + check_drift）</li>
+      </ul>
+    </div>
+    <div class="box gap">
+      <h3>与 vNext 契约的差距（未发布）</h3>
+      <ul>
+        <li>无跨会话状态机（INTAKE→ANALYSIS→…→NEXT）与四平面架构</li>
+        <li>无运行时上下文编译器（L0/L1/L2 切片、delta 续传、1,800 token 目标）</li>
+        <li>无自动执行收据、任务依赖图与行为评估 harness（P2/P8）</li>
+        <li>"四句人话"尚未完全达成：预检选项、CLI 输出、changelog 行仍暴露给用户</li>
+        <li>多客户端 / 工具调用标准（MCP）留待 P8 打包决策</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="foot">交付说明：本图为产品现状的用户体验地图（定性示意），阶段内容来自仓库已实现代码与文档；情绪曲线不构成实测数据。打开方式：浏览器直接打开本文件即可交互。</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var DATA=[
+    {id:1,name:"获取安装",emo:"轻快",val:62,user:["git clone 拿到套件（或已拷贝）","运行 install.bat / install.sh","或在 Codex 内调用 $vibe-coding-install"],prod:["校验 Python ≥3.11","把 3 个 skill 装入 $CODEX_HOME/skills","doctor 自检 + 打印下一步"],touch:"终端 / Codex 对话",pain:["需 Python 3.11+ 与命令行操作","面向零基础用户有门槛"]},
+    {id:2,name:"进入会话",emo:"期待",val:52,user:["打开目标项目文件夹（空目录或有代码）","新开会话并输入 $vibe-coding-manager"],prod:["显式触发，不自动抢占","开场白询问：项目位置 + 名称"],touch:"对话界面",pain:["每个项目都要手动新开会话 + 显式调用","无跨会话常驻管家"]},
+    {id:3,name:"状态识别",emo:"安心",val:78,user:["提供项目位置 / 名称"],prod:["空目录 → 脚手架路径","有代码 → 指纹识别（manifest.json→插件；package.json→页面/应用；pyproject→应用/脚本；单脚本→脚本）"],touch:"对话界面",pain:["指纹规则有限，冷门类型可能识别不准"]},
+    {id:4,name:"分支决策",emo:"掌控",val:72,user:["脚手架：选脚本/插件/页面/应用 + 预设(saas/c-end/vector-db/cli-tool) + 模块","接管：确认产品判型结果，无需选型"],prod:["按选型装配 profile（约束/红线/gitignore/文档占位）","承诺业务代码不被改动"],touch:"对话界面",pain:["预设数量有限，长尾需自定义 toml（有门槛）"]},
+    {id:5,name:"环境披露",emo:"迟疑",val:56,user:["三选一：自动安装 / 只给命令 / 跳过"],prod:["只读预检（git/python/node/uv/gh）","用大白话说明要装什么、为什么","未选择前绝不安装"],touch:"对话界面 + 终端",pain:["三选项对小白略重","但'先披露后安装'是安全底线"]},
+    {id:6,name:"执行生成",emo:"满足",val:88,user:["确认 GitHub 关联（可选）","阅读大白话收尾报告"],prod:["补管理壳/骨架 → 占位符替换 → profile → .env.example → R1 归档 → llms.txt","依赖处理 → git init → pre-commit 门禁 → 装 close-loop","GitHub origin/push → 大白话收尾"],touch:"终端输出",pain:["输出偏'管理机制'细节，用户仍需看 CLI 信息"]},
+    {id:7,name:"日常迭代",emo:"稳定",val:70,user:["在项目内新开会话，做真实任务","每轮自然完成收尾"],prod:["零历史启动：读 NOW + 路由文档（~1,150 token）","每轮 changelog 一行 + 归档 + NOW 更新 + doc 同步","pre-commit 跑 check_drift 门禁"],touch:"对话界面 + 仓库文件",pain:["纪律靠 skill 引导 + 门禁，无自动执行收据/状态推进","恢复上下文依赖 agent 读文件"]},
+    {id:8,name:"长期维护",emo:"信赖",val:76,user:["随时 $vibe-coding-install 更新套件","维护者：改源码后跑 sync_copies + check_drift","新项目回到阶段 2"],prod:["幂等更新 + doctor 自检","同步门禁锁定 4 对副本与版本单一来源"],touch:"终端 / 仓库",pain:["版本/副本同步是维护者职责（已脚本化）"]}
+  ];
+
+  var curve=document.getElementById("curve"),stages=document.getElementById("stages"),detail=document.getElementById("detail");
+
+  function svgPath(){
+    var W=1000,H=240,padX=70,padT=30,padB=52;
+    var n=DATA.length,pts=DATA.map(function(d,i){
+      var x=padX+i*(W-2*padX)/(n-1);
+      var y=padT+(H-padT-padB)*(1-(d.val-40)/60);
+      return {x:x,y:y,d:d};
+    });
+    var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="情绪曲线">';
+    for(var i=0;i<=4;i++){var gy=padT+(H-padT-padB)*(i/4);s+='<line x1="'+padX+'" y1="'+gy+'" x2="'+(W-padX)+'" y2="'+gy+'" stroke="#eef2f5" stroke-width="1"/>';}
+    var d='M'+pts[0].x+' '+pts[0].y;
+    for(var i=1;i<pts.length;i++){var p0=pts[i-1],p1=pts[i],mx=(p0.x+p1.x)/2;d+=' C'+mx+' '+p0.y+','+mx+' '+p1.y+','+p1.x+' '+p1.y;}
+    s+='<path d="'+d+'" fill="none" stroke="#0e7490" stroke-width="3" stroke-linecap="round"/>';
+    pts.forEach(function(p,i){
+      s+='<g class="stage-dot" data-id="'+p.d.id+'" transform="translate('+p.x+','+p.y+')">';
+      s+='<circle r="5.5" fill="#fff" stroke="#0e7490" stroke-width="2.5"/>';
+      s+='</g>';
+      s+='<text class="axis-label" x="'+p.x+'" y="'+(H-padB+20)+'">'+p.d.name+'</text>';
+      s+='<text class="axis-label" x="'+p.x+'" y="'+(H-padB+36)+'">阶段'+p.d.id+'</text>';
+    });
+    s+='</svg>';
+    curve.innerHTML=s;
+    return pts;
+  }
+  var pts=svgPath();
+
+  function renderStages(){
+    var h='';
+    DATA.forEach(function(d){
+      h+='<div class="stage-btn" data-id="'+d.id+'" role="button" tabindex="0" aria-label="阶段'+d.id+' '+d.name+'"><span class="n">'+String(d.id).padStart(2,"0")+'</span><span class="t">'+d.name+'</span></div>';
+    });
+    stages.innerHTML=h;
+  }
+  renderStages();
+
+  function renderDetail(id){
+    var d=null;DATA.forEach(function(x){if(x.id===id)d=x;});
+    if(!d)return;
+    detail.innerHTML=
+      '<h2><span class="n">'+String(d.id).padStart(2,"0")+'</span>'+d.name+'</h2>'+
+      '<div class="lanes">'+
+        '<div class="lane"><h3>用户动作</h3><ul>'+d.user.map(function(t){return '<li>'+t+'</li>';}).join("")+'</ul></div>'+
+        '<div class="lane"><h3>产品行为</h3><ul>'+d.prod.map(function(t){return '<li>'+t+'</li>';}).join("")+'</ul></div>'+
+        '<div class="lane"><h3>触点</h3><ul><li>'+d.touch+'</li></ul></div>'+
+        '<div class="lane pain"><h3>痛点</h3><ul>'+d.pain.map(function(t){return '<li>'+t+'</li>';}).join("")+'</ul></div>'+
+      '</div>'+
+      '<div class="emotion-tag">阶段情绪：<b>'+d.emo+'</b>（定性）</div>';
+    var dots=curve.querySelectorAll('.stage-dot'),btns=stages.querySelectorAll('.stage-btn');
+    [].forEach.call(dots,function(el){el.classList.toggle("active",+el.getAttribute("data-id")===id);});
+    [].forEach.call(btns,function(el){el.classList.toggle("active",+el.getAttribute("data-id")===id);});
+    document.title="VibeCoding_Manager · 用户体验地图 — "+d.name;
+  }
+
+  function onPick(id){renderDetail(+id);}
+  stages.addEventListener("click",function(e){var b=e.target.closest(".stage-btn");if(b)onPick(b.getAttribute("data-id"));});
+  stages.addEventListener("keydown",function(e){var b=e.target.closest(".stage-btn");if(b&&(e.key==="Enter"||e.key===" ")){e.preventDefault();onPick(b.getAttribute("data-id"));}});
+  curve.addEventListener("click",function(e){var g=e.target.closest(".stage-dot");if(g)onPick(g.getAttribute("data-id"));});
+
+  renderDetail(1);
+})();
+</script>
+</body>
+</html>

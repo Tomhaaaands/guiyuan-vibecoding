@@ -1,0 +1,7 @@
+name = "polyglot"
+description = "Mixed runtimes"
+
+constraints = [
+  "Declare per-service runtimes in overall-architecture.md",
+  "Cross-language calls happen only through the API gateway",
+]

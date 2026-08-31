@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Doc-rot prevention: scan stale markers + validate llms.txt links.
+"""Doc-rot prevention: scan markers, links, startup-context budget, and distribution sync.
 
 Usage:
   python tools/check_drift.py            # full scan (markers + llms.txt links)
@@ -20,6 +20,8 @@ import re
 import sys
 from pathlib import Path
 
+from context_budget import DEFAULT_BUDGET, DEFAULT_TARGET, audit, default_startup_paths
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
@@ -28,13 +30,13 @@ LLMS = ROOT / "llms.txt"
 SKIP_PARTS = {"archive", "_archive"}
 SYNC_PAIRS = (
     (ROOT / "templates" / "iteration-methodology",
-     ROOT / "skills" / "project-bootstrap" / "assets" / "project"),
+     ROOT / "skills" / "vibe-coding-manager" / "assets" / "project"),
     (ROOT / "skills" / "iteration-close-loop",
-     ROOT / "skills" / "project-bootstrap" / "assets" / "skills" / "iteration-close-loop"),
+     ROOT / "skills" / "vibe-coding-manager" / "assets" / "skills" / "iteration-close-loop"),
     (ROOT / "skills" / "iteration-close-loop",
      ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "iteration-close-loop"),
-    (ROOT / "skills" / "project-bootstrap",
-     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "project-bootstrap"),
+    (ROOT / "skills" / "vibe-coding-manager",
+     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "vibe-coding-manager"),
 )
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",
@@ -43,6 +45,10 @@ SKIP_FILES = {
     "docs/04-workflow/AGENTS_WORKFLOW.md",
     "docs/iteration-methodology.md",
 }
+# Single-source version gate: the self-contained install skill carries its own VERSION
+# (it travels to $CODEX_HOME and cannot read the repo root), so it must stay equal to root.
+VERSION_FILE = ROOT / "VERSION"
+BUNDLED_VERSION = ROOT / "skills" / "vibe-coding-install" / "VERSION"
 STALE_RE = re.compile(r"\[OUTDATED\]|\bTODO\b|\bTBD\b|\bFIXME\b")
 SOFT_RE = re.compile(r"待补(?:充)?")
 LINK_RE = re.compile(r"\]\(([^)#]+?)\)")
@@ -91,7 +97,7 @@ def _relative_map(root: Path) -> dict[str, str]:
     if not root.is_dir():
         return out
     for p in root.rglob("*"):
-        if p.is_file():
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc":
             out[p.relative_to(root).as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
     return out
 
@@ -122,6 +128,37 @@ def check_sync() -> int:
     return issues
 
 
+def check_version() -> int:
+    """Version single-source gate: root VERSION must equal the bundled install-skill VERSION."""
+    if not VERSION_FILE.is_file():
+        print("  [version] missing root VERSION file")
+        return 1
+    root_v = VERSION_FILE.read_text(encoding="utf-8").strip()
+    if not BUNDLED_VERSION.is_file():
+        print(f"  [version] missing bundled VERSION: {BUNDLED_VERSION.relative_to(ROOT).as_posix()}")
+        return 1
+    bundled_v = BUNDLED_VERSION.read_text(encoding="utf-8").strip()
+    if root_v != bundled_v:
+        print(f"  [version] mismatch: root VERSION {root_v} vs bundled VERSION {bundled_v}")
+        return 1
+    print(f"  [ok] version single-sourced: {root_v}")
+    return 0
+
+
+def check_context_budget() -> int:
+    """Block when the always-loaded startup contract exceeds the hard token ceiling."""
+    try:
+        rows, total = audit(default_startup_paths(ROOT))
+    except (FileNotFoundError, UnicodeDecodeError) as exc:
+        print(f"  [budget] cannot audit startup context: {exc}")
+        return 1
+    for row in rows:
+        print(f"  {row['path']}: ~{row['estimated_tokens']} tokens")
+    status = "ok" if total <= DEFAULT_TARGET else "warn" if total <= DEFAULT_BUDGET else "fail"
+    print(f"  [{status}] startup total ~{total} / target {DEFAULT_TARGET} / hard {DEFAULT_BUDGET}")
+    return int(total > DEFAULT_BUDGET)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Scan doc stale markers and llms.txt link validity")
     ap.add_argument("--markers", action="store_true", help="markers only")
@@ -131,6 +168,7 @@ def main() -> None:
     do_markers = args.markers or not args.links
     do_links = args.links or not args.markers
     do_sync = not (args.markers or args.links)
+    do_budget = do_sync
     total = 0
     if do_markers:
         print("== stale-marker scan ==")
@@ -140,9 +178,14 @@ def main() -> None:
     if do_links:
         print("== llms.txt link check ==")
         total += check_links()
+    if do_budget:
+        print("== startup context budget ==")
+        total += check_context_budget()
     if do_sync:
         print("== template/asset sync check ==")
         total += check_sync()
+        print("== version single-source check ==")
+        total += check_version()
     if total:
         print(f"\n{total} issue(s) found; clean them up and rerun.")
         sys.exit(1)
