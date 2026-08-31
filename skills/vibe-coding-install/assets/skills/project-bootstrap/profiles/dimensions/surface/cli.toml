@@ -1,7 +1,0 @@
-name = "cli"
-description = "CLI surface"
-
-[[modules]]
-name = "cli"
-keywords = "cli,command,terminal"
-code = "apps/cli"

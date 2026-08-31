@@ -1,3 +1,0 @@
-name = "vector-db"
-description = "Vector-first knowledge project: embeddings, collections, rebuilds"
-dimensions = { deploy = "local-tool", data = "vector-db", runtime = "python", surface = "api-first" }

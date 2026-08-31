@@ -1,0 +1,7 @@
+name = "plugin"
+description = "Browser extension / plugin"
+dimensions = { deploy = "local-tool", data = "files", surface = "extension" }
+
+red_lines = [
+  "Extension secrets never ship in the bundle; load them from env/background storage",
+]

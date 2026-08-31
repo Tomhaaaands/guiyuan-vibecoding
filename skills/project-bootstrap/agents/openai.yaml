@@ -1,5 +1,0 @@
-interface:
-  display_name: "Project Bootstrap"
-  short_description: "One-click scaffold of the iteration system into a new project (explicit $project-bootstrap only)"
-policy:
-  allow_implicit_invocation: false

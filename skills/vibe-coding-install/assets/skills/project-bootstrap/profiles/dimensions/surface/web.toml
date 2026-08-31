@@ -1,7 +1,0 @@
-name = "web"
-description = "Web frontend surface"
-
-[[modules]]
-name = "web"
-keywords = "frontend,page,ui"
-code = "apps/web"

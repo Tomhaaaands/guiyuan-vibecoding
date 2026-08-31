@@ -1,3 +1,0 @@
-name = "cli-tool"
-description = "CLI tool: local files + python + cli surface"
-dimensions = { deploy = "local-tool", data = "files", runtime = "python", surface = "cli" }

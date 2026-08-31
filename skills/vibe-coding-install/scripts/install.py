@@ -8,17 +8,18 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (bootstrap profile loading needs tomllib);
-  2. Installs the two bundled skills (iteration-close-loop, project-bootstrap) from this
+  2. Installs the two bundled skills (iteration-close-loop, vibe-coding-manager) from this
      skill's assets into $CODEX_HOME/skills (idempotent; --force overwrites);
   3. Doctor: verifies both skills are installed and the bundled template is complete
      (review-checklist.md + roadmap.md present);
-  4. With --target: scaffolds that project via the installed project-bootstrap skill;
+  4. With --target: scaffolds that project via the installed vibe-coding-manager skill;
   5. Prints next steps.
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import os
 import shutil
 import subprocess
@@ -29,9 +30,18 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 BUNDLED = SKILL_ROOT / "assets" / "skills"
-SKILLS = ("iteration-close-loop", "project-bootstrap")
-VERSION = "1.0.0"
+SKILLS = ("iteration-close-loop", "vibe-coding-manager")
 MIN_PY = (3, 11)
+
+
+def version() -> str:
+    """Kit version, single-sourced from this skill's VERSION file (bundled with the skill).
+
+    The file travels with the self-contained skill into $CODEX_HOME; check_drift gates it
+    against the repo root VERSION so the two never drift.
+    """
+    v = SKILL_ROOT / "VERSION"
+    return v.read_text(encoding="utf-8").strip() if v.is_file() else "unknown"
 
 
 def codex_skills() -> Path:
@@ -47,7 +57,7 @@ def doctor(dest: Path) -> int:
         else:
             print(f"  [missing] skill not installed: {name} (run install.py)")
             ok = False
-    template = dest / "project-bootstrap" / "assets" / "project" / "docs" / "04-workflow"
+    template = dest / "vibe-coding-manager" / "assets" / "project" / "docs" / "04-workflow"
     for f in ("review-checklist.md", "roadmap.md"):
         if (template / f).is_file():
             print(f"  [ok] template file: docs/04-workflow/{f}")
@@ -60,6 +70,9 @@ def doctor(dest: Path) -> int:
 
 def install(dest: Path, force: bool) -> None:
     dest.mkdir(parents=True, exist_ok=True)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    backup_root = dest / ".vibecoding-manager-backups" / stamp
+    backed_up = []
     for name in SKILLS:
         src = BUNDLED / name
         dst = dest / name
@@ -67,10 +80,16 @@ def install(dest: Path, force: bool) -> None:
             print(f"already installed, skipped: {name} (--force to overwrite)")
             continue
         if dst.exists():
+            backup = backup_root / name
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(dst, backup)
+            backed_up.append(name)
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
         print(f"installed: {dst}")
-    print(f"vibe-coding-install v{VERSION} done.")
+    if backed_up:
+        print(f"backup: {backup_root} ({', '.join(backed_up)})")
+    print(f"vibe-coding-install v{version()} done.")
 
 
 def main() -> None:
@@ -86,6 +105,13 @@ def main() -> None:
     ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
                     default="auto")
     ap.add_argument("--no-venv", action="store_true")
+    ap.add_argument("--mode", choices=["auto", "assess", "adopt", "scaffold"], default=None)
+    ap.add_argument("--assessment", default=None)
+    ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--deps", choices=["auto", "commands", "skip"], default=None)
+    ap.add_argument("--github", default=None, help="GitHub repo URL to set as origin")
+    ap.add_argument("--push", action="store_true")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--no-doctor", action="store_true", help="skip the doctor self-check")
     args = ap.parse_args()
@@ -94,8 +120,19 @@ def main() -> None:
         print(f"[error] Python {MIN_PY[0]}.{MIN_PY[1]}+ required (found {sys.version.split()[0]}).")
         sys.exit(1)
 
+    # Assessment is safe to run from the bundled copy and must not alter global skills.
+    if args.target and args.mode == "assess":
+        bootstrap = BUNDLED / "vibe-coding-manager" / "scripts" / "bootstrap.py"
+        cmd = [str(bootstrap), args.target, "--mode", "assess"]
+        if args.name:
+            cmd += ["--name", args.name]
+        if args.json:
+            cmd.append("--json")
+        subprocess.run([sys.executable, *cmd], check=True)
+        return
+
     dest = codex_skills()
-    print(f"vibe-coding-install v{VERSION}")
+    print(f"vibe-coding-install v{version()}")
     print(f"skill root : {SKILL_ROOT}")
     print(f"skills dest: {dest}")
     print()
@@ -107,9 +144,9 @@ def main() -> None:
             sys.exit(rc)
 
     if args.target:
-        bootstrap = dest / "project-bootstrap" / "scripts" / "bootstrap.py"
+        bootstrap = dest / "vibe-coding-manager" / "scripts" / "bootstrap.py"
         if not bootstrap.is_file():
-            print(f"[error] project-bootstrap skill missing: {bootstrap}")
+            print(f"[error] vibe-coding-manager skill missing: {bootstrap}")
             sys.exit(1)
         cmd = [str(bootstrap), args.target]
         if args.name:
@@ -130,6 +167,20 @@ def main() -> None:
             cmd += ["--env", args.env]
         if args.no_venv:
             cmd.append("--no-venv")
+        if args.mode:
+            cmd += ["--mode", args.mode]
+        if args.assessment:
+            cmd += ["--assessment", args.assessment]
+        for choice in args.workflow:
+            cmd += ["--workflow", choice]
+        if args.json:
+            cmd.append("--json")
+        if args.deps:
+            cmd += ["--deps", args.deps]
+        if args.github:
+            cmd += ["--github", args.github]
+        if args.push:
+            cmd.append("--push")
         print(f"$ python {' '.join(cmd)}")
         subprocess.run([sys.executable, *cmd], check=True)
 
@@ -138,7 +189,7 @@ def main() -> None:
     if args.target:
         print("  next: open a NEW conversation in that project and start your first real task.")
     else:
-        print("  next: invoke $project-bootstrap in a new project conversation, or")
+        print("  next: invoke $vibe-coding-manager in a new project conversation, or")
         print("        rerun with --target <folder> to scaffold an existing project.")
 
 

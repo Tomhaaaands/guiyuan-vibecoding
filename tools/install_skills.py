@@ -6,7 +6,7 @@ Usage:
   python tools/install_skills.py --doctor    # verify install + repo health (no writes)
 
 Behavior:
-  Copies skills/iteration-close-loop and skills/project-bootstrap into
+  Copies skills/iteration-close-loop and skills/vibe-coding-manager into
   $CODEX_HOME/skills (default ~/.codex/skills); skips existing skills, --force overwrites.
   --doctor prints the kit version, checks both skills are installed intact, and runs
   tools/check_drift.py to prove the distribution is healthy.
@@ -15,6 +15,7 @@ Behavior:
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import os
 import shutil
 import subprocess
@@ -24,7 +25,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-SKILLS = ("iteration-close-loop", "project-bootstrap", "vibe-coding-install")
+SKILLS = ("iteration-close-loop", "vibe-coding-manager", "vibe-coding-install")
 VERSION_FILE = ROOT / "VERSION"
 
 
@@ -61,6 +62,9 @@ def doctor() -> int:
 def install(force: bool) -> None:
     dest_root = codex_home() / "skills"
     dest_root.mkdir(parents=True, exist_ok=True)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    backup_root = dest_root / ".vibecoding-manager-backups" / stamp
+    backed_up = []
     for name in SKILLS:
         src = ROOT / "skills" / name
         dst = dest_root / name
@@ -68,11 +72,17 @@ def install(force: bool) -> None:
             print(f"already installed, skipped: {name} (--force to overwrite)")
             continue
         if dst.exists():
+            backup = backup_root / name
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(dst, backup)
+            backed_up.append(name)
             shutil.rmtree(dst)
         shutil.copytree(src, dst)
         print(f"installed: {dst}")
+    if backed_up:
+        print(f"backup: {backup_root} ({', '.join(backed_up)})")
     print(f"VibeCoding_Manager v{version()} installed.")
-    print("next: open a NEW empty project folder, start a new conversation, invoke $project-bootstrap.")
+    print("next: open your project folder (empty or existing), start a new conversation, invoke $vibe-coding-manager.")
 
 
 def main() -> None:
