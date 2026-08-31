@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-click installer for the VibeCoding_Manager kit (V1.0).
+"""One-click installer for the VibeCoding_Manager kit.
 
 Usage:
   python tools/one_click_install.py                 # install skills + doctor
@@ -8,7 +8,7 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
-  2. Installs the three kit skills (iteration-close-loop, project-bootstrap, vibe-coding-install)
+  2. Installs the three kit skills (iteration-close-loop, vibe-coding-manager, vibe-coding-install)
      into $CODEX_HOME/skills (idempotent; --force overwrites);
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
@@ -26,7 +26,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
 INSTALL = ROOT / "tools" / "install_skills.py"
-BOOTSTRAP = ROOT / "skills" / "project-bootstrap" / "scripts" / "bootstrap.py"
+BOOTSTRAP = ROOT / "skills" / "vibe-coding-manager" / "scripts" / "bootstrap.py"
 MIN_PY = (3, 11)
 
 
@@ -65,6 +65,16 @@ def main() -> None:
     ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
                     default="auto", help="dependency policy for the scaffolded project (default: auto)")
     ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
+    ap.add_argument("--mode", choices=["auto", "assess", "adopt", "scaffold"], default=None,
+                    help="project mode: existing code is assessed read-only before an explicit adopt")
+    ap.add_argument("--assessment", default=None, help="assessment JSON required by --mode adopt")
+    ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed",
+                    help="confirmed workflow choice for --mode adopt (repeatable)")
+    ap.add_argument("--json", action="store_true", help="print JSON in --mode assess")
+    ap.add_argument("--deps", choices=["auto", "commands", "skip"], default=None,
+                    help="dependency installs for the target project: auto/commands/skip")
+    ap.add_argument("--github", default=None, help="GitHub repo URL to set as origin")
+    ap.add_argument("--push", action="store_true", help="attempt initial push after git init/remote")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--no-doctor", action="store_true", help="skip the post-install doctor")
     args = ap.parse_args()
@@ -74,6 +84,16 @@ def main() -> None:
     print(f"kit root : {ROOT}")
     print("skills   : $CODEX_HOME/skills (default ~/.codex/skills)")
     print()
+
+    # Diagnostics must not change either the target project or the global skill root.
+    if args.target and args.mode == "assess":
+        assess = [str(BOOTSTRAP), args.target, "--mode", "assess"]
+        if args.name:
+            assess += ["--name", args.name]
+        if args.json:
+            assess.append("--json")
+        run(assess)
+        return
 
     run([str(INSTALL), *(["--force"] if args.force else [])])
 
@@ -100,6 +120,20 @@ def main() -> None:
             bootstrap_args += ["--env", args.env]
         if args.no_venv:
             bootstrap_args.append("--no-venv")
+        if args.mode:
+            bootstrap_args += ["--mode", args.mode]
+        if args.assessment:
+            bootstrap_args += ["--assessment", args.assessment]
+        for choice in args.workflow:
+            bootstrap_args += ["--workflow", choice]
+        if args.json:
+            bootstrap_args.append("--json")
+        if args.deps:
+            bootstrap_args += ["--deps", args.deps]
+        if args.github:
+            bootstrap_args += ["--github", args.github]
+        if args.push:
+            bootstrap_args.append("--push")
         run(bootstrap_args)
 
     print()
@@ -107,8 +141,8 @@ def main() -> None:
     if args.target:
         print("  next: open a NEW conversation in that project and start your first real task.")
     else:
-        print("  next: invoke $project-bootstrap in a new project conversation, or")
-        print("        rerun with --target <folder> to scaffold an existing project.")
+        print("  next: invoke $vibe-coding-manager in your project conversation (empty folder = scaffold,")
+        print("        existing code = adopt), or rerun with --target <folder> to manage it now.")
 
 
 if __name__ == "__main__":

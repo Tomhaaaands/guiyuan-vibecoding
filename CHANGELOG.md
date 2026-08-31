@@ -4,10 +4,22 @@
 > [docs/iteration-methodology.md](docs/iteration-methodology.md).
 > Row format: `| R1 | MM-DD | module | one-line conclusion (what/why/how-verified) | [r1](archive/...) |`
 
+## 2026-08-31
+
+| Round | Date | Module | One-line conclusion | Archive |
+| --- | --- | --- | --- | --- |
+| R20 | 09-01 | release+adoption | Public-release hardening: legacy `project-bootstrap` active payloads removed, ZIP now emits SHA-256 + manifest and installers back up overwritten skills; existing projects assess read-only then choose keep/map/managed per workflow, baseline drift blocks apply, receipts/backups support rollback, and milestone suggestions are evidence-backed/explicit-only; CreatorOS replacement and Flash_assistant migration are out of scope | [r20](docs/04-workflow/archive/2026-09-01-r20.md) |
+| R19 | 08-31 | distribution | 新增"发消息即安装"主安装通道（效仿夸克网盘）：`tools/build_dist.py` 打出自包含分发 zip `dist/vibecoding-manager-1.2.0.zip`（zip 根=恰好 3 个 skill 目录，解压入全局 skills 即装好；`--verify` 自检）；`vibe-coding-install` SKILL.md 改为以"技能地址消息"为主要流程并写明 5 步安装约定与更新规则，仓库/Codex 安装降为次要；README Quick start 与工具表（Ten tools）更新；临时目录实测 132 文件/122KB/sha256 自检全绿、check_drift 通过；zip 需用户托管到可访问 URL 后填入消息 | [r19](docs/04-workflow/archive/2026-08-31-r19.md) |
+| R18 | 08-31 | housekeeping | 版本单一来源化（根 VERSION=1.2.0 唯一权威，install skill 随包 VERSION 由新 check_drift 门禁锁定；种子版本 0.1.0 保持独立）+ 三 skill 分发拓扑清理（删除 2 个异常嵌套空目录 `iteration-close-loop/iteration-close-loop/` 与旧名空目录 `templates/.../skills/project-bootstrap/`）+ 新增 `tools/sync_copies.py` 把 4 对副本+版本的同步从人工 robocopy 脚本化；改名残留清理（README/fact-ownership/install SKILL 的 `project_bootstrap`/`_bootstrap` → `vibecoding_manager`）；封装策略评审结论：暂不加 MCP（保留 P8 决策，给出 skill+MCP 触发条件）；drift/同步干跑/临时 $CODEX_HOME 实测 install.py/镜像逻辑沙箱测试全过 | [r18](docs/04-workflow/archive/2026-08-31-r18.md) |
+| R17 | 08-31 | context+token | Token 策略从渐进披露进一步收敛为零历史启动、字段/证据切片与增量续传；新增标准库 context_budget 硬门禁并接入 drift/pre-commit，目标 1,800、硬上限 2,500，实测仓库启动约 1,150、模板约 700 tokens；四副本同步及预算失败路径/编译/索引/doctor/漂移验证通过 | [r17](docs/04-workflow/archive/2026-08-31-r17.md) |
+| R16 | 08-31 | product+architecture | vNext 产品北极星正式收敛为主动承担研发管理的 Vibecoding 管家；新增产品契约、四平面状态机、权威工件/L0-L1-L2 上下文契约、阻断式 Token 预算、P0-P8 路线图与 NOW 状态卡，并修复 llms.txt 生成器遗漏根级 docs 的索引 bug；四副本同步、索引/漂移/doctor/编译与临时目录回归通过 | [r16](docs/04-workflow/archive/2026-08-31-r16.md) |
+
 ## 2026-08-30
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R15 | 08-30 | naming+e2e | skill 改名 vibe-coding-manager（显示名 VibeCoding Manager、触发 $vibe-coding-manager、v1.2.0，仓库/模板/安装包/$CODEX_HOME 全同步）；GitHub 端到端打通：装 gh 2.98 + 设备授权 → 私有仓 vibe-coding-e2e-demo → 接管脚本项目自动首提交并推送；修复 --push 无提交、身份检查 cwd 错、gh 路径回退、.gitignore 误忽略 .env.example；远端清单验证 | [r15](docs/04-workflow/archive/2026-08-30-r15.md) |
+| R14 | 08-30 | manager | 核心定位从脚手架改为管理器：bootstrap.py 新增 adopt 接管（指纹识别 script/plugin/page/app，只补管理壳不动业务代码）+ 空目录脚手架保留 + 环境预检安装三选一（--deps auto/commands/skip）+ .env.example + GitHub origin/push；新增 script/plugin/page 预设并修复 runtime 重复注入；SKILL/README/方法论改 manager-first，v1.1.0；临时目录实测脚本/页面/插件接管与脚手架、check_drift/doctor 全绿 | [r14](docs/04-workflow/archive/2026-08-30-r14.md) |
 | R13 | 08-30 | 骨架 | 脚手架骨架升级：根 `pyproject.toml`（Python 依赖管理，占位符替换扩展到 .toml）；web/admin 模块默认生成 Next.js 16 + React 19 + TS 骨架（assets/frontend/{web,admin}，含 package.json/tsconfig/next.config rewrites）；修复 R12 引入的 `_git_init` try 块语法 bug（bootstrap 此前无法运行）；临时目录实测骨架生成 + 占位符替换 | [r13](docs/04-workflow/archive/2026-08-30-r13.md) |
 | R12 | 08-30 | gate | pre-commit 闸机：模板新增 `scripts/hooks/pre-commit`（sh，跑 check_drift，失败 exit 1）+ `scripts/install_hooks.py`（幂等）；bootstrap.py 在 git init 后自动装闸机；模板 AGENTS.md 技术约束补闸机说明；同步三副本 + $CODEX_HOME；kit 自身与 suanming_os 实测：TODO 文档提交被拒、干净提交放行 | [r12](docs/04-workflow/archive/2026-08-30-r12.md) |
 | R11 | 08-30 | profile | 修复 profile `docs_stubs` 路径 bug：`target / stub` 缺 `docs/` 前缀导致 c-end 等 profile 的文档占位写到根目录（如根 `00-system/data-layer.md`、`01-product/compliance.md`）→ 改 `target / "docs" / stub`；suanming_os 端到端测试暴露；同步三副本 + $CODEX_HOME；check_drift 绿 | [r11](docs/04-workflow/archive/2026-08-30-r11.md) |
