@@ -33,13 +33,12 @@ The agent receiving the message must:
 
 GitHub is the authoritative source. Domestic fallback order:
 
-1. Gitee raw: `https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip`
-2. GitHub proxy 1: `https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
-3. GitHub proxy 2: `https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
+1. GitHub proxy 1: `https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
+2. GitHub proxy 2: `https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
 
 Every mirror must host the exact same zip and `.sha256`; never skip checksum verification. If a
 fallback URL fails or returns a mismatched checksum, try the next one and restore the backup on
-final failure.
+final failure. Gitee raw returned `Access denied` in a browser test and is not an install source.
 
 **Update**: resend the same message with the newer zip URL — verify the checksum, back up the
 three old directories, replace them, then re-verify. If verification fails, restore the backup.

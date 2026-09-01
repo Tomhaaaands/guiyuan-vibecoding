@@ -2,9 +2,9 @@
   "name": "VibeCoding_Manager",
   "version": "0.1.0",
   "asset": "vibecoding-manager-0.1.0.zip",
-  "sha256": "24a7fa2d7f65ebd29e43c9ca9c669b65e351652d9dd90ec02b753cc4d4123c8d",
-  "size": 144898,
-  "source_commit": "96fc156b409fbb343f8f77cbec7e70de03a92127",
+  "sha256": "60f7a77201dce7eeadb7cd7b2f1f348f74d0ea9b98adb7511cb072421a6934a7",
+  "size": 144907,
+  "source_commit": "459156007e0d357142f7371b8b1284a2ba6528ab",
   "skills": [
     "iteration-close-loop",
     "vibe-coding-manager",
