@@ -108,6 +108,9 @@ def main() -> None:
     ap.add_argument("--mode", choices=["auto", "assess", "adopt", "scaffold"], default=None)
     ap.add_argument("--assessment", default=None)
     ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed")
+    ap.add_argument("--existing-system", action="append", default=[], metavar="NAME")
+    ap.add_argument("--compat-policy", choices=["full-takeover", "takeover", "defer", "abandon"], default=None)
+    ap.add_argument("--system-policy", choices=["keep-map", "auto-takeover", "abandon"], default=None)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--deps", choices=["auto", "commands", "skip"], default=None)
     ap.add_argument("--github", default=None, help="GitHub repo URL to set as origin")
@@ -126,6 +129,8 @@ def main() -> None:
         cmd = [str(bootstrap), args.target, "--mode", "assess"]
         if args.name:
             cmd += ["--name", args.name]
+        for name in args.existing_system:
+            cmd += ["--existing-system", name]
         if args.json:
             cmd.append("--json")
         subprocess.run([sys.executable, *cmd], check=True)
@@ -173,6 +178,10 @@ def main() -> None:
             cmd += ["--assessment", args.assessment]
         for choice in args.workflow:
             cmd += ["--workflow", choice]
+        if args.compat_policy:
+            cmd += ["--compat-policy", args.compat_policy]
+        if args.system_policy:
+            cmd += ["--system-policy", args.system_policy]
         if args.json:
             cmd.append("--json")
         if args.deps:

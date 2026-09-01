@@ -1,13 +1,16 @@
 # VibeCoding_Manager
 
+> 中文说明 / Chinese guide: [README.zh-CN.md](README.zh-CN.md)
+
 > An autonomous R&D butler for vibecoding: tell it what you want to build; it turns intent into
 > product/design/technical facts, executable tasks, verified code, traceable delivery, and reusable
 > experience. The user makes product decisions — the butler carries the management burden.
 
 VibeCoding_Manager (repo `vibecoding_manager`) is an open-source,
-local-first **vibecoding R&D manager**. The shipped v1.2 foundation provides project adoption,
+local-first **vibecoding R&D manager**. The shipped v0.1.0 foundation provides project adoption,
 scaffolding, iteration records, deterministic gates, Git/GitHub setup, and the first pitfall
-distillation path. The accepted vNext direction extends that foundation into a complete loop:
+distillation path. The public version line is pre-1.0 (`0.1.x`); the earlier `v1.2.0` tag remains
+as a historical development snapshot. The accepted vNext direction extends that foundation into a complete loop:
 requirements analysis → authoritative artifacts → task planning → development/verification →
 delivery → reflection and self-iteration.
 
@@ -65,6 +68,9 @@ heavier, more general tools; this kit deliberately isn't.
   keep the old authority, map it into the manager, or make the selected manager layer active.
   Baseline hashes, local backups, and receipts protect existing management files; business code is
   never touched.
+- **Pre-install compatibility gate** — a read-only match score pauses on low match or an existing
+  similar management system, then offers explicit choices: full takeover, scoped takeover,
+  keep-and-map, defer, or abandon.
 - **Upfront environment disclosure** — a read-only preflight shows what's installed, then every
   proposed install (Python, `.venv`, `npm install`) is announced in plain language with three
   choices: auto-install / commands-only / skip.
@@ -91,13 +97,15 @@ The kit ships as one self-contained zip. Install it in any agent by sending a si
 
 ```text
 请安装 VibeCoding_Manager Skill
-技能地址：https://<host>/vibecoding-manager-1.2.0.zip
+技能地址：https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
 ```
 
 The agent downloads the zip, places the three skills (`iteration-close-loop`,
 `vibe-coding-manager`, `vibe-coding-install`) into its global skills directory, and verifies.
 No account authorization is needed for a public asset. Verify its `.sha256` companion file before
 installation; an update backs up existing skills and restores them if verification fails.
+GitHub is the authoritative source; a Gitee mirror URL and release policy live in
+[docs/release-sources.md](docs/release-sources.md).
 
 Build the zip yourself with `python tools/build_dist.py --verify` (writes
 `dist/vibecoding-manager-<version>.zip`), or use a published release zip.
@@ -181,7 +189,7 @@ operator (or a few agents) who want traceability without ceremony.
 vibecoding_manager/
 ├── README.md
 ├── LICENSE
-├── VERSION                     # single source of the kit version (1.2.0)
+├── VERSION                     # single source of the kit version (0.1.0)
 ├── CHANGELOG.md                # one-line round ledger
 ├── AGENTS.md                   # startup contract for this repo itself
 ├── llms.txt                    # machine-readable doc index (generated)

@@ -55,6 +55,9 @@ This template = the minimal set (four files) + standard set (toolchain), materia
 An existing project is assessed before anything is changed. The manager inventories only its
 management workflow, then the user selects `keep` (old workflow remains authoritative), `map`
 (old workflow is indexed), or `managed` (the selected VibeCoding_Manager layer becomes active).
+Before adoption it also computes a compatibility score and pauses when the match is low or an
+existing similar management system is present; the user then chooses full takeover, scoped
+takeover, keep-and-map, defer, or abandon. None of those choices writes business code.
 The adoption record and receipts live in `.vibecoding-manager/`; backups stay local and are ignored.
 At milestone boundaries `workflow_optimize.py` can propose at most three evidence-backed changes.
 It never applies them without a new user confirmation.

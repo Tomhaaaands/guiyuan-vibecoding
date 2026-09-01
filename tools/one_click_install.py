@@ -70,6 +70,12 @@ def main() -> None:
     ap.add_argument("--assessment", default=None, help="assessment JSON required by --mode adopt")
     ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed",
                     help="confirmed workflow choice for --mode adopt (repeatable)")
+    ap.add_argument("--existing-system", action="append", default=[], metavar="NAME",
+                    help="similar project-management system declared by the user (repeatable)")
+    ap.add_argument("--compat-policy", choices=["full-takeover", "takeover", "defer", "abandon"], default=None,
+                    help="low-match decision from the compatibility gate")
+    ap.add_argument("--system-policy", choices=["keep-map", "auto-takeover", "abandon"], default=None,
+                    help="similar-system decision from the compatibility gate")
     ap.add_argument("--json", action="store_true", help="print JSON in --mode assess")
     ap.add_argument("--deps", choices=["auto", "commands", "skip"], default=None,
                     help="dependency installs for the target project: auto/commands/skip")
@@ -90,6 +96,8 @@ def main() -> None:
         assess = [str(BOOTSTRAP), args.target, "--mode", "assess"]
         if args.name:
             assess += ["--name", args.name]
+        for name in args.existing_system:
+            assess += ["--existing-system", name]
         if args.json:
             assess.append("--json")
         run(assess)
@@ -126,6 +134,10 @@ def main() -> None:
             bootstrap_args += ["--assessment", args.assessment]
         for choice in args.workflow:
             bootstrap_args += ["--workflow", choice]
+        if args.compat_policy:
+            bootstrap_args += ["--compat-policy", args.compat_policy]
+        if args.system_policy:
+            bootstrap_args += ["--system-policy", args.system_policy]
         if args.json:
             bootstrap_args.append("--json")
         if args.deps:

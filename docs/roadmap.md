@@ -1,5 +1,8 @@
 # VibeCoding_Manager vNext roadmap
 
+> Public version line: `0.1.x` (pre-1.0). The earlier `v1.2.0` tag is a historical development
+> snapshot, not a 1.0 stability statement.
+
 > Delivery order is dependency-driven. Each milestone has one measurable acceptance sentence; a
 > later milestone does not begin by widening scope around an unverified earlier loop.
 

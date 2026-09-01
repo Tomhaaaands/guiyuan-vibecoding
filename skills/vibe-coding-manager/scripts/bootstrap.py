@@ -16,6 +16,7 @@ Usage:
   python bootstrap.py [target] --name "project" \
       [--mode auto|assess|adopt|scaffold] [--assessment FILE] \
       [--workflow startup|state|ledger|methodology|tooling=keep|map|managed] \
+      [--existing-system NAME] [--compat-policy POLICY] [--system-policy POLICY] \
       [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|path/to.toml] \
       [--module "name=kw1,kw2"] [--code "name=dir"] [--template default] \
       [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
@@ -112,6 +113,59 @@ ENV_TEMPLATES = {
 # not part of the map.
 WORKFLOWS = ("startup", "state", "ledger", "methodology", "tooling")
 ADOPTION_DIR = ".vibecoding-manager"
+COMPAT_POLICIES = ("full-takeover", "takeover", "defer", "abandon")
+SYSTEM_POLICIES = ("keep-map", "auto-takeover", "abandon")
+KNOWN_SYSTEM_DEFS = (
+    {
+        "id": "spec-kit",
+        "label": "Spec Kit / specification workflow",
+        "markers": ("specs/", "specs.md", "specify.md", "spec-kit/"),
+    },
+    {
+        "id": "openspec",
+        "label": "OpenSpec",
+        "markers": (".openspec/", "openspec/", "specs/change/"),
+    },
+    {
+        "id": "superpowers",
+        "label": "Superpowers / Claude skill set",
+        "markers": (".claude/skills/", "superpowers/"),
+    },
+    {
+        "id": "claude-code",
+        "label": "Claude Code conventions",
+        "markers": ("CLAUDE.md", ".claude/"),
+    },
+    {
+        "id": "cursor",
+        "label": "Cursor rules",
+        "markers": (".cursor/", ".cursorrules"),
+    },
+    {
+        "id": "project-bootstrap",
+        "label": "Legacy project-bootstrap / VibeCoding_Manager workflow",
+        "markers": (".vibecoding-manager/", "docs/04-workflow/", "AGENTS_WORKFLOW.md"),
+    },
+    {
+        "id": "agent-rules",
+        "label": "Agent rule file",
+        "markers": ("AGENTS.md",),
+    },
+    {
+        "id": "iteration-ledger",
+        "label": "Iteration ledger / roadmap docs",
+        "markers": ("CHANGELOG.md", "docs/roadmap.md"),
+    },
+)
+FULL_TAKEOVER_OVERLAYS = {
+    "CLAUDE.md",
+    "CHANGELOG.md",
+    ".cursorrules",
+    ".cursor",
+    ".claude",
+    ".openspec",
+    "specs",
+}
 
 
 def _sha256(path: Path) -> str:
@@ -153,13 +207,79 @@ def _managed_candidates(root: Path) -> dict[str, list[dict[str, str]]]:
     return out
 
 
-def _assessment(root: Path, detected: dict) -> dict:
-    groups = _managed_candidates(root)
+def _detect_known_systems(root: Path) -> list[dict]:
+    """Find local project-management overlays without touching them."""
+    systems = []
+    for definition in KNOWN_SYSTEM_DEFS:
+        hits = [marker for marker in definition["markers"] if (root / marker).exists()]
+        if hits:
+            systems.append({
+                "id": definition["id"],
+                "label": definition["label"],
+                "markers": hits,
+            })
+    return systems
+
+
+def _declared_systems(values: list[str]) -> list[dict]:
+    """Normalize user-declared systems (e.g. Notion, Linear) for the gate."""
+    systems = []
+    seen: set[str] = set()
+    for raw in values:
+        label = raw.strip()
+        if not label or label.casefold() in seen:
+            continue
+        seen.add(label.casefold())
+        systems.append({
+            "id": re.sub(r"[^a-z0-9]+", "-", label.casefold()).strip("-") or "declared",
+            "label": label,
+            "source": "declared",
+            "markers": [],
+        })
+    return systems
+
+
+def _compat_assessment(root: Path, groups: dict[str, list[dict]], known_systems: list[dict], declared_systems: list[dict]) -> dict:
+    """Deterministic match score for manager vs the project's current management process."""
+    matched = [name for name in WORKFLOWS if groups[name]]
+    score = max(0, min(100, 30 + 12 * len(matched) - 15 * (len(known_systems) + len(declared_systems))))
+    level = "low" if score < 60 else "medium" if score < 80 else "high"
+    risks = [f"missing {name} management workflow" for name in WORKFLOWS if not groups[name]]
+    risks.extend(f"existing system '{system['label']}' may already own management authority"
+                 for system in known_systems + declared_systems)
     return {
-        "schema_version": 1,
+        "score": score,
+        "level": level,
+        "dimensions": [{"name": name, "matched_files": len(groups[name])} for name in WORKFLOWS],
+        "risks": risks,
+        "systems_required": bool(known_systems or declared_systems),
+        "policies": {
+            "compatibility": {
+                "required": level == "low",
+                "options": list(COMPAT_POLICIES),
+                "recommended": "takeover",
+            },
+            "systems": {
+                "required": bool(known_systems or declared_systems),
+                "options": list(SYSTEM_POLICIES),
+                "recommended": "keep-map",
+            },
+        },
+    }
+
+
+def _assessment(root: Path, detected: dict, declared_systems: list[str] | None = None) -> dict:
+    groups = _managed_candidates(root)
+    known_systems = _detect_known_systems(root)
+    declared = _declared_systems(declared_systems or [])
+    return {
+        "schema_version": 2,
         "target": str(root),
         "assessed_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "detected": detected,
+        "known_systems": known_systems,
+        "declared_systems": declared,
+        "compatibility": _compat_assessment(root, groups, known_systems, declared),
         "workflows": [
             {
                 "name": name,
@@ -176,8 +296,24 @@ def _print_assessment(data: dict, as_json: bool) -> None:
         print(json.dumps(data, ensure_ascii=False, indent=2))
         return
     detected = data["detected"]
+    compat = data["compatibility"]
     print("== lossless adoption assessment ==")
     print(f"  detected: {detected['label']} (runtime: {detected['runtime']})")
+    print(f"  match: {compat['score']}/100 ({compat['level']})")
+    for dim in compat["dimensions"]:
+        print(f"  - {dim['name']}: {dim['matched_files']} existing manager file(s)")
+    for risk in compat["risks"]:
+        print(f"  risk: {risk}")
+    if data["known_systems"]:
+        for system in data["known_systems"]:
+            print(f"  detected system: {system['label']} ({', '.join(system['markers'])})")
+    if data["declared_systems"]:
+        for system in data["declared_systems"]:
+            print(f"  declared system: {system['label']}")
+    if compat["policies"]["compatibility"]["required"]:
+        print("  [gate] low match: choose --compat-policy full-takeover|takeover|defer|abandon")
+    if compat["policies"]["systems"]["required"]:
+        print("  [gate] existing systems: choose --system-policy keep-map|auto-takeover|abandon")
     print("  no project files, dependencies, Git settings, or skills were changed.")
     print("  choose each workflow: keep (old remains authoritative), map (old is indexed), or managed.")
     for item in data["workflows"]:
@@ -185,7 +321,7 @@ def _print_assessment(data: dict, as_json: bool) -> None:
         summary = ", ".join(row["path"] for row in files[:3]) or "none found"
         suffix = " …" if len(files) > 3 else ""
         print(f"  - {item['name']}: {len(files)} existing file(s), recommend {item['recommended']} ({summary}{suffix})")
-    print("  next: save this JSON outside the project, then run --mode adopt --assessment <file> with --workflow choices.")
+    print("  next: save this JSON outside the project, then run --mode adopt --assessment <file> with the confirmed policies.")
 
 
 def _load_assessment(path: Path, target: Path) -> dict:
@@ -193,9 +329,40 @@ def _load_assessment(path: Path, target: Path) -> dict:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"invalid assessment file: {path} ({exc})") from exc
-    if data.get("schema_version") != 1 or data.get("target") != str(target):
-        raise ValueError("assessment does not belong to this project; rerun --mode assess")
+    if data.get("schema_version") != 2 or data.get("target") != str(target):
+        raise ValueError("assessment does not belong to this project or was created by an older version; rerun --mode assess")
     return data
+
+
+def _validate_gate(assessment: dict, compat_policy: str | None, system_policy: str | None) -> None:
+    compat = assessment.get("compatibility", {})
+    if compat_policy in {"defer", "abandon"} or system_policy == "abandon":
+        return
+    if compat_policy == "full-takeover" and system_policy == "keep-map":
+        raise ValueError("full-takeover conflicts with keep-map; choose auto-takeover for existing systems or takeover for scoped adoption")
+    if compat.get("level") == "low" and not compat_policy:
+        raise ValueError("compatibility gate: low match; choose --compat-policy full-takeover|takeover|defer|abandon")
+    if compat.get("systems_required") and not system_policy:
+        raise ValueError("similar-system gate: existing systems found; choose --system-policy keep-map|auto-takeover|abandon")
+    if compat_policy and compat_policy not in COMPAT_POLICIES:
+        raise ValueError(f"--compat-policy must be one of {'|'.join(COMPAT_POLICIES)}")
+    if system_policy and system_policy not in SYSTEM_POLICIES:
+        raise ValueError(f"--system-policy must be one of {'|'.join(SYSTEM_POLICIES)}")
+
+
+def _write_deferred_decision(root: Path, assessment: dict, policy: str) -> Path:
+    state_dir = root / ADOPTION_DIR / "decisions"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    payload = {
+        "schema_version": 2,
+        "created_at": stamp,
+        "policy": policy,
+        "assessment": assessment,
+    }
+    path = state_dir / f"{policy}-{stamp}.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 def _workflow_choices(values: list[str]) -> dict[str, str]:
@@ -218,17 +385,20 @@ def _verify_assessment(data: dict, root: Path) -> None:
                 raise ValueError(f"baseline changed: {item['path']}; rerun --mode assess before applying")
 
 
-def _adoption_receipt(root: Path, assessment: dict, choices: dict[str, str], backups: list[dict], copied: list[str]) -> Path:
+def _adoption_receipt(root: Path, assessment: dict, choices: dict[str, str], backups: list[dict],
+                      copied: list[str], policies: dict | None = None, moved: list[dict] | None = None) -> Path:
     state_dir = root / ADOPTION_DIR
     state_dir.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     receipt = {
-        "schema_version": 1,
+        "schema_version": 2,
         "created_at": stamp,
         "assessment": assessment,
+        "policies": policies or {},
         "workflows": choices,
         "backups": backups,
         "copied": copied,
+        "legacy_overlays": moved or [],
     }
     manifest = state_dir / "adoption.json"
     manifest.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -239,7 +409,45 @@ def _adoption_receipt(root: Path, assessment: dict, choices: dict[str, str], bac
     return path
 
 
-def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, str]) -> tuple[list[str], Path]:
+def _archive_legacy_overlays(root: Path, assessment: dict, stamp: str) -> list[dict]:
+    """Move known management overlays out of the project root during full takeover."""
+    pre_root = root / ADOPTION_DIR / "pre-adoption" / stamp
+    moved: list[dict] = []
+    seen: set[str] = set()
+    for system in assessment.get("known_systems", []):
+        for marker in system.get("markers", []):
+            rel = Path(marker.rstrip("/"))
+            key = rel.as_posix()
+            if key not in FULL_TAKEOVER_OVERLAYS or key in seen:
+                continue
+            src = root / rel
+            if not src.exists():
+                continue
+            dst = pre_root / "legacy" / rel
+            if dst.exists():
+                continue
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(src), str(dst))
+            moved.append({"path": key, "moved_to": dst.relative_to(root).as_posix()})
+            seen.add(key)
+    if moved:
+        manifest = pre_root / "README.md"
+        lines = [
+            "# Pre-adoption archive",
+            "",
+            "Legacy management overlays moved from the project root during full takeover.",
+            "",
+            "Moved:",
+            *[f"- {m['path']} -> {m['moved_to']}" for m in moved],
+            "",
+            "Backups and receipt: `.vibecoding-manager/backups/` + `.vibecoding-manager/adoption.json`.",
+        ]
+        manifest.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return moved
+
+
+def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, str],
+                    policies: dict | None = None, full_takeover: bool = False) -> tuple[list[str], Path]:
     """Copy only explicitly managed workflow files, restoring backups on failure."""
     _verify_assessment(assessment, root)
     managed = {name for name, mode in choices.items() if mode == "managed"}
@@ -247,7 +455,7 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
     backup_root = root / ADOPTION_DIR / "backups" / stamp
     backups: list[dict] = []
     copied: list[str] = []
-    new_paths: list[Path] = []
+    moved: list[dict] = []
     try:
         for src in sorted(ASSETS.rglob("*")):
             if not src.is_file():
@@ -264,7 +472,6 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
                 shutil.copy2(dst, backup)
                 backups.append({"path": rel.as_posix(), "backup": backup.relative_to(root).as_posix()})
             else:
-                new_paths.append(dst)
                 backups.append({"path": rel.as_posix(), "backup": None})
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dst)
@@ -272,11 +479,18 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
 
         copied_paths = [root / rel for rel in copied]
         _replace_placeholders(root, name, scope=copied_paths)
+        if full_takeover:
+            moved = _archive_legacy_overlays(root, assessment, stamp)
         # Do not generate an archive, index, Git hook, environment file, or dependency
         # side effect during adoption.  Those are separate workflow decisions.
-        receipt = _adoption_receipt(root, assessment, choices, backups, copied)
+        receipt = _adoption_receipt(root, assessment, choices, backups, copied, policies, moved)
         return copied, receipt
     except Exception:
+        for item in reversed(moved):
+            dst = root / item["moved_to"]
+            original = root / item["path"]
+            if dst.exists() and not original.exists():
+                shutil.move(str(dst), str(original))
         for item in reversed(backups):
             dst = root / item["path"]
             if item["backup"]:
@@ -288,15 +502,53 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
         raise
 
 
-def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: list[str]) -> None:
+def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: list[str],
+               compat_policy: str | None = None, system_policy: str | None = None) -> None:
     if assessment_path is None:
         raise ValueError("adopt requires --assessment <json from --mode assess>")
     assessment = _load_assessment(assessment_path, root)
+    _validate_gate(assessment, compat_policy, system_policy)
+    if compat_policy in {"defer", "abandon"}:
+        if compat_policy == "defer":
+            decision = _write_deferred_decision(root, assessment, compat_policy)
+            print(f"\nAdoption deferred: {root}")
+            print(f"  old content was not changed; future adoption decision saved at {decision.relative_to(root).as_posix()}")
+        else:
+            print(f"\nAdoption abandoned: {root} (VibeCoding_Manager will not be used in this project)")
+        return
+    if system_policy == "abandon":
+        print(f"\nAdoption abandoned: {root} (VibeCoding_Manager will not be used in this project)")
+        return
+
     choices = _workflow_choices(workflows)
-    copied, receipt = _apply_adoption(root, name, assessment, choices)
+    if not workflows:
+        choices = {name: "keep" for name in WORKFLOWS}
+        compat_adopt = compat_policy in {"full-takeover", "takeover"}
+        systems_required = assessment.get("compatibility", {}).get("systems_required")
+        for item in assessment.get("workflows", []):
+            name = item["name"]
+            has_existing = bool(item.get("existing_files"))
+            if systems_required and has_existing:
+                if system_policy == "keep-map":
+                    choices[name] = "map"
+                elif system_policy == "auto-takeover":
+                    choices[name] = "managed"
+            elif compat_adopt:
+                choices[name] = "managed"
+    policies = {"compatibility": compat_policy, "systems": system_policy}
+    copied, receipt = _apply_adoption(
+        root,
+        name,
+        assessment,
+        choices,
+        policies=policies,
+        full_takeover=compat_policy == "full-takeover",
+    )
     print(f"\nLossless adoption complete: {root}")
     print("  workflows: " + ", ".join(f"{key}={value}" for key, value in choices.items()))
     print(f"  copied {len(copied)} explicitly managed file(s); source code was not touched")
+    if compat_policy == "full-takeover":
+        print("  full takeover: legacy management overlays archived under .vibecoding-manager/pre-adoption/")
     print(f"  receipt: {receipt.relative_to(root).as_posix()}")
 
 
@@ -847,6 +1099,12 @@ def main() -> None:
                     help="JSON emitted by --mode assess; required before --mode adopt")
     ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed",
                     help="adoption choice (repeatable): startup/state/ledger/methodology/tooling")
+    ap.add_argument("--existing-system", action="append", default=[], metavar="NAME",
+                    help="similar project-management system declared by the user (assess; repeatable)")
+    ap.add_argument("--compat-policy", choices=list(COMPAT_POLICIES), default=None,
+                    help="low-match decision: full-takeover|takeover|defer|abandon")
+    ap.add_argument("--system-policy", choices=list(SYSTEM_POLICIES), default=None,
+                    help="similar-system decision: keep-map|auto-takeover|abandon")
     ap.add_argument("--json", action="store_true", help="print assessment JSON (assess mode only)")
     ap.add_argument("--force", action="store_true", help="overwrite existing management files")
     ap.add_argument("--no-install-skill", action="store_true", help="skip iteration-close-loop install")
@@ -889,11 +1147,18 @@ def main() -> None:
     if mode in {"assess", "adopt"}:
         detected = detect_project_type(target)
     if mode == "assess":
-        _print_assessment(_assessment(target, detected), args.json)
+        _print_assessment(_assessment(target, detected, args.existing_system), args.json)
         return
     if mode == "adopt":
         try:
-            _run_adopt(target, name, Path(args.assessment).resolve() if args.assessment else None, args.workflow)
+            _run_adopt(
+                target,
+                name,
+                Path(args.assessment).resolve() if args.assessment else None,
+                args.workflow,
+                args.compat_policy,
+                args.system_policy,
+            )
         except ValueError as exc:
             ap.error(str(exc))
         return

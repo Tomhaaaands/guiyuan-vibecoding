@@ -1,6 +1,6 @@
 # VibeCoding_Manager product contract
 
-> Status: accepted vNext direction (2026-08-31). Current v1.2 remains the bootstrap/iteration
+> Status: accepted vNext direction (2026-08-31). Current v0.1.0 remains the bootstrap/iteration
 > foundation; capabilities in this document become shipped only when their roadmap acceptance gate
 > passes.
 

@@ -39,14 +39,34 @@ Check the target before asking anything else:
   → app/script; `index.html` → static page; a single root script file → script). It must not write
   files, install dependencies, change Git, or install Skills. Let the user choose each workflow:
   `keep` (old remains authoritative), `map` (old is indexed), or `managed` (only then add a layer).
+  The same read-only pass also detects known management overlays and computes the match score used
+  by the Stage 2 gate.
 
 ## Stage 2 · Confirm the gradual adoption plan
 
-For an existing project, save `--mode assess --json` output outside the target folder. Ask for
-the user's choices for `startup`, `state`, `ledger`, `methodology`, and `tooling`, then run
-`--mode adopt --assessment <json>` with `--workflow <name>=keep|map|managed`. Missing choices are
-`keep`. The apply step verifies hashes, backs up selected management files, and writes a receipt;
-it never modifies business code, installs dependencies, initializes Git, or changes global Skills.
+For an existing project, save `--mode assess --json` output outside the target folder. Read the
+compatibility gate and pause before any adoption write:
+
+- If match is low, present these choices and wait for one:
+  1. **full-takeover** — take over all management workflows and archive legacy management
+     overlays under `.vibecoding-manager/pre-adoption/`; business code is still untouched.
+  2. **takeover** — take over all management workflows without restructuring.
+  3. **defer** — leave old content unchanged and record the intent for a later iteration.
+  4. **abandon** — do not use VibeCoding_Manager in this project.
+- If the project has an existing similar system, also ask whether it is external (Notion, Linear,
+  Trello, etc.) when no local marker is visible, then present:
+  1. **keep-map** — keep the old system authoritative and map it for retrieval.
+  2. **auto-takeover** — attempt a scoped takeover with backups and a receipt.
+  3. **abandon** — do not use VibeCoding_Manager in this project.
+
+Pass the confirmed decisions with `--compat-policy` and `--system-policy`. Then ask for the user's
+choices for `startup`, `state`, `ledger`, `methodology`, and `tooling`, or let the policy set them.
+If both gates apply, keep the choices consistent: `full-takeover` cannot be combined with
+`keep-map`.
+Run `--mode adopt --assessment <json>` with `--workflow <name>=keep|map|managed` when fine-grained
+control is needed. Missing choices are `keep`. The apply step verifies hashes, backs up selected
+management files, and writes a receipt; it never modifies business code, installs dependencies,
+initializes Git, or changes global Skills.
 
 ## Stage 3 · Environment preflight & disclosure (before any install)
 
@@ -65,6 +85,8 @@ Never install anything before this choice is made.
 
 ```bash
 python <skill path>/scripts/bootstrap.py <folder> --name <project> --mode auto|assess|adopt|scaffold \
+    [--existing-system NAME] [--compat-policy full-takeover|takeover|defer|abandon] \
+    [--system-policy keep-map|auto-takeover|abandon] \
     [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|path/to.toml] \
     [--module web --module api ...] [--code "name=dir"] [--template default] \
     [--dimension "key=value"] [--python auto|system|install|<path>] \
@@ -108,5 +130,7 @@ a candidate; never apply a suggestion automatically or repeat a dismissed one.
 - Deploy only user-confirmed modules; never guess names/keywords/code dirs;
 - Business code is never overwritten; existing management files change only after a confirmed
   `managed` selection and a baseline-hash check;
+- When the gate requires a decision, stop until the user chooses; `defer` and `abandon` mean no
+  project management files are written;
 - No installs before the Stage 3 disclosure choice; explain every install in plain language;
 - After the closing report, stop asking business details and guide to a new conversation.

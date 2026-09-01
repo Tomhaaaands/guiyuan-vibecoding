@@ -61,6 +61,8 @@ def main() -> None:
         "- [README.md](README.md): project overview",
         "- [AGENTS.md](AGENTS.md): agent startup contract + module routing",
     ]
+    if (ROOT / "README.zh-CN.md").exists():
+        lines.append("- [README.zh-CN.md](README.zh-CN.md): 中文说明 / Chinese guide")
     for rel, desc in (
         ("NOW.md", "current product focus / blockers / next"),
         ("CHANGELOG.md", "one-line iteration ledger"),

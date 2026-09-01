@@ -16,7 +16,7 @@ by sending the agent a single message, e.g.:
 
 ```
 请安装 VibeCoding_Manager Skill
-技能地址：https://<host>/vibecoding-manager-1.2.0.zip
+技能地址：https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
 ```
 
 The agent receiving the message must:
@@ -30,6 +30,10 @@ The agent receiving the message must:
    `vibe-coding-install/VERSION` matches the kit version printed in the zip name.
 5. Report the installed version and that the kit is ready
    (a new project conversation can invoke `$vibe-coding-manager`).
+
+GitHub is the authoritative source. If the user cannot reach GitHub, use the Gitee mirror:
+`https://gitee.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`.
+The mirror must host the exact same zip and `.sha256`; never skip checksum verification.
 
 **Update**: resend the same message with the newer zip URL — verify the checksum, back up the
 three old directories, replace them, then re-verify. If verification fails, restore the backup.
@@ -58,5 +62,5 @@ scaffold an existing project folder with the iteration system.
 - Primary zip install writes only into the current agent's global skills directory; scaffolding
   touches only the target folder.
 - `--target` manages that folder via the installed vibe-coding-manager skill's `bootstrap.py`
-  (pass-through: `--name/--profile/--module/--dimension/--python/--env/--no-venv/--mode/--assessment/--workflow/--deps/--github/--push`).
+  (pass-through: `--name/--profile/--module/--dimension/--python/--env/--no-venv/--mode/--assessment/--workflow/--existing-system/--compat-policy/--system-policy/--deps/--github/--push`).
 - Build the distributable zip with `python tools/build_dist.py --verify` in the repo.
