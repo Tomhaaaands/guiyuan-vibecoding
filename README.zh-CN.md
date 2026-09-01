@@ -13,7 +13,7 @@
 
 ```text
 请安装 VibeCoding_Manager Skill
-技能地址：https://gitee.com/tomhands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
+技能地址：https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip
 ```
 
 Agent 安装时会校验 SHA-256、检查压缩包结构、备份旧的同名 Skill，并自检安装结果。
@@ -43,7 +43,7 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 ## 下载与更新
 
 - GitHub 是权威版本地址。
-- 国内镜像使用 Gitee Release，镜像文件必须与 GitHub 完全一致。
+- 国内镜像使用 Gitee 仓库 raw 文件，非登录用户可直接下载；文件必须与 GitHub 完全一致。
 - 更新时重新发送新版本安装消息，Agent 会备份旧版本并在校验失败时回滚。
 
 完整发布地址和校验规则见 [docs/release-sources.md](docs/release-sources.md)。

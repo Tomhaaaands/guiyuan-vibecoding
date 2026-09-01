@@ -14,12 +14,13 @@ The previous `v1.2.0` tag remains a historical development snapshot. New release
 | --- | --- |
 | GitHub (authoritative) | https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip |
 | GitHub SHA-256 | https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
-| Gitee mirror | https://gitee.com/tomhands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip |
-| Gitee SHA-256 | https://gitee.com/tomhands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
+| Gitee mirror (raw, anonymous) | https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip |
+| Gitee SHA-256 (raw, anonymous) | https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
 
 The Gitee repository and Release are published under `tomhands/vibecoding-manager`. Public web
 access should be verified from a normal browser; some automated environments may receive a 403
-from Gitee's anti-bot layer while the Gitee API still serves the original files.
+from Gitee's anti-bot layer while the Gitee API still serves the original files. The raw mirror
+below is a repository file under `releases/0.1.0/`, intended for non-logged-in users.
 
 ## Install message
 
