@@ -13,7 +13,7 @@
 
 ```text
 请安装 VibeCoding_Manager Skill
-技能地址：https://gitee.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
+技能地址：https://gitee.com/tomhands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
 ```
 
 Agent 安装时会校验 SHA-256、检查压缩包结构、备份旧的同名 Skill，并自检安装结果。

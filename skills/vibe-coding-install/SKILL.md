@@ -32,7 +32,7 @@ The agent receiving the message must:
    (a new project conversation can invoke `$vibe-coding-manager`).
 
 GitHub is the authoritative source. If the user cannot reach GitHub, use the Gitee mirror:
-`https://gitee.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`.
+`https://gitee.com/tomhands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`.
 The mirror must host the exact same zip and `.sha256`; never skip checksum verification.
 
 **Update**: resend the same message with the newer zip URL — verify the checksum, back up the
