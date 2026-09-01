@@ -8,6 +8,7 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R25 | 09-01 | mirror fallback | 国内镜像回退顺序设为 Gitee raw → `gh-proxy.com` → `ghfast.top`；两个代理实测返回与官方一致的文件和 SHA-256；安装 Skill、中文 README、发布说明更新并重建 `0.1.0` 安装包 | [r25](docs/04-workflow/archive/2026-09-01-r25.md) |
 | R24 | 09-01 | gitee anonymous mirror | Gitee mirror switched from login-gated Release attachments to repository raw files under `releases/0.1.0/`; install-message and docs use raw URL for non-logged-in users; `0.1.0` package rebuilt and SHA updated, GitHub/Gitee Release artifacts replaced, and `v0.1.0` tag moved to R24 | [r24](docs/04-workflow/archive/2026-09-01-r24.md) |
 | R23 | 09-01 | gitee mirror | Gitee mirror published at `tomhands/vibecoding-manager` with `v0.1.0` Release and the same ZIP/SHA-256/manifest; docs and install-message mirror URLs corrected to `tomhands`; Gitee API download hash matches local; public Gitee web/download URLs returned 403 from this automated environment and need browser verification | [r23](docs/04-workflow/archive/2026-09-01-r23.md) |
 | R22 | 09-01 | pre-1.0 gate+distribution | 版本线重置为 0.1.0（保留 v1.2.0 历史快照）；接管前新增匹配度门禁（低匹配暂停 four choices）与同类系统门禁（keep-map/auto-takeover/abandon），full takeover 只归档管理覆盖层不动业务代码；新增 README.zh-CN 顶部 Agent 安装提示、GitHub 权威/Gitee 镜像发布源与校验规则；同步副本、临时目录门禁测试与 build 验证通过 | [r22](docs/04-workflow/archive/2026-09-01-r22.md) |

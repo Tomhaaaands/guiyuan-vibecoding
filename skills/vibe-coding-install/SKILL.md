@@ -31,9 +31,15 @@ The agent receiving the message must:
 5. Report the installed version and that the kit is ready
    (a new project conversation can invoke `$vibe-coding-manager`).
 
-GitHub is the authoritative source. If the user cannot reach GitHub, use the Gitee mirror:
-`https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip`.
-The mirror must host the exact same zip and `.sha256`; never skip checksum verification.
+GitHub is the authoritative source. Domestic fallback order:
+
+1. Gitee raw: `https://gitee.com/tomhands/vibecoding-manager/raw/main/releases/0.1.0/vibecoding-manager-0.1.0.zip`
+2. GitHub proxy 1: `https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
+3. GitHub proxy 2: `https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
+
+Every mirror must host the exact same zip and `.sha256`; never skip checksum verification. If a
+fallback URL fails or returns a mismatched checksum, try the next one and restore the backup on
+final failure.
 
 **Update**: resend the same message with the newer zip URL — verify the checksum, back up the
 three old directories, replace them, then re-verify. If verification fails, restore the backup.

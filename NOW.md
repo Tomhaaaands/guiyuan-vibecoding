@@ -4,8 +4,8 @@
 - The public version line is `0.1.x`; the earlier `v1.2.0` release remains a historical snapshot.
 - Existing-project adoption now has a compatibility gate: low match or an existing similar system
   pauses for explicit full-takeover / scoped-takeover / keep-and-map / defer / abandon choices.
-- The Gitee mirror is published under `tomhands/vibecoding-manager` with anonymous raw files under
-  `releases/0.1.0/`; normal-browser verification is still the final external check.
+- The domestic mirror uses Gitee raw first, with `gh-proxy.com` and `ghfast.top` as backup
+  GitHub proxies; normal-browser verification is still the final external check.
 - Existing-project adoption is lossless: assess first, then user-selected keep/map/managed workflow
   layers with baseline hashes, backups, receipts, and milestone optimization bundles.
 - The product remains skill + standard-library Python: no MCP, central registry, CreatorOS
@@ -15,8 +15,8 @@
 - Runtime artifact store/context compiler and behavior evaluation harness are not implemented yet.
 
 ## Next
-1. Verify the Gitee raw URL from a normal browser in logged-out state and record the confirmed
-   download and checksum.
+1. Verify the Gitee raw and both proxy URLs from a normal browser in logged-out state and record
+   the confirmed downloads and checksum.
 2. Start P2 with typed runtime artifacts and a deterministic context compiler.
 3. Add a behavior-evaluation harness before connecting a provider or considering MCP.
 4. Plan any Flash_assistant migration independently in that project's future conversation.
