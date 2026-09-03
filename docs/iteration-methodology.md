@@ -31,6 +31,12 @@ having each register rounds in the shared ledger (no hierarchy, sync via changel
 
 ## 3. Five-layer documentation system
 
+The five directories are a required skeleton for both versions. In the published version they
+are created in each managed host project; in this internal repository they separate future
+system, product, technical, and reference material from the existing workflow records. The
+published payload contains only reusable, agent-neutral skills and templates, while this repo's
+root `NOW.md`, `CHANGELOG.md`, and product docs remain internal records.
+
 | Layer | Responsibility | Contents |
 | --- | --- | --- |
 | 00-system | global facts | architecture, data layer, red lines, design system, versioning |
@@ -100,7 +106,7 @@ skills delegate to, and it ships as repo-internal `tools/` helpers (not the mana
 | P8 MVP | one scripted journey through the loop | `mvp_walkthrough.py` | analysis -> artifacts -> dispatch -> receipt -> reflection within budget |
 
 Rules: red-line judgment is model-routed (`judge_red_line`), provider boundary is isolable
-([docs/provider-boundary.md](docs/provider-boundary.md)), and every engine step is covered by
+([docs/02-technical/provider-boundary.md](docs/02-technical/provider-boundary.md)), and every engine step is covered by
 `tools/behavior_harness.py` scenarios (the manager's own gate before it gates a project).
 
 ## 6. Three-layer record model + current-focus card

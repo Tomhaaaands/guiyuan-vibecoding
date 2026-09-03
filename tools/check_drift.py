@@ -44,6 +44,7 @@ SKIP_FILES = {
     "docs/04-workflow/iteration-methodology.md",
     "docs/04-workflow/AGENTS_WORKFLOW.md",
     "docs/iteration-methodology.md",
+    "docs/02-technical/qa-contract.md",
 }
 # Single-source version gate: the self-contained install skill carries its own VERSION
 # (it travels with the installed skill and cannot read the repo root), so it must stay equal to root.

@@ -1,0 +1,9 @@
+name = "node"
+description = "Node.js runtime"
+
+constraints = [
+  "Pin Node via .nvmrc / engines",
+  "Commit package-lock.json for reproducible installs",
+]
+
+gitignore_add = ["node_modules/"]

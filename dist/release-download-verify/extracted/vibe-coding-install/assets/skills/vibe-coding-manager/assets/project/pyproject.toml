@@ -1,0 +1,10 @@
+# {{PROJECT_NAME}} Python dependency management (backend apps/api)
+[project]
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+description = "{{PROJECT_NAME}} - AI-driven toC product"
+requires-python = ">=3.11"
+
+# Backend is pure standard library by default (apps/api). Declare third-party
+# dependencies here when you add them, e.g.:
+# dependencies = ["fastapi", "uvicorn"]

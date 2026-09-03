@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:\\Users\\Tomhands\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe\" \"Z:\\codeprojects\\vibecoding_manager\\tools\\vcm_session_hook.py\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

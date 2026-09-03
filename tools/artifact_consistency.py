@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Cross-artifact consistency check for the authority artifact store (stdlib only).
 
-Enforces the machine-checkable half of docs/artifact-context-contract.md section 6: missing
+Enforces the machine-checkable half of docs/02-technical/artifact-context-contract.md section 6: missing
 acceptance on accepted product/task/roadmap artifacts, state claims without receipts, broken
 supersession references, and accepted-but-superseded status. Reference existence and content
 hash integrity are already covered by artifact_store.validate; this adds the semantic rules.

@@ -24,13 +24,17 @@ module docs. Startup context is budgeted by `python tools/context_budget.py`.
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
 | project-type profiles / presets / dimensions | `skills/vibe-coding-manager/profiles/README.md` | `skills/vibe-coding-manager/profiles/` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
+| QA / testing / self-check | [docs/02-technical/qa-contract.md](docs/02-technical/qa-contract.md) | `tools/run_qa.py`, `tests/`, `tools/selfqa.py` |
+| project hook / SessionStart / agent scope | [docs/02-technical/project-hook.md](docs/02-technical/project-hook.md), [docs/02-technical/agent-hook-methods.md](docs/02-technical/agent-hook-methods.md) | `tools/install_project_hook.py`, `tools/vcm_session_hook.py`, `.codex/hooks.json` |
 | methodology / principles / migration guide | [docs/iteration-methodology.md](docs/iteration-methodology.md) | `docs/` |
-| fact ownership / which manager / boundary | [docs/fact-ownership.md](docs/fact-ownership.md) | `docs/` |
-| product north star / MVP / scope | [docs/product-spec.md](docs/product-spec.md) | `docs/` |
-| manager state machine / orchestration / self-iteration | [docs/manager-architecture.md](docs/manager-architecture.md) | `docs/` |
-| artifacts / context builder / progressive disclosure | [docs/artifact-context-contract.md](docs/artifact-context-contract.md) | `docs/` |
-| token budget / context cost / model routing | [docs/token-budget.md](docs/token-budget.md) | `docs/` |
-| roadmap / delivery order / acceptance | [docs/roadmap.md](docs/roadmap.md) | `docs/` |
+| fact ownership / which manager / boundary | [docs/00-system/fact-ownership.md](docs/00-system/fact-ownership.md) | `docs/00-system/` |
+| product north star / MVP / scope | [docs/01-product/product-spec.md](docs/01-product/product-spec.md) | `docs/01-product/` |
+| manager state machine / orchestration / self-iteration | [docs/00-system/manager-architecture.md](docs/00-system/manager-architecture.md) | `docs/00-system/` |
+| artifacts / context builder / progressive disclosure | [docs/02-technical/artifact-context-contract.md](docs/02-technical/artifact-context-contract.md) | `docs/02-technical/` |
+| token budget / context cost / model routing | [docs/02-technical/token-budget.md](docs/02-technical/token-budget.md) | `docs/02-technical/` |
+| roadmap / delivery order / acceptance | [docs/01-product/roadmap.md](docs/01-product/roadmap.md) | `docs/01-product/` |
+| install / installer / scaffold | [docs/01-product/install/](docs/01-product/install/) + [docs/02-technical/packaging/](docs/02-technical/packaging/) | `skills/vibe-coding-install/`, `skills/vibe-coding-manager/` |
+| settings / admin UI | [docs/01-product/settings/](docs/01-product/settings/) + [docs/02-technical/frontend/](docs/02-technical/frontend/) | `skills/vibe-coding-manager/assets/frontend/admin/` |
 
 ## 2. Documentation discipline (non-negotiable)
 
@@ -52,12 +56,12 @@ module docs. Startup context is budgeted by `python tools/context_budget.py`.
 | --- | --- |
 | Quick start / usage | [README.md](README.md) |
 | Current focus / blockers / next | [NOW.md](NOW.md) |
-| Product contract | [docs/product-spec.md](docs/product-spec.md) |
-| Manager architecture | [docs/manager-architecture.md](docs/manager-architecture.md) |
-| Artifact + context contract | [docs/artifact-context-contract.md](docs/artifact-context-contract.md) |
-| Token budget | [docs/token-budget.md](docs/token-budget.md) |
-| Product roadmap | [docs/roadmap.md](docs/roadmap.md) |
+| Product contract | [docs/01-product/product-spec.md](docs/01-product/product-spec.md) |
+| Manager architecture | [docs/00-system/manager-architecture.md](docs/00-system/manager-architecture.md) |
+| Artifact + context contract | [docs/02-technical/artifact-context-contract.md](docs/02-technical/artifact-context-contract.md) |
+| Token budget | [docs/02-technical/token-budget.md](docs/02-technical/token-budget.md) |
+| Product roadmap | [docs/01-product/roadmap.md](docs/01-product/roadmap.md) |
 | Full methodology | [docs/iteration-methodology.md](docs/iteration-methodology.md) |
-| Fact ownership boundary (vs Private_butler) | [docs/fact-ownership.md](docs/fact-ownership.md) |
+| Fact ownership boundary (vs Private_butler) | [docs/00-system/fact-ownership.md](docs/00-system/fact-ownership.md) |
 | Iteration progress | [CHANGELOG.md](CHANGELOG.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |

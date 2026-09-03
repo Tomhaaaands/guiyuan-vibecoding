@@ -46,6 +46,26 @@ def version() -> str:
     return v.read_text(encoding="utf-8").strip() if v.is_file() else "unknown"
 
 
+def _validate_installed(dest: Path) -> list[str]:
+    """Return installability errors for the installed tree (empty means healthy)."""
+    errors: list[str] = []
+    for name in SKILLS:
+        if not (dest / name / "SKILL.md").is_file():
+            errors.append(f"{name}: missing SKILL.md")
+    mgr = dest / "vibe-coding-manager"
+    if not (mgr / "assets" / "project").is_dir():
+        errors.append("vibe-coding-manager: missing assets/project")
+    if not (mgr / "profiles").is_dir():
+        errors.append("vibe-coding-manager: missing profiles")
+    # The published project template must carry the self-QA gate.
+    if not (mgr / "assets" / "project" / "tools" / "selfqa.py").is_file():
+        errors.append("vibe-coding-manager: assets/project/tools/selfqa.py missing")
+    # ...and the project-scoped SessionStart hook runner.
+    if not (mgr / "assets" / "project" / "tools" / "vcm_session_hook.py").is_file():
+        errors.append("vibe-coding-manager: assets/project/tools/vcm_session_hook.py missing")
+    return errors
+
+
 def resolve_skills_root(skills_dir: str | None) -> Path:
     if skills_dir:
         return Path(skills_dir).expanduser().resolve()
@@ -82,6 +102,9 @@ def doctor(dest: Path) -> int:
         else:
             print(f"  [missing] skill not installed: {name} (run install.py)")
             ok = False
+    for err in _validate_installed(dest):
+        print(f"  [broken] {err}")
+        ok = False
     template = dest / "vibe-coding-manager" / "assets" / "project" / "docs" / "04-workflow"
     for f in ("review-checklist.md", "roadmap.md"):
         if (template / f).is_file():
@@ -94,27 +117,94 @@ def doctor(dest: Path) -> int:
 
 
 def install(dest: Path, force: bool) -> None:
+    args, rc = _install_transactional(dest, BUNDLED, SKILLS, force)
+    if rc != 0:
+        raise SystemExit(rc)
+    if backed_up := args["backed_up"]:
+        print(f"backup: {args['backup_root']} ({', '.join(backed_up)})")
+    print(f"vibe-coding-install v{version()} done.")
+
+
+def _install_transactional(dest: Path, src_root: Path, names: tuple[str, ...], force: bool) -> tuple[dict, int]:
+    """Back up, atomically swap, validate, and roll back on failure."""
     dest.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     backup_root = dest / ".vibecoding-manager-backups" / stamp
-    backed_up = []
-    for name in SKILLS:
-        src = BUNDLED / name
+    plan: list[tuple[str, Path, Path, bool]] = []
+    for name in names:
+        src = src_root / name
         dst = dest / name
+        if not src.is_dir():
+            print(f"[error] missing source skill: {src}")
+            return {"backup_root": backup_root, "backed_up": []}, 1
         if dst.exists() and not force:
             print(f"already installed, skipped: {name} (--force to overwrite)")
             continue
-        if dst.exists():
-            backup = backup_root / name
-            backup.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(dst, backup)
-            backed_up.append(name)
-            shutil.rmtree(dst)
-        shutil.copytree(src, dst)
-        print(f"installed: {dst}")
-    if backed_up:
-        print(f"backup: {backup_root} ({', '.join(backed_up)})")
-    print(f"vibe-coding-install v{version()} done.")
+        plan.append((name, src, dst, dst.exists()))
+
+    if not plan:
+        return {"backup_root": backup_root, "backed_up": []}, _install_finish(dest)
+
+    staged: list[tuple[str, Path, bool, Path]] = []
+    try:
+        for name, src, dst, existed in plan:
+            tmp = dst.with_name(dst.name + f".tmp-{stamp}")
+            if tmp.exists():
+                shutil.rmtree(tmp)
+            shutil.copytree(src, tmp)
+            staged.append((name, dst, existed, tmp))
+    except OSError as exc:
+        for _name, _dst, _existed, tmp in staged:
+            if tmp.exists():
+                shutil.rmtree(tmp, ignore_errors=True)
+        print(f"[error] staging failed: {exc}")
+        return {"backup_root": backup_root, "backed_up": []}, 1
+
+    backed_up: list[str] = []
+    installed: list[tuple[str, Path, bool]] = []
+    try:
+        for name, dst, existed, tmp in staged:
+            if existed:
+                backup = backup_root / name
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(dst, backup)
+                backed_up.append(name)
+                shutil.rmtree(dst)
+            os.replace(tmp, dst)
+            installed.append((name, dst, existed))
+            print(f"installed: {dst}")
+        errors = _validate_installed(dest)
+        if errors:
+            raise RuntimeError("; ".join(errors))
+    except (OSError, RuntimeError) as exc:
+        _rollback(installed, backup_root)
+        print(f"[rollback] install failed: {exc}")
+        print(f"[rollback] backup retained at: {backup_root}")
+        return {"backup_root": backup_root, "backed_up": backed_up}, 1
+
+    return {"backup_root": backup_root, "backed_up": backed_up}, 0
+
+
+def _rollback(installed: list[tuple[str, Path, bool]], backup_root: Path) -> None:
+    for name, dst, existed in reversed(installed):
+        backup = backup_root / name
+        if existed and backup.is_dir():
+            shutil.rmtree(dst, ignore_errors=True)
+            shutil.copytree(backup, dst)
+            print(f"  restored: {name}")
+        elif not existed:
+            shutil.rmtree(dst, ignore_errors=True)
+            print(f"  removed newly installed: {name}")
+
+
+def _install_finish(dest: Path) -> int:
+    errors = _validate_installed(dest)
+    if errors:
+        for e in errors:
+            print(f"  [broken] {e}")
+        return 1
+    print("all skills already installed and healthy; use --force to overwrite")
+    return 0
 
 
 def main() -> None:

@@ -2,7 +2,7 @@
 """Deterministic context compiler (P2 runtime, stdlib only).
 
 Turns authority artifacts into the minimum bounded view for one decision, per
-docs/artifact-context-contract.md sections 3-7: L0 pointer cards and L1 field/span
+docs/02-technical/artifact-context-contract.md sections 3-7: L0 pointer cards and L1 field/span
 slices, ordered by phase policy, enforced under a hard token ceiling, with delta-only
 continuation. It never connects a provider and never silently drops required safety,
 permission, acceptance, or destructive-operation evidence.

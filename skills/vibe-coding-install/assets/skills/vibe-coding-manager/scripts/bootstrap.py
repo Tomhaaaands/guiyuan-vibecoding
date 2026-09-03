@@ -167,7 +167,7 @@ KNOWN_SYSTEM_DEFS = (
     {
         "id": "iteration-ledger",
         "label": "Iteration ledger / roadmap docs",
-        "markers": ("CHANGELOG.md", "docs/roadmap.md"),
+        "markers": ("CHANGELOG.md", "docs/01-product/roadmap.md"),
     },
 )
 FULL_TAKEOVER_OVERLAYS = {
@@ -516,7 +516,8 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
 
 
 def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: list[str],
-               compat_policy: str | None = None, system_policy: str | None = None) -> None:
+               compat_policy: str | None = None, system_policy: str | None = None,
+               install_hook: bool = True) -> None:
     if assessment_path is None:
         raise ValueError("adopt requires --assessment <json from --mode assess>")
     assessment = _load_assessment(assessment_path, root)
@@ -563,6 +564,8 @@ def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: l
     if compat_policy == "full-takeover":
         print("  full takeover: legacy management overlays archived under .vibecoding-manager/pre-adoption/")
     print(f"  receipt: {receipt.relative_to(root).as_posix()}")
+    hook_status = _install_project_hook(root) if install_hook else "skipped (--hook none)"
+    print(f"  project hook: {hook_status}")
 
 
 def _replace_placeholders(root: Path, name: str, scope: list[Path] | None = None) -> list[str]:
@@ -657,12 +660,20 @@ def _fill_routing_tables(root: Path, modules: list[dict]) -> None:
 def _ensure_module_dirs(root: Path, modules: list[dict]) -> list[str]:
     created = []
     for m in modules:
+        product_docs = ("prd.md", "acceptance.md", "ux.md", "behavior.md")
+        technical_docs = ("iteration.md",)
         for rel in (Path("docs/01-product") / m["name"], Path("docs/02-technical") / m["name"]):
             d = root / rel
             if not d.exists():
                 d.mkdir(parents=True, exist_ok=True)
-                (d / ".gitkeep").write_text("", encoding="utf-8")
                 created.append(rel.as_posix() + "/")
+            names = product_docs if rel.parts[1] == "01-product" else technical_docs
+            for filename in names:
+                p = d / filename
+                if not p.exists():
+                    title = f"{m['name'].replace('-', ' ').title()} {p.stem.title()}"
+                    p.write_text(f"# {title}\n\n> Placeholder: fill in for this project module.\n", encoding="utf-8")
+                    created.append((rel / filename).as_posix())
         if m["code"] and not (root / m["code"]).exists():
             d = root / m["code"]
             d.mkdir(parents=True, exist_ok=True)
@@ -826,6 +837,64 @@ def _install_precommit_gate(root: Path) -> None:
     if src.exists() and dst.parent.exists() and not dst.exists():
         shutil.copy2(src, dst)
         print(f"  pre-commit gate: installed ({dst.relative_to(root).as_posix()})")
+
+
+def _install_project_hook(root: Path) -> str:
+    """Install the project-scoped Codex SessionStart hook (advisory, idempotent).
+
+    This is the agent layer, not a Git hook: it only reads the project and injects
+    a detection-based advisory on SessionStart. It is written after the confirmed
+    adopt/scaffold write because it depends on tools/vcm_session_hook.py and must
+    not create a dependency or Git side effect for the business code.
+    """
+    runner = root / "tools" / "vcm_session_hook.py"
+    if not runner.is_file():
+        src = ASSETS / "tools" / "vcm_session_hook.py"
+        if not src.is_file():
+            return "skip (runner not bundled)"
+        runner.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, runner)
+    codex = root / ".codex"
+    codex.mkdir(parents=True, exist_ok=True)
+    py = next(
+        (p for p in (root / ".venv" / "Scripts" / "python.exe",
+                     root / "venv" / "Scripts" / "python.exe")
+         if p.is_file()),
+        Path(sys.executable),
+    )
+    command = f'"{py}" "{runner.resolve()}"'
+    hooks = {
+        "hooks": {
+            "SessionStart": [
+                {
+                    "matcher": "startup|resume|clear|compact",
+                    "hooks": [
+                        {"type": "command", "command": command, "timeout": 20},
+                    ],
+                }
+            ]
+        }
+    }
+    target = codex / "hooks.json"
+    data = json.dumps(hooks, ensure_ascii=False, indent=2) + "\n"
+    if target.is_file() and target.read_text(encoding="utf-8") == data:
+        return "unchanged"
+    target.write_text(data, encoding="utf-8")
+    return f"installed ({target.relative_to(root).as_posix()})"
+
+
+def _hook_methods_text() -> str:
+    """Local common Agent hook setups, so the agent reads this instead of searching."""
+    return (
+        "Common Agent project-scoped hook setups (VibeCoding_Manager defaults to Codex):\n"
+        "  Codex:       <project>/.codex/hooks.json  (SessionStart/PreToolUse/PostToolUse/PreCommit;\n"
+        "               requires a trusted project + user-level [features].hooks)\n"
+        "  Claude Code: <project>/.claude/settings.json  (PreToolUse/PostToolUse/Stop/SubagentStop)\n"
+        "  Cursor:      <project>/.cursor/rules or .cursorrules  (rules, not lifecycle events)\n"
+        "  Git:         <project>/.git/hooks/pre-commit  (commit gate; hard)\n"
+        "  VCM default: Codex SessionStart advisory (soft). Strict blocking uses a PreToolUse/commit hook.\n"
+        "Full local reference: docs/02-technical/agent-hook-methods.md"
+    )
 
 
 def _known_skill_roots() -> list[tuple[str, Path]]:
@@ -1285,6 +1354,11 @@ def main() -> None:
     ap.add_argument("--discover-skills", action="store_true",
                     help="list known agent skill roots read-only and exit")
     ap.add_argument("--no-install-skill", action="store_true", help="alias for --skill-location skip")
+    ap.add_argument("--hook", choices=["advisory", "none"], default="advisory",
+                    help="project-scoped agent hook: advisory=install SessionStart reminder (default); "
+                         "none=skip")
+    ap.add_argument("--hook-methods", action="store_true",
+                    help="print local common Agent hook setup methods and exit")
     ap.add_argument("--module", action="append", default=[], metavar="name=kw1,kw2",
                     help="business modules (scaffold only; repeatable)")
     ap.add_argument("--code", action="append", default=[], metavar="name=dir",
@@ -1311,6 +1385,10 @@ def main() -> None:
     ap.add_argument("--push", action="store_true", help="attempt initial push after git init/remote")
     ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
     args = ap.parse_args()
+
+    if args.hook_methods:
+        print(_hook_methods_text())
+        return
 
     if args.discover_skills:
         _discover_skill_roots()
@@ -1344,6 +1422,7 @@ def main() -> None:
                 args.workflow,
                 args.compat_policy,
                 args.system_policy,
+                install_hook=args.hook == "advisory",
             )
         except ValueError as exc:
             ap.error(str(exc))
@@ -1508,6 +1587,7 @@ def main() -> None:
         skill_location,
         args.force,
     )
+    hook_status = _install_project_hook(target) if args.hook == "advisory" else "skipped (--hook none)"
 
     # --- report -----------------------------------------------------------
     print(f"\n{'Adoption' if mode == 'adopt' else 'Deployment'} complete: {target}")
@@ -1523,6 +1603,10 @@ def main() -> None:
         print(f"  module placeholder dirs: {'、'.join(created_dirs)}")
     print(f"  init archive: {arch.relative_to(target).as_posix()}")
     print(f"  .env.example: {env_status}")
+    print(f"  project hook: {hook_status}")
+    print("  hook reminder: 项目级 hook 默认开启，作为 SessionStart 软约束（提醒 VCM 纪律、识别空文件夹意图）。")
+    print("                 无需再搜索：常用 Agent hook 设置方法见 docs/02-technical/agent-hook-methods.md，"
+          "或运行 bootstrap.py --hook-methods 打开本地清单。")
     status_text = {
         "reused": "existing, reused",
         "created": "created (local Python)",

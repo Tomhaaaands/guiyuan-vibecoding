@@ -1,0 +1,13 @@
+{
+  "name": "VibeCoding_Manager",
+  "version": "1.2.0",
+  "asset": "vibecoding-manager-1.2.0.zip",
+  "sha256": "d3c20e87b00dec3a4e03a9fa37921d3731628daa9530d66fa327169238af4bb6",
+  "size": 137781,
+  "source_commit": "c33fb74be350200cbb1c0397cc03660811dbbaaf",
+  "skills": [
+    "iteration-close-loop",
+    "vibe-coding-manager",
+    "vibe-coding-install"
+  ]
+}

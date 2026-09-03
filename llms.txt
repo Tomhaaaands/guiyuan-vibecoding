@@ -12,14 +12,53 @@
 
 ## Project docs
 
-- [artifact-context-contract.md](docs/artifact-context-contract.md): Authority artifact and context contract
-- [distillation.md](docs/distillation.md): Distillation pipeline
-- [fact-ownership.md](docs/fact-ownership.md): Fact ownership — which manager owns which memory
 - [iteration-methodology.md](docs/iteration-methodology.md): Iteration Management Methodology
-- [manager-architecture.md](docs/manager-architecture.md): VibeCoding_Manager cognitive and execution architecture
-- [product-baseline-v0.1.0.md](docs/product-baseline-v0.1.0.md): VibeCoding Manager 产品基线 v0.1.0
-- [product-spec.md](docs/product-spec.md): VibeCoding_Manager product contract
-- [provider-boundary.md](docs/provider-boundary.md): Provider integration boundary (P2)
-- [release-sources.md](docs/release-sources.md): Release Sources (archived)
-- [roadmap.md](docs/roadmap.md): VibeCoding_Manager vNext roadmap
-- [token-budget.md](docs/token-budget.md): Token budget and efficiency contract
+
+## 00-system
+
+- [fact-ownership.md](docs/00-system/fact-ownership.md): Fact ownership — which manager owns which memory
+- [manager-architecture.md](docs/00-system/manager-architecture.md): VibeCoding_Manager cognitive and execution architecture
+
+## 01-product
+
+- [_index.md](docs/01-product/_index.md): Product Capability Index
+- [acceptance.md](docs/01-product/analysis/acceptance.md): Analysis Acceptance
+- [prd.md](docs/01-product/analysis/prd.md): Analysis Capability
+- [acceptance.md](docs/01-product/delivery/acceptance.md): Delivery Acceptance
+- [prd.md](docs/01-product/delivery/prd.md): Delivery Capability
+- [acceptance.md](docs/01-product/dispatch/acceptance.md): Dispatch Acceptance
+- [prd.md](docs/01-product/dispatch/prd.md): Dispatch Capability
+- [acceptance.md](docs/01-product/install/acceptance.md): Install Acceptance
+- [prd.md](docs/01-product/install/prd.md): Install Capability
+- [product-baseline-v0.1.0.md](docs/01-product/product-baseline-v0.1.0.md): VibeCoding Manager 产品基线 v0.1.0
+- [product-spec.md](docs/01-product/product-spec.md): VibeCoding_Manager product overview and contract
+- [acceptance.md](docs/01-product/reflection/acceptance.md): Reflection Acceptance
+- [prd.md](docs/01-product/reflection/prd.md): Reflection Capability
+- [roadmap.md](docs/01-product/roadmap.md): VibeCoding_Manager vNext roadmap
+- [acceptance.md](docs/01-product/settings/acceptance.md): Settings Acceptance
+- [prd.md](docs/01-product/settings/prd.md): Settings Capability
+
+## 02-technical
+
+- [_index.md](docs/02-technical/_index.md): Technical Domain Index
+- [agent-hook-methods.md](docs/02-technical/agent-hook-methods.md): Common Agent Hook Methods
+- [artifact-context-contract.md](docs/02-technical/artifact-context-contract.md): Authority artifact and context contract
+- [distillation.md](docs/02-technical/distillation.md): Distillation pipeline
+- [component-library.md](docs/02-technical/frontend/component-library.md): Frontend Component Library Contract
+- [settings-page.md](docs/02-technical/frontend/settings-page.md): Settings Page Technical Contract
+- [audit-and-adoption.md](docs/02-technical/migration/audit-and-adoption.md): Migration Audit And Adoption
+- [install-contract.md](docs/02-technical/packaging/install-contract.md): Install Technical Contract
+- [project-hook.md](docs/02-technical/project-hook.md): Project-Scoped Agent Hook
+- [provider-boundary.md](docs/02-technical/provider-boundary.md): Provider integration boundary (P2)
+- [qa-contract.md](docs/02-technical/qa-contract.md): QA & Testing Contract
+- [token-budget.md](docs/02-technical/token-budget.md): Token budget and efficiency contract
+
+## 03-reference
+
+- [README.md](docs/03-reference/README.md): Reference Material
+- [_index.md](docs/03-reference/_index.md): Reference Index
+- [release-sources.md](docs/03-reference/release-sources.md): Release Sources (archived)
+
+## 04-workflow
+
+- [migration-protocol.md](docs/04-workflow/migration-protocol.md): Architecture Migration Protocol

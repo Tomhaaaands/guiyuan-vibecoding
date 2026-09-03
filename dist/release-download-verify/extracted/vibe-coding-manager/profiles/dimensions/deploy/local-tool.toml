@@ -1,0 +1,7 @@
+name = "local-tool"
+description = "Local/internal tool: single-user, minimal auth"
+
+constraints = [
+  "Single-user by default; no multi-tenant concerns",
+  "Data stays local; no cloud sync unless specified",
+]

@@ -14,11 +14,11 @@ as a historical development snapshot. The accepted vNext direction extends that 
 requirements analysis → authoritative artifacts → task planning → development/verification →
 delivery → reflection and self-iteration.
 
-Product contract: [docs/product-spec.md](docs/product-spec.md). Architecture and delivery plan:
-[docs/manager-architecture.md](docs/manager-architecture.md) and [docs/roadmap.md](docs/roadmap.md).
+Product contract: [docs/01-product/product-spec.md](docs/01-product/product-spec.md). Architecture and delivery plan:
+[docs/00-system/manager-architecture.md](docs/00-system/manager-architecture.md) and [docs/01-product/roadmap.md](docs/01-product/roadmap.md).
 The current independent-product baseline, including optional Private Butler inbox/result integration
 and the single/multi-project management direction, is
-[docs/product-baseline-v0.1.0.md](docs/product-baseline-v0.1.0.md).
+[docs/01-product/product-baseline-v0.1.0.md](docs/01-product/product-baseline-v0.1.0.md).
 
 ## The problem
 
@@ -94,9 +94,9 @@ heavier, more general tools; this kit deliberately isn't.
   analysis-to-authority-artifact generator, a task graph dispatcher, a receipt loop, an
   experience-candidate loop, an end-to-end MVP walkthrough, and a working pitfalls→red-lines distillation
   (other directions stubbed).
-- **Installable as a skill** — `$vibe-coding-install` (explicit-only) installs/updates the kit in
-  the current Agent's global skills directory, an explicit shared directory, or a project-local
-  copy; `install.bat` / `install.sh` are the one-command entry outside the Agent.
+- **Portable agent skills** — `$vibe-coding-install` (explicit-only) installs/updates reusable
+  `SKILL.md` files in a user-selected shared or agent skills directory. Codex, Doubao, Harness,
+  and compatible agents can use the same payload; `agents/openai.yaml` is only a Codex adapter.
 
 ## Quick start
 
@@ -118,7 +118,7 @@ The published GitHub `v0.1.0` release zip is retired. If you want the one-messag
 yourself with `python tools/build_dist.py --verify` (writes `dist/vibecoding-manager-<version>.zip`
 plus `.sha256` and a manifest), host it where you control it, then send that URL in a message. Verify
 the `.sha256` companion before install; an update backs up existing skills and restores them if
-verification fails. See [docs/release-sources.md](docs/release-sources.md).
+verification fails. See [docs/03-reference/release-sources.md](docs/03-reference/release-sources.md).
 
 ### 3. Use it
 
@@ -207,7 +207,11 @@ vibecoding_manager/
 ├── AGENTS.md                   # startup contract for this repo itself
 ├── llms.txt                    # machine-readable doc index (generated)
 ├── docs/
-│   └── iteration-methodology.md # the full reusable methodology
+│   ├── 00-system/              # global architecture, boundaries, red lines
+│   ├── 01-product/             # product contracts and roadmap
+│   ├── 02-technical/           # runtime contracts and technical truth
+│   ├── 03-reference/           # research, competitors, tutorials, environments
+│   └── 04-workflow/             # NOW, ledger, methodology, archive
 ├── skills/
 │   ├── iteration-close-loop/   # round close-out skill (source)
 │   ├── vibe-coding-manager/    # guided manager skill (source)
@@ -240,9 +244,9 @@ python tools/check_drift.py            # verify gates are green before committin
 - [docs/iteration-methodology.md](docs/iteration-methodology.md) — seven core principles, the
   five-layer doc system, two workflows, the three-layer record model, goal-locking, output rules,
   token-saving design, and a migration guide (minimal set → standard set → full set).
-- [docs/distillation.md](docs/distillation.md) — the self-iteration distillation loop (four lift
+- [docs/02-technical/distillation.md](docs/02-technical/distillation.md) — the self-iteration distillation loop (four lift
   directions; the pitfalls direction is implemented).
-- [docs/provider-boundary.md](docs/provider-boundary.md) — where a model backend may appear, how it
+- [docs/02-technical/provider-boundary.md](docs/02-technical/provider-boundary.md) — where a model backend may appear, how it
   is selected, degraded, idempotent, and gated by the analysis F1 threshold.
 
 ## License

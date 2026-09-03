@@ -1,6 +1,6 @@
 ---
 name: vibe-coding-install
-description: One-click installer for the VibeCoding_Manager kit (coding-project manager, repo vibecoding_manager). Installs/updates the iteration-close-loop and vibe-coding-manager skills into the current agent's global skills directory or an explicit --skills-dir, runs a self-check, and can scaffold an existing project folder. The published GitHub release zip is retired; install from the repo or a user-hosted zip. Explicit-only: invoke with $vibe-coding-install.
+description: One-click installer for the VibeCoding_Manager kit. Installs reusable, agent-neutral skills into a shared or agent-selected skills directory, runs a self-check, and can scaffold an existing project folder. Codex uses the optional agents/openai.yaml adapter; other agents may load SKILL.md directly. The published GitHub release zip is retired; install from the repo or a user-hosted zip. Explicit-only: invoke with $vibe-coding-install.
 ---
 
 # VibeCoding Manager · 安装与更新
@@ -35,8 +35,8 @@ The agent receiving the message must:
 1. Download the zip from the 技能地址, verify its published `.sha256` companion file, and extract it.
 2. Confirm the zip root contains exactly three skill directories:
    `iteration-close-loop/`, `vibe-coding-manager/`, `vibe-coding-install/`.
-3. Back up any existing same-named directories, then copy the three directories into the **current agent's global skills directory**
-   (install 到全局 skills 目录，确保所有项目可用；不要装到项目级或临时目录).
+3. Back up any existing same-named directories, then copy the three directories into the **user-selected shared or agent skills directory**.
+   The directory may be used by Codex, Doubao, Harness, or another compatible agent.
 4. Verify: each skill has `SKILL.md`; `agents/openai.yaml` is an optional Codex adapter. Check
    the bundled `vibe-coding-install/VERSION` matches the kit version printed in the zip name.
 5. Report the installed version and that the kit is ready
@@ -72,7 +72,7 @@ scaffold an existing project folder with the iteration system.
 ## Rules
 
 - Explicit-only: never auto-trigger on ordinary tasks; run only when invoked via `$vibe-coding-install`.
-- Primary zip install writes only into the current agent's global skills directory; if the agent
+- Primary zip install writes only into the user-selected skills directory; if the agent
   cannot resolve one, ask the user to choose: read-only discovery, an explicit shared directory,
   or project-local installation under `.vibecoding-manager/skills/`. Scaffolding touches only the
   target folder.

@@ -8,7 +8,12 @@
 
 ```text
 AGENTS.md                       # startup-contract skeleton (reading order/routing/discipline/index)
-docs/04-workflow/
+docs/
+  00-system/                    # global facts (architecture, data, red lines, versioning)
+  01-product/                   # product truth and module PRDs
+  02-technical/                 # technical truth and module state/contracts
+  03-reference/                 # tutorials, environments, reusable references
+  04-workflow/                  # process engine and iteration records
   AGENTS_WORKFLOW.md            # process skeleton (routing/two workflows/five-step closure/mapping)
   changelog.md                  # one-line ledger skeleton
   NOW.md                        # current-focus card skeleton (focus/blockers/next)
@@ -37,6 +42,17 @@ scripts/
 3. **Generate + verify**: `python tools/gen_llms_txt.py` for llms.txt, then
    `python tools/context_budget.py` and `python tools/check_drift.py` plus the project's own structural checks; install the
    commit gate once: `python scripts/install_hooks.py` (bootstrap installs it automatically).
+
+## Release vs internal boundary
+
+The published payload contains reusable, agent-neutral skills and this project template. It does
+not contain this repository's internal product PRD, `NOW.md`, `CHANGELOG.md`, or root `docs/`
+content. Those files describe the VibeCoding_Manager repository itself and remain internal.
+When installed into a host project, the template's `docs/` five-layer skeleton is created there.
+
+Host-project authors' existing `CHANGELOG.md`, `NOW.md`, and `docs/` are treated as user-owned
+content: adoption detects and preserves them; it does not hide them with blanket `.gitignore`
+rules or overwrite them without an explicit managed workflow choice.
 
 ## Optional: behavior packaging
 

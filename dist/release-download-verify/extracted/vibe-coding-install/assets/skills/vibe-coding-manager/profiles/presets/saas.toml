@@ -1,0 +1,3 @@
+name = "saas"
+description = "Multi-tenant SaaS: user isolation, idempotent billing, API-first"
+dimensions = { deploy = "saas", data = "relational", runtime = "python", surface = "api-first" }

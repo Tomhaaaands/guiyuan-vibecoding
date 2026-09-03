@@ -12,3 +12,4 @@ dist/
 build/
 *.log
 .DS_Store
+# Do not ignore author or VCM documentation: CHANGELOG.md, NOW.md, and docs/ are authoritative.

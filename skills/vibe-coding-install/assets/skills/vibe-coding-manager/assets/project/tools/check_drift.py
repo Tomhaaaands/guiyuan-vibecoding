@@ -44,6 +44,7 @@ SKIP_FILES = {
     "docs/04-workflow/iteration-methodology.md",
     "docs/04-workflow/AGENTS_WORKFLOW.md",
     "docs/iteration-methodology.md",
+    "docs/02-technical/qa-contract.md",
 }
 STALE_RE = re.compile(r"\[OUTDATED\]|\bTODO\b|\bTBD\b|\bFIXME\b")
 SOFT_RE = re.compile(r"待补(?:充)?")

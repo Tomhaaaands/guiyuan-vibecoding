@@ -8,6 +8,13 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R50 | 09-03 | agent-hook-init | 初始化阶段新增项目级 hook 提醒与开关（--hook advisory|none，--hook-methods 本地清单），新增本地常用 Agent hook 设置方法档 agent-hook-methods.md，避免重复联网查找；bootstrap 同步，unittest 153 全绿 | [r50](docs/04-workflow/archive/2026-09-03-r50.md) |
+| R49 | 09-03 | agent-hook | 新增项目级 Codex SessionStart 提醒 hook（非阻断、仅读）：识别 managed/vcm-shaped/coding/ambiguous 并注入意图闸门，adopt/scaffold 自动落地 `.codex/hooks.json`；发布模板、内部工具、selfqa 与安装校验同步，unittest 12 项通过 | [r49](docs/04-workflow/archive/2026-09-03-r49.md) |
+| R48 | 09-03 | qa+install | 新增 stdlib 内部测试套件+run_qa 门禁，发布模板植入项目自检 selfqa.py，技能安装补齐备份/校验/失败回滚；qa-contract 落档 | [r48](docs/04-workflow/archive/2026-09-03-r48.md) |
+| R47 | 09-03 | capability-graph | 内部版完成产品能力/技术责任域模块化迁移；发布版模板新增 capability 文档骨架与标准文件生成；安装、设置、分析、派发、交付、反思模块建立索引和验收入口 | [r47](docs/04-workflow/archive/2026-09-03-r47.md) |
+| R46 | 09-03 | internal-doc-migration | 内部版根文档按五层职责迁移：system/product/technical/reference；全仓索引与工具引用已更新；architecture_audit 零冲突 | [r46](docs/04-workflow/archive/2026-09-03-r46.md) |
+| R45 | 09-03 | topology+settings+migration | 补齐 reference 沉淀流程、apps/workers 与五层 docs 占位；新增只读 architecture_audit 迁移检测标准；Admin 增加 Settings 页；发布模板与内部版同步 | [r45](docs/04-workflow/archive/2026-09-03-r45.md) |
+| R44 | 09-03 | release+internal boundaries | 明确发布版/内部版边界；通用 SKILL.md 可供 Codex、豆包、Harness 共用；模板与内部仓库补齐 docs/00-system..04-workflow 五层骨架；作者文档不做 blanket gitignore | [r44](docs/04-workflow/archive/2026-09-03-r44.md) |
 | R43 | 09-03 | packaging+docs | 方法论落档 P0-P8 闭环；归档旧 zip 发布(仓库直装default, message 改自托管)；删 GitHub v0.1.0 release、移除 releases/0.1.0 资产；check_drift+harness 全绿 | [r43](docs/04-workflow/archive/2026-09-03-r43.md) |
 | R42 | 09-03 | P8 MVP | 新增端到端 MVP walkthrough：分析->工件->派发->回执->反思，默认 local-fallback 可复现、context 132/2500、整体 PASS；P0-P8 本地闭环完成 | [r42](docs/04-workflow/archive/2026-09-03-r42.md) |
 | R41 | 09-03 | P6 experience | 新增经验回环：失败/阻塞回执 -> [AI-DRAFT] experience 候选 + 影子红线评估(不改权威 red-lines.md)；harness 19/19 | [r41](docs/04-workflow/archive/2026-09-03-r41.md) |

@@ -31,6 +31,11 @@ having each register rounds in the shared ledger (no hierarchy, sync via changel
 
 ## 3. Five-layer documentation system
 
+This five-layer tree is part of every generated project, even when a layer is initially empty.
+The published VCM payload owns only the reusable template and agent-neutral skills. The VCM
+repository's product/status documents, root `NOW.md`, and root `CHANGELOG.md` are internal-version
+records and are not copied into host projects.
+
 | Layer | Responsibility | Contents |
 | --- | --- | --- |
 | 00-system | global facts | architecture, data layer, red lines, design system, versioning |

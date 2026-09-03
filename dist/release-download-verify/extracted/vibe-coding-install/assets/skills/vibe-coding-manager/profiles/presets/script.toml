@@ -1,0 +1,7 @@
+name = "script"
+description = "Single-file or small script (python/node)"
+
+constraints = [
+  "Keep the entry point at the project root while it stays a single script",
+  "Pin the runtime version (.python-version / .nvmrc / engines) once the script grows",
+]

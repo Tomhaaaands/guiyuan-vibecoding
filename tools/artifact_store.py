@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Typed authority-artifact store (P2 runtime, deterministic, stdlib only).
 
-Implements the local half of docs/artifact-context-contract.md: artifacts are keyed by
+Implements the local half of docs/02-technical/artifact-context-contract.md: artifacts are keyed by
 artifact_id with a sha256 content hash and a sidecar JSON metadata file. No provider,
 no external dependency; each write is content-addressed and revisioned so the store is
 idempotent and rollback-safe.
@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-# Authority artifact kinds exactly as documented in docs/artifact-context-contract.md.
+# Authority artifact kinds exactly as documented in docs/02-technical/artifact-context-contract.md.
 KINDS = (
     "analysis",
     "product-spec",

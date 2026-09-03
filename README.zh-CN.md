@@ -43,8 +43,9 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 4. 按提示完成语义确认、评估、门禁选择和接管确认。
 5. 进入新对话开始第一轮真实任务。
 
-安装位置按用户选择：当前 Agent 的全局 skills 目录、只读检索候选后确认的共享目录，或项目
-内 `.vibecoding-manager/skills/`。
+安装位置按用户选择：共享 skills 目录、某个 Agent 的 skills 目录，或项目内
+`.vibecoding-manager/skills/`。技能正文是通用的 `SKILL.md`；`agents/openai.yaml` 只是 Codex
+适配器，因此豆包、Harness、Codex 等兼容 Agent 可以共用同一份技能。
 
 ## 下载与更新
 
@@ -52,4 +53,4 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 - 发消息安装仅适用于自行构建并托管的 zip；安装会校验 SHA-256、备份并被替换。
 - Gitee raw 当前浏览器实测返回 Access denied，不再作为安装入口；Gitee 仍保留代码镜像仓库。
 
-旧的发布地址与校验规则见（已归档）[docs/release-sources.md](docs/release-sources.md)。
+旧的发布地址与校验规则见（已归档）[docs/03-reference/release-sources.md](docs/03-reference/release-sources.md)。

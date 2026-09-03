@@ -1,0 +1,18 @@
+#!/bin/sh
+# VibeCoding_Manager pre-commit gate: run the project's drift checks before every commit.
+# Installed by scripts/install_hooks.py (or automatically by the bootstrap scaffold).
+# Bypass only when you know what you're doing: git commit --no-verify
+
+PY=python3
+command -v python3 >/dev/null 2>&1 || PY=python
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+
+if [ ! -f "$ROOT/tools/check_drift.py" ]; then
+  exit 0
+fi
+
+if ! "$PY" "$ROOT/tools/check_drift.py"; then
+  echo "[gate] check_drift failed - fix the issues and re-commit (or git commit --no-verify to bypass)."
+  exit 1
+fi
+exit 0
