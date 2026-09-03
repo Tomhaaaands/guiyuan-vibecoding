@@ -1,0 +1,38 @@
+# Deterministic natural-language intent map.
+#
+# The Skill prompt asks users for a free-text description and then resolves it through this
+# file. Signals are matched as case-folded substrings; longer matches score higher. Add aliases
+# here, not in prompts, so repeated descriptions resolve to the same profile.
+
+[profile.script]
+signals = ["脚本", "小工具", "工具", "script", "utility", "命令行工具", "terminal tool"]
+
+[profile.plugin]
+signals = ["插件", "扩展", "chrome 插件", "浏览器插件", "plugin", "extension", "vscode 插件", "obsidian 插件"]
+
+[profile.page]
+signals = ["网页", "页面", "网站", "落地页", "官网", "个人主页", "landing page", "website", "web page", "portfolio", "静态站"]
+
+[profile.saas]
+signals = ["saas", "多租户", "订阅制", "crm", "erp", "管理后台", "后台系统", "云服务", "付费订阅"]
+
+[profile.c-end]
+signals = ["c端", "消费端", "点单", "预约", "会员", "c-end"]
+
+[profile.vector-db]
+signals = ["知识库", "rag", "向量", "语义搜索", "embedding", "检索", "向量库"]
+
+[profile.cli-tool]
+signals = ["cli", "命令行", "终端工具", "命令行工具"]
+
+[profile.content-site]
+signals = ["博客", "文档站", "内容站", "blog", "docs site", "内容平台", "写作"]
+
+[profile.ecommerce]
+signals = ["电商", "商城", "购物", "下单", "商品", "ecommerce", "shop", "storefront", "购物车"]
+
+[profile.admin-dashboard]
+signals = ["后台", "管理面板", "仪表盘", "admin dashboard", "dashboard", "运营后台"]
+
+[profile.bot]
+signals = ["机器人", "bot", "自动化", "微信机器人", "telegram 机器人", "工作流", "定时任务"]

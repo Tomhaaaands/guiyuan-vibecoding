@@ -4,10 +4,32 @@
 > [docs/iteration-methodology.md](docs/iteration-methodology.md).
 > Row format: `| R1 | MM-DD | module | one-line conclusion (what/why/how-verified) | [r1](archive/...) |`
 
+## 2026-09-03
+
+| Round | Date | Module | One-line conclusion | Archive |
+| --- | --- | --- | --- | --- |
+| R43 | 09-03 | packaging+docs | 方法论落档 P0-P8 闭环；归档旧 zip 发布(仓库直装default, message 改自托管)；删 GitHub v0.1.0 release、移除 releases/0.1.0 资产；check_drift+harness 全绿 | [r43](docs/04-workflow/archive/2026-09-03-r43.md) |
+| R42 | 09-03 | P8 MVP | 新增端到端 MVP walkthrough：分析->工件->派发->回执->反思，默认 local-fallback 可复现、context 132/2500、整体 PASS；P0-P8 本地闭环完成 | [r42](docs/04-workflow/archive/2026-09-03-r42.md) |
+| R41 | 09-03 | P6 experience | 新增经验回环：失败/阻塞回执 -> [AI-DRAFT] experience 候选 + 影子红线评估(不改权威 red-lines.md)；harness 19/19 | [r41](docs/04-workflow/archive/2026-09-03-r41.md) |
+| R40 | 09-03 | P5 receipt loop | 新增执行/验证/回执闭环：checks->verdict(pass/fail/blocked)->回执->任务状态->project-state 同步，幂等且带证据；harness 18/18 | [r40](docs/04-workflow/archive/2026-09-03-r40.md) |
+| R39 | 09-03 | P4 task graph | 新增任务图+就绪+下一任务派发(proposed/in_progress/done/blocked, priority 排序, 依赖全 done 才算就绪)；harness 17/17 | [r39](docs/04-workflow/archive/2026-09-03-r39.md) |
+| R38 | 09-03 | P3 production | 新增 analysis->权威工件草稿生成器(product-spec/decisions, draft, depends_on 源 analysis)，一致性检查兜底；harness 16/16 | [r38](docs/04-workflow/archive/2026-09-03-r38.md) |
+| R37 | 09-03 | P3 validation | 新增跨工件一致性检查：missing_acceptance/state_without_receipt/supersedes_gap(+accepted_superseded warn)；harness 15/15，CLI 实测 exit 1 | [r37](docs/04-workflow/archive/2026-09-03-r37.md) |
+| R36 | 09-03 | red-line judge | 红线升级为模型裁决：短名单后`judge_red_line`判 violates/respects/unknown；violates/unknown 升级、respects 保留打标；siliconflow 实测判出真违规；harness 14/14 | [r36](docs/04-workflow/archive/2026-09-03-r36.md) |
+| R35 | 09-03 | gold standard | 五套金标准改句子粒度，修复 semantic 反向；默认门禁切到 `semantic`(bge-m3, min-f1 0.25)，local 0.169 / siliconflow 0.299；char-bigram 标注为句子 gold 上不可靠 | [r35](docs/04-workflow/archive/2026-09-03-r35.md) |
+| R34 | 09-03 | red-line | 分析阶段红线强制：读取项目 red-lines.md，红线主题命中的决策/选项升级为待确认(字符bigram≥0.25)，红线哈希并入幂等键；harness 13/13 | [r34](docs/04-workflow/archive/2026-09-03-r34.md) |
+| R33 | 09-03 | semantic gate | 语义打分(bge-m3)+5 套金标准+默认门槛 0.30；实测 char-bigram 更好分(0.429 vs 0.204)，semantic 留为实验项；siliconflow 通过、local-fallback 被拦 | [r33](docs/04-workflow/archive/2026-09-03-r33.md) |
+| R32 | 09-03 | real backend | 接入 SiliconFlow 真实后端（Qwen/Qwen3-8B），密钥走 `VCM_SILICONFLOW_API_KEY` 不进 git；similarity 改字符 bigram；套件实测 0.395 > local-fallback 0.207，harness 12/12 | [r32](docs/04-workflow/archive/2026-09-03-r32.md) |
+| R31 | 09-03 | eval baseline | 分析门禁做真：score_labels 加 similarity(token-set Dice)+金标准套件+red-team harness；12/12 全绿，local-fallback 对套件 ≈0.0 成为真实后端基线 | [r31](docs/04-workflow/archive/2026-09-03-r31.md) |
+| R30 | 09-03 | provider-p2 | Provider 接入边界 + `analysis` 权威工件：新增 provider 注册表(local-fallback)/编排(幂等+降级)/金标准评分门禁；harness 7/7 全绿 + CLI 实测 | [r30](docs/04-workflow/archive/2026-09-03-r30.md) |
+| R29 | 09-03 | runtime P2 | 类型化工件库/确定性上下文编译器/行为评估 harness 落地（stdlib、不接 Provider）；6 场景 harness 全绿 + CLI 临时目录实测通过 | [r29](docs/04-workflow/archive/2026-09-03-r29.md) |
+
 ## 2026-08-31
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R28 | 09-02 | product | v0.1.0 独立产品基线落档：补充单/多项目治理与管理总览，PB 仅作为用户确认后的可选 inbox/结果回流，Creator OS 保持独立；历史旧名只留归档 | [r28](docs/04-workflow/archive/2026-09-02-r28.md) |
+| R27 | 09-01 | ux+install | 用户旅程改为一句话描述 + intent-map 确定性判型；UV 成为默认引导工具并保留 `python -m venv` 回退；Skill 安装改为用户选择当前 Agent 全局/共享/项目内，新增 `--skills-dir/--discover/--skill-location`，脚手架不再隐式写 `~/.codex/skills`；新增 content-site/ecommerce/admin-dashboard/bot 预设；旅程图、README、SKILL、模板、方法论同步；sync/check_drift/临时 scaffold 验证通过 | [r27](docs/04-workflow/archive/2026-09-01-r27.md) |
 | R26 | 09-01 | proxy-primary mirror | 浏览器实测确认 Gitee raw 返回 Access denied、两个 GitHub 代理成功；国内安装顺序改为 `gh-proxy.com` → `ghfast.top`，Gitee raw 不再作为安装入口；安装 Skill、中文 README、发布说明更新并重建 `0.1.0` 安装包 | [r26](docs/04-workflow/archive/2026-09-01-r26.md) |
 | R25 | 09-01 | mirror fallback | 国内镜像回退顺序设为 Gitee raw → `gh-proxy.com` → `ghfast.top`；两个代理实测返回与官方一致的文件和 SHA-256；安装 Skill、中文 README、发布说明更新并重建 `0.1.0` 安装包 | [r25](docs/04-workflow/archive/2026-09-01-r25.md) |
 | R24 | 09-01 | gitee anonymous mirror | Gitee mirror switched from login-gated Release attachments to repository raw files under `releases/0.1.0/`; install-message and docs use raw URL for non-logged-in users; `0.1.0` package rebuilt and SHA updated, GitHub/Gitee Release artifacts replaced, and `v0.1.0` tag moved to R24 | [r24](docs/04-workflow/archive/2026-09-01-r24.md) |

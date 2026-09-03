@@ -2,25 +2,21 @@
 
 ## 通过 Agent 安装
 
-请把下面整段发给你的 Agent：
+已归档：GitHub 发布的 `v0.1.0` release zip 已停用。推荐从仓库安装：
 
-```text
-请安装 VibeCoding_Manager Skill
-技能地址：https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
+```bash
+git clone <your-repo-url> vibecoding_manager
+cd vibecoding_manager
+install.bat            # Windows
+./install.sh           # macOS / Linux
 ```
 
-如果 GitHub 无法访问，请改用国内镜像地址：
+仍要「发消息即装」：先用 `python tools/build_dist.py --verify` 打好
+`dist/vibecoding-manager-<version>.zip` 与 `.sha256`，自行托管后再把地址发给 Agent：
 
 ```text
 请安装 VibeCoding_Manager Skill
-技能地址：https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
-```
-
-备用代理：
-
-```text
-请安装 VibeCoding_Manager Skill
-技能地址：https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
+技能地址：<你自行托管的 vibecoding-manager-<version>.zip 地址>
 ```
 
 Agent 安装时会校验 SHA-256、检查压缩包结构、备份旧的同名 Skill，并自检安装结果。
@@ -33,7 +29,7 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 
 ## 当前能力
 
-- 空目录：引导创建新项目管理结构。
+- 空目录：让用户用一句话描述想做什么，语义化识别为预设类型后引导创建新项目管理结构。
 - 已有项目：先只读评估，再选择每个管理环节的保留、映射或托管。
 - 低匹配度或发现同类系统：暂停并提示风险，由用户选择完全接管、只接管、保留并映射、延后接管或放弃。
 - 接管前校验基线哈希，写入本地备份和回执。
@@ -43,15 +39,17 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 
 1. 安装完成后，打开目标项目的新对话。
 2. 显式调用 `$vibe-coding-manager`。
-3. 告诉 Agent 项目位置和名称。
-4. 按提示完成评估、门禁选择和接管确认。
+3. 告诉 Agent 项目位置、名称，并用一句话描述空目录项目想做什么。
+4. 按提示完成语义确认、评估、门禁选择和接管确认。
 5. 进入新对话开始第一轮真实任务。
+
+安装位置按用户选择：当前 Agent 的全局 skills 目录、只读检索候选后确认的共享目录，或项目
+内 `.vibecoding-manager/skills/`。
 
 ## 下载与更新
 
-- GitHub 是权威版本地址。
-- 国内回退顺序：gh-proxy.com → ghfast.top，每次仍校验 SHA-256。
+- 已停用 GitHub 公开 release zip；仓库直装为默认。
+- 发消息安装仅适用于自行构建并托管的 zip；安装会校验 SHA-256、备份并被替换。
 - Gitee raw 当前浏览器实测返回 Access denied，不再作为安装入口；Gitee 仍保留代码镜像仓库。
-- 更新时重新发送新版本安装消息，Agent 会备份旧版本并在校验失败时回滚。
 
-完整发布地址和校验规则见 [docs/release-sources.md](docs/release-sources.md)。
+旧的发布地址与校验规则见（已归档）[docs/release-sources.md](docs/release-sources.md)。

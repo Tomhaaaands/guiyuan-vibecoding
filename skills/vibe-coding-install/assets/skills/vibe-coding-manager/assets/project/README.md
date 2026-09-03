@@ -40,10 +40,9 @@ scripts/
 
 ## Optional: behavior packaging
 
-Install the skills once and every project inherits them:
-`$iteration-close-loop` closes out rounds; `$vibe-coding-manager` one-click deploys
-(this template ships inside it — the first conversation copies the skeleton, writes R1,
-generates the index, and auto-installs the close-loop skill).
+The template can be used with global skills installed once, or with a project-local copy under
+`.vibecoding-manager/skills/`. `$iteration-close-loop` closes out rounds when the client supports
+skill triggers; otherwise the project rules point to the local close-loop `SKILL.md` and scripts.
 
 ## Relationship to the full methodology
 

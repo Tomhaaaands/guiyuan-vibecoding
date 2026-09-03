@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .env
 .env.*
+.vibecoding/
 .codex/
 node_modules/
 .next/

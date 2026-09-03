@@ -29,11 +29,12 @@ Reply (wording may vary, but must contain these items):
 
 Check the target before asking anything else:
 
-- **Empty folder** (or only `.git`) → **scaffold path**. First ask what they want to build:
-  - script / plugin / page (map to `--profile script|plugin|page`)
-  - full app → keep the existing questions: project type presets (saas / c-end / vector-db /
-    cli-tool / custom dimensions) and modules (web / api / db / worker / tests, or the default
-    template web+api+db+worker+tests)
+- **Empty folder** (or only `.git`) → **scaffold path**. Ask one plain sentence: "What do you
+  want to build?" Resolve it with `--intent "<description>"` against `profiles/intent-map.toml`;
+  do not present a project-type menu. When confidence is high, restate the resolved profile in
+  one sentence and proceed. When medium/low, ask one open clarifying question before choosing.
+  Preset modules and dimensions come from the resolved profile; the default template remains
+  `web+api+db+worker+tests` for full apps unless the profile defines a more specific module set.
 - **Folder has code** → **assess path first**. Run the read-only assessment (fingerprints:
   `manifest.json` → plugin; `package.json` deps → page/app; `pyproject.toml`/`requirements.txt`
   → app/script; `index.html` → static page; a single root script file → script). It must not write
@@ -70,12 +71,13 @@ initializes Git, or changes global Skills.
 
 ## Stage 3 · Environment preflight & disclosure (before any install)
 
-Run the read-only preflight and show what's found (git / python / node / uv / gh), then state in
-plain language exactly what this project needs installed and why — e.g. ".venv is an isolated
-environment that belongs only to this project and won't change anything else on your computer."
-Then offer three choices:
+Run the read-only preflight and show what's found (git / python / node / gh). UV is an optional
+Python accelerator; if it is missing, say "UV makes Python environments faster and shares the
+cache across projects; I recommend installing it" before asking for permission. Explain `.venv`
+in one plain sentence. Then offer three choices:
 
-1. **Auto-install (recommended)** — I run the installs now (`--deps auto`);
+1. **Auto-install (recommended)** — I install uv when useful, then Python/`.venv`/npm as needed
+   (`--deps auto`);
 2. **Commands only** — I print the exact commands and you run them later (`--deps commands`);
 3. **Skip** — I only add the management layer, no installs (`--deps skip`).
 
@@ -85,12 +87,15 @@ Never install anything before this choice is made.
 
 ```bash
 python <skill path>/scripts/bootstrap.py <folder> --name <project> --mode auto|assess|adopt|scaffold \
+    [--intent "one-sentence description"] \
     [--existing-system NAME] [--compat-policy full-takeover|takeover|defer|abandon] \
     [--system-policy keep-map|auto-takeover|abandon] \
-    [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|path/to.toml] \
+    [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|content-site|ecommerce|admin-dashboard|bot|path/to.toml] \
     [--module web --module api ...] [--code "name=dir"] [--template default] \
     [--dimension "key=value"] [--python auto|system|install|<path>] \
     [--env auto|shared|isolated|reuse|skip] [--deps auto|commands|skip] \
+    [--skills-dir PATH] [--skill-location auto|project|global|skip] \
+    [--discover-skills] [--dry-run] \
     [--assessment <json>] [--workflow startup=keep|map|managed ...] \
     [--github <repo-url>] [--push]
 ```
@@ -99,6 +104,11 @@ python <skill path>/scripts/bootstrap.py <folder> --name <project> --mode auto|a
 - adopt: requires a fresh assessment plus confirmed workflow choices; it owns only `managed`
   workflow files and creates a local backup before replacing one;
 - scaffold: artifact choice maps to `--profile script|plugin|page`; full app uses modules/presets;
+- scaffold with `--intent`: semantic resolver picks the profile deterministically; use
+  `--dry-run` to inspect the resolved plan before writing.
+- close-loop skill: default is project-local `.vibecoding-manager/skills/`; install to a global
+  or shared directory only after the user selects `--skills-dir` or `VIBECODING_SKILLS_HOME`.
+  `--discover-skills` lists known candidate roots read-only.
 - GitHub: if the user gave a repo URL or wants one, set origin with `--github <url>`, and push
   (`--push`) only after they have authenticated (`gh auth login` or git credentials) and confirmed.
 
@@ -128,9 +138,11 @@ a candidate; never apply a suggestion automatically or repeat a dismissed one.
 
 - Stage 0 always precedes everything; Stage 1 state detection decides assess vs scaffold;
 - Deploy only user-confirmed modules; never guess names/keywords/code dirs;
+- Project type is resolved from free text + `profiles/intent-map.toml`; never show a preset menu.
 - Business code is never overwritten; existing management files change only after a confirmed
   `managed` selection and a baseline-hash check;
 - When the gate requires a decision, stop until the user chooses; `defer` and `abandon` mean no
   project management files are written;
 - No installs before the Stage 3 disclosure choice; explain every install in plain language;
+- Never write global Skills without an explicit user-chosen path; project-local is the fallback.
 - After the closing report, stop asking business details and guide to a new conversation.

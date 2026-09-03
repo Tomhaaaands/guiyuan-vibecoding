@@ -1,0 +1,14 @@
+name = "ecommerce"
+description = "Ecommerce: catalog, cart, orders, payment"
+dimensions = { deploy = "saas", data = "relational", runtime = "python", surface = "web" }
+
+red_lines = [
+  "Order totals and payments are recomputed server-side; never trust client totals",
+  "Payment operations require an idempotency key",
+]
+
+constraints = [
+  "Catalog, cart, and order schemas land in database.md before migration",
+]
+
+docs_stubs = ["00-system/data-layer.md", "00-system/deployment.md"]

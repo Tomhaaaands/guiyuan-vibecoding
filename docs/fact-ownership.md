@@ -1,7 +1,7 @@
 # Fact ownership — which manager owns which memory
 
-> Shared boundary contract (2026-08-29) between **VibeCoding_Manager** (repo `vibecoding_manager`, the per-project "project
-> manager") and **Private_butler** (repo `memory_os`, the personal "life manager"). Mirrored in both repos and kept
+> Shared boundary contract, updated 2026-09-02, between **VibeCoding Manager** (repo `vibecoding_manager`, the per-project
+> manager") and **Private Butler** (repo `private_butler`, the personal "life manager"). Mirrored in both repos and kept
 > identical; if the two copies drift, fix them here and re-sync.
 
 ## Purpose
@@ -28,7 +28,7 @@ library stays clean and personal.
 | "This endpoint is `POST /api/x` with fields a/b/c" | project record | repo (`api.md` + changelog) |
 | "Why models were moved out of the repo (R121)" | project record | repo (`archive/...-r121.md`) |
 | "Crawler must never bypass login state" | project record | repo (`red-lines.md`) |
-| "Tom is building Flash_assistant; latest round R126 admin split" | project digest | Private_butler `project` namespace (pointer) |
+| "Tom is building Creator OS; latest round R129 completed product naming" | project digest | Private Butler `project` namespace (pointer) |
 
 ## Triage (three questions, in order)
 

@@ -46,7 +46,7 @@ SKIP_FILES = {
     "docs/iteration-methodology.md",
 }
 # Single-source version gate: the self-contained install skill carries its own VERSION
-# (it travels to $CODEX_HOME and cannot read the repo root), so it must stay equal to root.
+# (it travels with the installed skill and cannot read the repo root), so it must stay equal to root.
 VERSION_FILE = ROOT / "VERSION"
 BUNDLED_VERSION = ROOT / "skills" / "vibe-coding-install" / "VERSION"
 STALE_RE = re.compile(r"\[OUTDATED\]|\bTODO\b|\bTBD\b|\bFIXME\b")

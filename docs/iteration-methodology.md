@@ -84,6 +84,25 @@ Rules: **manual trigger** (only when the user asks for Figma round-trips); Figma
 (fileKey / node id / variables id) must be recorded — no "synced" claims without anchors; frozen
 token/component definitions change only from Figma.
 
+### 5a. Manager local loop (P0-P8 engine)
+
+The manager's own runtime loop is deterministic and stdlib-only. It is the "butler" capability the
+skills delegate to, and it ships as repo-internal `tools/` helpers (not the managed-project template):
+
+| Phase | Engine | Tool | Acceptance |
+| --- | --- | --- | --- |
+| P1 context | L0/L1 views + hard token budget | `context_compiler.py`, `context_budget.py` | zero-history startup; target 1.8k / ceiling 2.5k |
+| P2 analysis | intent -> labeled facts/assumptions/options/decisions/questions | `analysis.py`, `analysis_provider.py`, `analysis_eval.py` | ambiguity becomes labeled; `local-fallback` ~0.169 vs real backend ~0.299 (bge-m3 similarity) |
+| P3 artifacts | labeled analysis -> draft authority artifacts + consistency | `artifact_generate.py`, `artifact_consistency.py` | generated product/decision artifacts pass missing-acceptance/state-without-receipt/supersedes checks |
+| P4 tasks | dependency graph, readiness, next-task dispatch | `task_graph.py` | the manager can pick the next executable task without a board |
+| P5 delivery | checks -> verdict -> receipt -> state sync | `receipt_loop.py` | a task reaches delivered only with a receipt; fail repairs, no-budget blocks |
+| P6 reflection | failed/blocked receipts -> draft experience candidates | `experience_loop.py` | a repeated failure becomes an `[AI-DRAFT]` candidate; never auto-edits red-lines.md |
+| P8 MVP | one scripted journey through the loop | `mvp_walkthrough.py` | analysis -> artifacts -> dispatch -> receipt -> reflection within budget |
+
+Rules: red-line judgment is model-routed (`judge_red_line`), provider boundary is isolable
+([docs/provider-boundary.md](docs/provider-boundary.md)), and every engine step is covered by
+`tools/behavior_harness.py` scenarios (the manager's own gate before it gates a project).
+
 ## 6. Three-layer record model + current-focus card
 
 The core design — it resolves "record cost vs traceability":
@@ -173,7 +192,20 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
 | `tools/check_drift.py` | markers + links + startup budget + distribution sync | periodic / closure |
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
-| `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
+| `tools/artifact_store.py` | typed authority-artifact store (content-addressed, revisioned, validated) | P2 runtime / artifact writes |
+| `tools/context_compiler.py` | deterministic L0/L1 context compiler with budget degradation + delta continuation | before each task / runtime assembly |
+| `tools/behavior_harness.py` | behavior-evaluation harness for the local core (store + compiler + analysis-label scoring) | every round / before wiring a provider |
+| `tools/analysis_labels.py` | validate and score labeled analysis against gold fixtures | P2 acceptance gate |
+| `tools/analysis_provider.py` | provider registry + config + deterministic local fallback | before any model wiring |
+| `tools/analysis.py` | analysis orchestrator: intent -> labeled `analysis` authority artifact (idempotent, degradable) | ANALYSIS phase |
+| `tools/analysis_eval.py` | score a provider against gold and gate promotion by overall F1 | before promoting a backend |
+| `tools/artifact_consistency.py` | cross-artifact consistency check (missing acceptance, state-without-receipt, supersedes gaps) | P3 validation / periodic |
+| `tools/artifact_generate.py` | turn a labeled analysis into draft product/decision authority artifacts | P3 production after ANALYSIS |
+| `tools/task_graph.py` | P4 task graph: readiness, acceptance validation, next-task dispatch | P4 / planning phase |
+| `tools/receipt_loop.py` | P5 loop: checks -> verdict -> receipt -> task status -> project-state sync | P5 / execution+verification |
+| `tools/experience_loop.py` | P6: failed/blocked receipts -> draft experience candidates + shadow red-line eval | P6 / reflection |
+| `tools/mvp_walkthrough.py` | P8 end-to-end MVP: analysis -> artifacts -> dispatch -> receipt -> reflection with budget gate | P8 / MVP validation |
+| `tools/install_skills.py` | install skills to a user-chosen root + `--discover`/`--doctor` | first setup |
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
 | `tools/workflow_optimize.py` | receipt-backed workflow suggestion bundle; never applies changes | milestone review |
 | `tools/check_package.py` | tracked source/history secret scan before public release | release gate |
@@ -198,10 +230,11 @@ rollup/hydrate/check_drift/gen_llms_txt scripts; replace placeholders and you're
 
 ### Full set (+ behavior packaging)
 
-Install the skills: `iteration-close-loop` closes rounds in any project; `vibe-coding-manager`
-first assesses an existing project without writing it, then applies only user-confirmed workflow
-layers, or deploys the kit into a new project. Existing-project adoption does not auto-install the
-close-loop skill.
+Install the skills globally (user-chosen agent/shared directory) or project-locally under
+`.vibecoding-manager/skills/`: `iteration-close-loop` closes rounds in any project;
+`vibe-coding-manager` first assesses an existing project without writing it, then applies only
+user-confirmed workflow layers, or deploys the kit into a new project. Existing-project adoption
+does not auto-install the close-loop skill.
 
 ### Steps
 

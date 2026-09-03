@@ -130,14 +130,14 @@
 (function(){
   "use strict";
   var DATA=[
-    {id:1,name:"获取安装",emo:"轻快",val:62,user:["git clone 拿到套件（或已拷贝）","运行 install.bat / install.sh","或在 Codex 内调用 $vibe-coding-install"],prod:["校验 Python ≥3.11","把 3 个 skill 装入 $CODEX_HOME/skills","doctor 自检 + 打印下一步"],touch:"终端 / Codex 对话",pain:["需 Python 3.11+ 与命令行操作","面向零基础用户有门槛"]},
-    {id:2,name:"进入会话",emo:"期待",val:52,user:["打开目标项目文件夹（空目录或有代码）","新开会话并输入 $vibe-coding-manager"],prod:["显式触发，不自动抢占","开场白询问：项目位置 + 名称"],touch:"对话界面",pain:["每个项目都要手动新开会话 + 显式调用","无跨会话常驻管家"]},
-    {id:3,name:"状态识别",emo:"安心",val:78,user:["提供项目位置 / 名称"],prod:["空目录 → 脚手架路径","有代码 → 指纹识别（manifest.json→插件；package.json→页面/应用；pyproject→应用/脚本；单脚本→脚本）"],touch:"对话界面",pain:["指纹规则有限，冷门类型可能识别不准"]},
-    {id:4,name:"分支决策",emo:"掌控",val:72,user:["脚手架：选脚本/插件/页面/应用 + 预设(saas/c-end/vector-db/cli-tool) + 模块","接管：确认产品判型结果，无需选型"],prod:["按选型装配 profile（约束/红线/gitignore/文档占位）","承诺业务代码不被改动"],touch:"对话界面",pain:["预设数量有限，长尾需自定义 toml（有门槛）"]},
-    {id:5,name:"环境披露",emo:"迟疑",val:56,user:["三选一：自动安装 / 只给命令 / 跳过"],prod:["只读预检（git/python/node/uv/gh）","用大白话说明要装什么、为什么","未选择前绝不安装"],touch:"对话界面 + 终端",pain:["三选项对小白略重","但'先披露后安装'是安全底线"]},
-    {id:6,name:"执行生成",emo:"满足",val:88,user:["确认 GitHub 关联（可选）","阅读大白话收尾报告"],prod:["补管理壳/骨架 → 占位符替换 → profile → .env.example → R1 归档 → llms.txt","依赖处理 → git init → pre-commit 门禁 → 装 close-loop","GitHub origin/push → 大白话收尾"],touch:"终端输出",pain:["输出偏'管理机制'细节，用户仍需看 CLI 信息"]},
+    {id:1,name:"获取安装",emo:"轻快",val:62,user:["git clone 拿到套件（或已拷贝）","运行 install.bat / install.sh","或在当前 Agent 发送 $vibe-coding-install / 技能地址"],prod:["校验 Python ≥3.11","按用户选择装入当前 Agent 全局 skills、共享目录或项目内","doctor 自检 + 打印下一步"],touch:"终端 / Agent 对话",pain:["需 Python 3.11+ 与命令行操作","面向零基础用户有门槛"]},
+    {id:2,name:"进入会话",emo:"期待",val:52,user:["打开目标项目文件夹（空目录或有代码）","新开会话，按客户端支持的 skill 触发方式调用 $vibe-coding-manager"],prod:["显式触发，不自动抢占","开场白询问：项目位置 + 名称 + 一句话描述"],touch:"对话界面",pain:["每个项目都要手动新开会话 + 显式调用","无跨会话常驻管家"]},
+    {id:3,name:"状态识别",emo:"安心",val:78,user:["提供项目位置 / 名称","空目录补充一句：想做一个什么"],prod:["空目录 → 脚手架路径 + intent-map 语义识别","有代码 → 指纹识别（manifest.json→插件；package.json→页面/应用；pyproject→应用/脚本；单脚本→脚本）"],touch:"对话界面",pain:["指纹规则有限，冷门类型可能识别不准"]},
+    {id:4,name:"分支决策",emo:"掌控",val:72,user:["脚手架：自然语言确认最终判型，不再看选项清单","接管：确认产品判型结果，无需选型"],prod:["按 intent-map 确定性映射 profile（约束/红线/gitignore/文档占位）","高置信度一句话确认，低置信度只追问一句开放问题","承诺业务代码不被改动"],touch:"对话界面",pain:["预设数量有限，长尾需补 intent-map/profile（有门槛）"]},
+    {id:5,name:"环境披露",emo:"迟疑",val:56,user:["三选一：自动安装 / 只给命令 / 跳过"],prod:["只读预检（git/Python/Node/GitHub CLI；uv 缺失时推荐安装）","用大白话说明要装什么、为什么","未选择前绝不安装"],touch:"对话界面 + 终端",pain:["三选项对小白略重","但'先披露后安装'是安全底线"]},
+    {id:6,name:"执行生成",emo:"满足",val:88,user:["确认 GitHub 关联（可选）","阅读大白话收尾报告"],prod:["补管理壳/骨架 → 占位符替换 → profile → .env.example → R1 归档 → llms.txt","依赖处理（默认引导 uv，缺失回退 python -m venv）","git init → pre-commit 门禁 → close-loop 按选择装入项目/全局","GitHub origin/push → 大白话收尾"],touch:"终端输出",pain:["输出偏'管理机制'细节，用户仍需看 CLI 信息"]},
     {id:7,name:"日常迭代",emo:"稳定",val:70,user:["在项目内新开会话，做真实任务","每轮自然完成收尾"],prod:["零历史启动：读 NOW + 路由文档（~1,150 token）","每轮 changelog 一行 + 归档 + NOW 更新 + doc 同步","pre-commit 跑 check_drift 门禁"],touch:"对话界面 + 仓库文件",pain:["纪律靠 skill 引导 + 门禁，无自动执行收据/状态推进","恢复上下文依赖 agent 读文件"]},
-    {id:8,name:"长期维护",emo:"信赖",val:76,user:["随时 $vibe-coding-install 更新套件","维护者：改源码后跑 sync_copies + check_drift","新项目回到阶段 2"],prod:["幂等更新 + doctor 自检","同步门禁锁定 4 对副本与版本单一来源"],touch:"终端 / 仓库",pain:["版本/副本同步是维护者职责（已脚本化）"]}
+    {id:8,name:"长期维护",emo:"信赖",val:76,user:["随时 $vibe-coding-install 更新全局/共享套件","项目级安装时同步 .vibecoding-manager/skills/ 副本","维护者：改源码后跑 sync_copies + check_drift"],prod:["幂等更新 + doctor 自检 + 备份回滚","同步门禁锁定 4 对副本与版本单一来源"],touch:"终端 / Agent / 仓库",pain:["版本/副本同步是维护者职责（已脚本化）"]}
   ];
 
   var curve=document.getElementById("curve"),stages=document.getElementById("stages"),detail=document.getElementById("detail");

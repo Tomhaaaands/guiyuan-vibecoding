@@ -1,0 +1,23 @@
+{
+  "intent": "Add a POST /auth/login endpoint that returns a token and never trusts the client user id.",
+  "notes": "Technical contract with a security constraint; gold at sentence granularity.",
+  "gold": {
+    "known_facts": [
+      {"id": "k1", "statement": "The API adds a POST /auth/login endpoint for authentication.", "source": "intent"},
+      {"id": "k2", "statement": "A successful call returns a token to the caller.", "source": "intent"},
+      {"id": "k3", "statement": "The user identity must be derived server-side, never trusted from the client.", "source": "intent"}
+    ],
+    "assumptions": [
+      {"id": "a1", "statement": "A session or auth store already exists to validate credentials.", "confidence": 0.5}
+    ],
+    "options": [
+      {"id": "o1", "statement": "Return either a signed token or an opaque server-side session id.", "confidence": 0.7}
+    ],
+    "decisions": [
+      {"id": "d1", "statement": "Resolve the user id from the authenticated principal on the server.", "confidence": 0.9}
+    ],
+    "open_questions": [
+      {"id": "q1", "statement": "Clarify how long the returned token remains valid.", "confidence": 1.0}
+    ]
+  }
+}

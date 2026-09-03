@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Install this repo's skills into the Codex skills directory, and self-check the kit.
+"""Install this repo's skills into a user-chosen skills root, and self-check the kit.
 
 Usage:
-  python tools/install_skills.py [--force]   # install the two skills
-  python tools/install_skills.py --doctor    # verify install + repo health (no writes)
+  python tools/install_skills.py [--skills-dir PATH] [--force]
+  python tools/install_skills.py --doctor [--skills-dir PATH]
+  python tools/install_skills.py --discover
 
 Behavior:
   Copies skills/iteration-close-loop and skills/vibe-coding-manager into
-  $CODEX_HOME/skills (default ~/.codex/skills); skips existing skills, --force overwrites.
+  the explicit --skills-dir, VIBECODING_SKILLS_HOME, or the Codex fallback;
+  skips existing skills, --force overwrites.
   --doctor prints the kit version, checks both skills are installed intact, and runs
   tools/check_drift.py to prove the distribution is healthy.
+  --discover lists known agent skill roots read-only without writing.
 """
 
 from __future__ import annotations
@@ -33,13 +36,34 @@ def version() -> str:
     return VERSION_FILE.read_text(encoding="utf-8").strip() if VERSION_FILE.exists() else "unknown"
 
 
-def codex_home() -> Path:
-    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+def resolve_skills_root(skills_dir: str | None) -> Path:
+    if skills_dir:
+        return Path(skills_dir).expanduser().resolve()
+    env = os.environ.get("VIBECODING_SKILLS_HOME")
+    if env:
+        return Path(env).expanduser().resolve()
+    codex = os.environ.get("CODEX_HOME", Path.home() / ".codex")
+    return Path(codex).expanduser() / "skills"
 
 
-def doctor() -> int:
-    home = codex_home()
-    skills_root = home / "skills"
+def discover() -> None:
+    candidates = [
+        ("Codex", resolve_skills_root(None)),
+        ("Claude Code", Path.home() / ".claude" / "skills"),
+        ("Cursor", Path.home() / ".cursor" / "skills"),
+    ]
+    print("== known agent skill roots (read-only, not exhaustive) ==")
+    found = False
+    for label, root in candidates:
+        print(f"  {label}: {root} ({'exists' if root.exists() else 'not found'})")
+        found = found or root.exists()
+    if not found:
+        print("  none found; use --skills-dir <path> for an explicit global directory")
+    else:
+        print("  confirm one path with --skills-dir <path> before writing")
+
+
+def doctor(skills_root: Path) -> int:
     print(f"VibeCoding_Manager v{version()} · doctor")
     ok = True
     for name in SKILLS:
@@ -59,8 +83,7 @@ def doctor() -> int:
     return 0 if ok else 1
 
 
-def install(force: bool) -> None:
-    dest_root = codex_home() / "skills"
+def install(force: bool, dest_root: Path) -> None:
     dest_root.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     backup_root = dest_root / ".vibecoding-manager-backups" / stamp
@@ -89,10 +112,17 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Install VibeCoding_Manager skills and self-check the kit")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--doctor", action="store_true", help="verify install + repo health (no writes)")
+    ap.add_argument("--skills-dir", default=None, help="explicit global skills root")
+    ap.add_argument("--discover", action="store_true", help="list known agent skill roots read-only")
     args = ap.parse_args()
+    if args.discover:
+        discover()
+        return
+    dest_root = resolve_skills_root(args.skills_dir)
+    print(f"skills root: {dest_root}")
     if args.doctor:
-        sys.exit(doctor())
-    install(args.force)
+        sys.exit(doctor(dest_root))
+    install(args.force, dest_root)
 
 
 if __name__ == "__main__":

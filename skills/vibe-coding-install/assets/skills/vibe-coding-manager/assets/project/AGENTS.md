@@ -50,5 +50,5 @@ the context-budget tool; the hard management-context ceiling is 2,500 tokens.
 | Methodology / migration guide | [iteration-methodology.md](docs/04-workflow/iteration-methodology.md) |
 | Current focus / blockers / next | [NOW.md](docs/04-workflow/NOW.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |
-| Round close-out (skill) | `$iteration-close-loop` |
-| One-click install (skill) | `$vibe-coding-install` |
+| Round close-out (skill/scripts) | `$iteration-close-loop` when the client supports it; otherwise read `.vibecoding-manager/skills/iteration-close-loop/SKILL.md` and run `tools/rollup_round.py` |
+| Kit install/update | `$vibe-coding-install` when the client supports it; otherwise use the repo installer or project-local skill copy |

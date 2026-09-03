@@ -173,10 +173,12 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
 | `tools/check_drift.py` | markers + links + startup budget + distribution sync | periodic / closure |
 | `tools/gen_llms_txt.py` | regenerate root llms.txt | doc-structure changes |
-| `tools/install_skills.py` | install skills + `--doctor` self-check | first setup |
+| `tools/install_skills.py` | install skills to a user-chosen root + `--discover`/`--doctor` | first setup |
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
+| `tools/workflow_optimize.py` | receipt-backed workflow suggestion bundle; never applies changes | milestone review |
+| `tools/check_package.py` | tracked source/history secret scan before public release | release gate |
 | skill `vibe-coding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
-| skill `vibe-coding-manager` | one-click guided manager: adopt an existing project or scaffold a new one (explicit-only) | any project's first conversation |
+| skill `vibe-coding-manager` | guided manager: assess an existing project before confirmed, scoped adoption; scaffold a new one | any project's first conversation |
 | skill `iteration-close-loop` | round close-out | every round wrap-up |
 
 ## 11. Reuse & migration guide (how to apply elsewhere)
@@ -196,9 +198,11 @@ rollup/hydrate/check_drift/gen_llms_txt scripts; replace placeholders and you're
 
 ### Full set (+ behavior packaging)
 
-Install the skills: `iteration-close-loop` closes rounds in any project; `vibe-coding-manager`
-one-click adopts an existing project or deploys the kit into a new project, and auto-installs the
-close-loop skill.
+Install the skills globally (user-chosen agent/shared directory) or project-locally under
+`.vibecoding-manager/skills/`: `iteration-close-loop` closes rounds in any project;
+`vibe-coding-manager` first assesses an existing project without writing it, then applies only
+user-confirmed workflow layers, or deploys the kit into a new project. Existing-project adoption
+does not auto-install the close-loop skill.
 
 ### Steps
 

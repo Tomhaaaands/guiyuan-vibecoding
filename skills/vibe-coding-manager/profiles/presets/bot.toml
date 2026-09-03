@@ -1,0 +1,7 @@
+name = "bot"
+description = "Chat bot / automation workflow"
+dimensions = { deploy = "local-tool", data = "files", runtime = "python", surface = "api-first" }
+
+red_lines = [
+  "Bot secrets never enter prompt context or client code",
+]

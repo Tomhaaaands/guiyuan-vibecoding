@@ -15,14 +15,14 @@
 | P4 | milestone/task graph, dependencies, readiness, acceptance and next-task dispatch | planned | the manager can explain and select the next executable task without a user-maintained board |
 | P5 | code -> checks -> repair/block -> receipt -> artifact/state sync loop | planned | one real task progresses from ready to delivered only with verification evidence |
 | P6 | experience candidates, project red lines, shadow policy evaluation and rollback | planned | a repeated failure becomes one evidence-backed candidate and cannot silently change production behavior |
-| P7 | optional Private_butler read/digest bridge | planned | integration improves context but either product operates independently when the other is unavailable |
+| P7 | optional Private Butler capability/inbox/result bridge | planned | candidates are user-gated and idempotent; integration improves context while either product operates independently |
 | P8 | end-to-end MVP evaluation and packaging decision | planned | one scripted small-product journey completes analysis through reflection within token and quality budgets |
 
-Existing-project adoption is a compatibility layer, not a CreatorOS or Flash_assistant migration.
+Existing-project adoption is a compatibility layer, not a Creator OS migration.
 It may preserve, map, or manage one workflow at a time and never changes a project automatically.
 
 ## MVP scope lock
 
-The first end-to-end cut uses one local Git repository, one primary coding agent, one recommended
-stack, and no management UI. Additional agents, profiles, deployment providers, and resident
-services wait until P8 evidence shows the core loop is reliable.
+The first end-to-end cut uses one local Git repository, one primary coding agent and one recommended
+stack. The v0.1.0 product direction includes a repository-backed single/multi-project overview;
+implementation follows after the core P2-P8 evidence loop is reliable.

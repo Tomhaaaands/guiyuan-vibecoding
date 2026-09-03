@@ -17,7 +17,9 @@
 - [fact-ownership.md](docs/fact-ownership.md): Fact ownership — which manager owns which memory
 - [iteration-methodology.md](docs/iteration-methodology.md): Iteration Management Methodology
 - [manager-architecture.md](docs/manager-architecture.md): VibeCoding_Manager cognitive and execution architecture
+- [product-baseline-v0.1.0.md](docs/product-baseline-v0.1.0.md): VibeCoding Manager 产品基线 v0.1.0
 - [product-spec.md](docs/product-spec.md): VibeCoding_Manager product contract
-- [release-sources.md](docs/release-sources.md): Release Sources
+- [provider-boundary.md](docs/provider-boundary.md): Provider integration boundary (P2)
+- [release-sources.md](docs/release-sources.md): Release Sources (archived)
 - [roadmap.md](docs/roadmap.md): VibeCoding_Manager vNext roadmap
 - [token-budget.md](docs/token-budget.md): Token budget and efficiency contract

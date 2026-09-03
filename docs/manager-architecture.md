@@ -139,6 +139,10 @@ The bridge uses an optional provider seam:
 - never copy full project specifications into personal memory;
 - never make project execution depend on Private_butler availability;
 - preserve lineage when an idea dispatch starts a project.
+- expose project-analysis, implementation, verification and documentation capabilities through an
+  optional executor declaration; inbox receipt never grants execution permission.
+- return an idempotent result receipt containing status, authoritative artifact references and
+  verification evidence.
 
 ## 8. Evaluation authority
 

@@ -3,6 +3,7 @@
 > Status: accepted vNext direction (2026-08-31). Current v0.1.0 remains the bootstrap/iteration
 > foundation; capabilities in this document become shipped only when their roadmap acceptance gate
 > passes.
+> Current v0.1.0 product baseline: [product-baseline-v0.1.0.md](product-baseline-v0.1.0.md).
 
 ## 1. One-line promise
 
@@ -78,7 +79,7 @@ The first end-to-end MVP supports:
 - dependency-aware task selection;
 - one complete task loop: context -> code -> checks -> receipt -> artifact/state sync;
 - milestone reflection that emits reviewable experience/red-line candidates;
-- optional Private_butler context read and project-digest write-back;
+- optional Private Butler inbox, context read and structured result/digest write-back;
 - token accounting and blocking context-budget gates.
 
 Deferred until the core loop is stable:
@@ -89,7 +90,7 @@ Deferred until the core loop is stable:
 - many framework/deployment profiles;
 - autonomous production policy promotion;
 - cloud-hosted code execution, mobile clients, and multi-tenant service operation.
-- migration or replacement of CreatorOS / Flash_assistant; those remain independent projects.
+- migration or replacement of Creator OS; it remains an independent product.
 
 ## 6. User-facing experience
 
@@ -114,14 +115,16 @@ become routine chores for the user.
 - Repeated failures converge into one evidence-backed experience candidate rather than prompt
   accumulation.
 
-## 8. Private_butler boundary
+## 8. Private Butler boundary
 
 VibeCoding_Manager owns project truth. Private_butler owns personal memory and lightweight project
 pointers. Integration is optional and low-coupling:
 
 - at project start, read approved user preferences and related project pointers when available;
+- receive task candidates through an inbox, but require user acceptance before project changes;
 - during work, use repository artifacts as the only authority for project facts;
 - at milestone close, return a short project digest plus artifact pointer;
 - either system remains fully usable when the other is unavailable.
+- deduplicate candidates by idempotency key and return status, artifact pointers and verification evidence.
 
 The shared ownership rules remain in `docs/fact-ownership.md`.

@@ -3,10 +3,17 @@
 > Status: P1 contract (2026-08-31). This contract prevents project drift and controls token cost by
 > separating authoritative storage from the minimum view used for one decision.
 
+> Runtime status (R42): the P0-P8 local loop is implemented across `tools/`: the artifact store and
+> context compiler, the analysis/provider boundary (docs/provider-boundary.md), P3 consistency +
+> generation, P4 task graph, P5 receipt loop, P6 experience/shadow red-line, and P8
+> `tools/mvp_walkthrough.py` end-to-end journey (analysis -> artifacts -> dispatch -> receipt ->
+> reflection) with a context budget gate.
+
 ## 1. Authority artifact catalog
 
 | Artifact | Owns | Must not own |
 | --- | --- | --- |
+| analysis | labelled intent: facts, assumptions, options, decisions, open questions (before a decision) | downstream accepted decisions |
 | product-spec | user problem, audience, scope, requirements, product acceptance | implementation detail |
 | design-brief | experience goals, flows, visual direction, design constraints | backend contracts |
 | technical-spec | stack, architecture, data, interfaces, runtime/deployment constraints | product priority |

@@ -1,0 +1,22 @@
+{
+  "intent": "Make it faster.",
+  "notes": "Deliberately ambiguous; the analysis should surface unknowns and assumptions, not facts.",
+  "gold": {
+    "known_facts": [
+      {"id": "k1", "statement": "There is an existing system that the user wants to make faster.", "source": "intent"}
+    ],
+    "assumptions": [
+      {"id": "a1", "statement": "The user considers speed more important than other qualities.", "confidence": 0.4},
+      {"id": "a2", "statement": "A baseline measurement of the current speed is available.", "confidence": 0.3}
+    ],
+    "options": [
+      {"id": "o1", "statement": "Cache the hot paths that are called most often.", "confidence": 0.5},
+      {"id": "o2", "statement": "Parallelize independent work where the dependencies allow it.", "confidence": 0.5}
+    ],
+    "decisions": [],
+    "open_questions": [
+      {"id": "q1", "statement": "Clarify which operation is slow and by how much.", "confidence": 1.0},
+      {"id": "q2", "statement": "Clarify the acceptable latency target.", "confidence": 1.0}
+    ]
+  }
+}

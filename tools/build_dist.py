@@ -107,10 +107,11 @@ def verify_zip(zip_path: Path) -> None:
         for name in SKILLS:
             sk = root / name / "SKILL.md"
             ag = root / name / "agents" / "openai.yaml"
-            if sk.is_file() and ag.is_file():
-                print(f"  [ok] {name}: SKILL.md + agents/openai.yaml")
+            if sk.is_file():
+                adapter = "agents/openai.yaml (Codex adapter)" if ag.is_file() else "no Codex adapter (optional)"
+                print(f"  [ok] {name}: SKILL.md + {adapter}")
             else:
-                print(f"  [bad] {name}: missing SKILL.md/openai.yaml")
+                print(f"  [bad] {name}: missing SKILL.md")
                 ok = False
         bundled = root / "vibe-coding-install" / "VERSION"
         if bundled.is_file() and bundled.read_text(encoding="utf-8").strip() == version():

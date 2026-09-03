@@ -5,9 +5,7 @@ __pycache__/
 .env.*
 !.env.example
 .codex/
-.vibecoding-manager/backups/
-.vibecoding-manager/pre-adoption/
-.vibecoding-manager/decisions/
+.vibecoding-manager/
 node_modules/
 .next/
 dist/

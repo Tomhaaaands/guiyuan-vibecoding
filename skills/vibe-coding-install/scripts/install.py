@@ -2,14 +2,16 @@
 """One-click installer bundled as the vibe-coding-install skill (self-contained).
 
 Usage:
-  python <skill>/scripts/install.py                 # install/update skills + doctor
-  python <skill>/scripts/install.py --target <dir>  # ... then scaffold that project
-  python <skill>/scripts/install.py --force         # overwrite existing skill copies
+  python <skill>/scripts/install.py [--skills-dir PATH]  # install/update + doctor
+  python <skill>/scripts/install.py --discover           # read-only candidate list
+  python <skill>/scripts/install.py --target <dir>       # ... then scaffold that project
+  python <skill>/scripts/install.py --force              # overwrite existing skill copies
 
 Behavior:
   1. Verifies Python >= 3.11 (bootstrap profile loading needs tomllib);
   2. Installs the two bundled skills (iteration-close-loop, vibe-coding-manager) from this
-     skill's assets into $CODEX_HOME/skills (idempotent; --force overwrites);
+     skill's assets into --skills-dir, VIBECODING_SKILLS_HOME, or the Codex fallback
+     (idempotent; --force overwrites);
   3. Doctor: verifies both skills are installed and the bundled template is complete
      (review-checklist.md + roadmap.md present);
   4. With --target: scaffolds that project via the installed vibe-coding-manager skill;
@@ -37,15 +39,38 @@ MIN_PY = (3, 11)
 def version() -> str:
     """Kit version, single-sourced from this skill's VERSION file (bundled with the skill).
 
-    The file travels with the self-contained skill into $CODEX_HOME; check_drift gates it
+    The file travels with the self-contained skill into the installed skills root; check_drift gates it
     against the repo root VERSION so the two never drift.
     """
     v = SKILL_ROOT / "VERSION"
     return v.read_text(encoding="utf-8").strip() if v.is_file() else "unknown"
 
 
-def codex_skills() -> Path:
-    return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")) / "skills"
+def resolve_skills_root(skills_dir: str | None) -> Path:
+    if skills_dir:
+        return Path(skills_dir).expanduser().resolve()
+    env = os.environ.get("VIBECODING_SKILLS_HOME")
+    if env:
+        return Path(env).expanduser().resolve()
+    codex = os.environ.get("CODEX_HOME", Path.home() / ".codex")
+    return Path(codex).expanduser() / "skills"
+
+
+def discover() -> None:
+    candidates = [
+        ("Codex", resolve_skills_root(None)),
+        ("Claude Code", Path.home() / ".claude" / "skills"),
+        ("Cursor", Path.home() / ".cursor" / "skills"),
+    ]
+    print("== known agent skill roots (read-only, not exhaustive) ==")
+    found = False
+    for label, root in candidates:
+        print(f"  {label}: {root} ({'exists' if root.exists() else 'not found'})")
+        found = found or root.exists()
+    if not found:
+        print("  none found; use --skills-dir <path> for an explicit global directory")
+    else:
+        print("  confirm one path with --skills-dir <path> before writing")
 
 
 def doctor(dest: Path) -> int:
@@ -100,6 +125,7 @@ def main() -> None:
     ap.add_argument("--dimension", action="append", default=[], metavar="key=value")
     ap.add_argument("--module", action="append", default=[], metavar="name=kw1,kw2")
     ap.add_argument("--code", action="append", default=[], metavar="name=dir")
+    ap.add_argument("--intent", default=None, help="one-sentence project description")
     ap.add_argument("--template", choices=["default"], default=None)
     ap.add_argument("--python", default="auto", metavar="auto|system|install|<path>")
     ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
@@ -117,11 +143,18 @@ def main() -> None:
     ap.add_argument("--push", action="store_true")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--no-doctor", action="store_true", help="skip the doctor self-check")
+    ap.add_argument("--skills-dir", default=None, help="explicit global skills root")
+    ap.add_argument("--skill-location", choices=["auto", "project", "global", "skip"], default=None,
+                    help="close-loop install location for the scaffolded project")
+    ap.add_argument("--discover", action="store_true", help="list known agent skill roots read-only")
     args = ap.parse_args()
 
     if sys.version_info < MIN_PY:
         print(f"[error] Python {MIN_PY[0]}.{MIN_PY[1]}+ required (found {sys.version.split()[0]}).")
         sys.exit(1)
+    if args.discover:
+        discover()
+        return
 
     # Assessment is safe to run from the bundled copy and must not alter global skills.
     if args.target and args.mode == "assess":
@@ -136,7 +169,7 @@ def main() -> None:
         subprocess.run([sys.executable, *cmd], check=True)
         return
 
-    dest = codex_skills()
+    dest = resolve_skills_root(args.skills_dir)
     print(f"vibe-coding-install v{version()}")
     print(f"skill root : {SKILL_ROOT}")
     print(f"skills dest: {dest}")
@@ -164,8 +197,14 @@ def main() -> None:
             cmd += ["--module", m]
         for c in args.code:
             cmd += ["--code", c]
+        if args.intent:
+            cmd += ["--intent", args.intent]
         if args.template:
             cmd += ["--template", args.template]
+        if args.skills_dir:
+            cmd += ["--skills-dir", args.skills_dir]
+        if args.skill_location:
+            cmd += ["--skill-location", args.skill_location]
         if args.python != "auto":
             cmd += ["--python", args.python]
         if args.env != "auto":

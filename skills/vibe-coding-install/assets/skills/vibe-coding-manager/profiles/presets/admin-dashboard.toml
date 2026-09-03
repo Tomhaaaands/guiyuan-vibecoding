@@ -1,0 +1,9 @@
+name = "admin-dashboard"
+description = "Admin dashboard / operations console"
+dimensions = { deploy = "saas", data = "relational", runtime = "python", surface = "web" }
+
+red_lines = [
+  "Admin routes require server-side role checks; UI hiding alone is not authorization",
+]
+
+docs_stubs = ["00-system/data-layer.md"]

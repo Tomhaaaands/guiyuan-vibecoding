@@ -1,0 +1,23 @@
+{
+  "intent": "Publish a content site with articles and a newsletter signup, targeted at indie builders.",
+  "notes": "Product surface with an audience and a conversion goal; gold at sentence granularity.",
+  "gold": {
+    "known_facts": [
+      {"id": "k1", "statement": "A content site should publish articles to an audience.", "source": "intent"},
+      {"id": "k2", "statement": "A newsletter signup captures readers on the site.", "source": "intent"},
+      {"id": "k3", "statement": "The target audience is indie builders.", "source": "intent"}
+    ],
+    "assumptions": [
+      {"id": "a1", "statement": "A newsletter provider is available to handle subscriptions.", "confidence": 0.6}
+    ],
+    "options": [
+      {"id": "o1", "statement": "Use a static site generator to publish the content.", "confidence": 0.7}
+    ],
+    "decisions": [
+      {"id": "d1", "statement": "Target indie builders as the primary audience.", "confidence": 0.8}
+    ],
+    "open_questions": [
+      {"id": "q1", "statement": "Clarify the hosting provider and domain to use.", "confidence": 1.0}
+    ]
+  }
+}

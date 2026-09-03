@@ -3,9 +3,9 @@
 
 The kit ships several self-contained payload copies: the manager skill carries a project
 template (assets/project) and a close-loop copy (assets/skills/iteration-close-loop); the
-install skill bundles both skills (assets/skills/*) so it can install/update from inside
-Codex. check_drift detects drift; this script fixes it by copying source -> payload for the
-same SYNC_PAIRS (imported from check_drift to keep one definition), plus the version file.
+install skill bundles both skills (assets/skills/*) so it can install/update from any Agent.
+check_drift detects drift; this script fixes it by copying source -> payload for the same
+SYNC_PAIRS (imported from check_drift to keep one definition), plus the version file.
 
 Usage:
   python tools/sync_copies.py            # propagate source -> payloads, then run check_drift

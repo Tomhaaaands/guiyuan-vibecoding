@@ -16,6 +16,9 @@ delivery → reflection and self-iteration.
 
 Product contract: [docs/product-spec.md](docs/product-spec.md). Architecture and delivery plan:
 [docs/manager-architecture.md](docs/manager-architecture.md) and [docs/roadmap.md](docs/roadmap.md).
+The current independent-product baseline, including optional Private Butler inbox/result integration
+and the single/multi-project management direction, is
+[docs/product-baseline-v0.1.0.md](docs/product-baseline-v0.1.0.md).
 
 ## The problem
 
@@ -49,17 +52,18 @@ heavier, more general tools; this kit deliberately isn't.
 
 ## Why VibeCoding_Manager (differentiators)
 
-1. **Conversation-first, not command-first** — a guided Q&A deploys the full project (modules,
-   routing, red-line stubs, environment, git) in one session. No CLI incantations to learn.
+1. **Conversation-first, not command-first** — tell it in one sentence what you want to build;
+   a deterministic intent map resolves the profile, then one guided confirmation deploys the
+   project (modules, routing, red-line stubs, environment, git) in one session.
 2. **Deterministic gates, not prompt rules** — structure and drift checks are scripts. Red lines
    and pitfalls stay **resident and visible every round**; they never disappear into an archive.
 3. **Three-layer record model** — one-line ledger + module state cards + full archive. History is
    addressable but never preloaded into normal work.
 4. **Hard-budget context compiler** — zero-history startup, field/span retrieval, delta-only
    continuation, and a deterministic 1,800-token target / 2,500-token ceiling.
-5. **Env-aware and git-ready** — reuses your existing Python (or auto-installs one), shares
-   dependencies when possible and creates a project `.venv` when not, then `git init`s and prints
-   the commit command.
+5. **Env-aware and git-ready** — recommends UV for multi-project Python work, reuses your existing
+   Python or auto-installs one, creates a project `.venv`, then `git init`s and prints the commit
+   command. No UV is still fine: standard `python -m venv` is the fallback.
 
 ## Features
 
@@ -81,36 +85,22 @@ heavier, more general tools; this kit deliberately isn't.
 - **Project-type profiles** — built-in presets (`saas` / `c-end` / `vector-db` / `cli-tool`) and
   four composable dimensions (`deploy` / `data` / `runtime` / `surface`) inject per-type modules,
   red-line stubs, constraints, and doc placeholders; custom `.toml` profiles cover the long tail.
-- **Twelve deterministic tools** — build the distributable zip, install skills (with `--doctor`
+- **Twenty-five deterministic tools** — build the distributable zip, install skills (with `--doctor`
   self-check), one-click install, roll up rounds, hydrate docs (keyword + reserved semantic
-  backend), check drift, sync payload copies, generate `llms.txt`, and a working pitfalls→red-lines
-  distillation (other directions stubbed).
-- **Installable as a skill** — `$vibe-coding-install` (explicit-only) installs/updates the kit from
-  inside Codex and can scaffold an existing project; `install.bat` / `install.sh` are the
-  one-command entry outside Codex.
+  backend), check drift, sync payload copies, generate `llms.txt`, a typed authority-artifact
+  store, a deterministic context compiler, a behavior-evaluation harness, labeled-analysis
+  validation/scoring, an isolated provider registry with local fallback, an analysis
+  orchestrator, an analysis-evaluation gate, a cross-artifact consistency check, an
+  analysis-to-authority-artifact generator, a task graph dispatcher, a receipt loop, an
+  experience-candidate loop, an end-to-end MVP walkthrough, and a working pitfalls→red-lines distillation
+  (other directions stubbed).
+- **Installable as a skill** — `$vibe-coding-install` (explicit-only) installs/updates the kit in
+  the current Agent's global skills directory, an explicit shared directory, or a project-local
+  copy; `install.bat` / `install.sh` are the one-command entry outside the Agent.
 
 ## Quick start
 
-### 1. Install by message (primary, Quark-style)
-
-The kit ships as one self-contained zip. Install it in any agent by sending a single message:
-
-```text
-请安装 VibeCoding_Manager Skill
-技能地址：https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
-```
-
-The agent downloads the zip, places the three skills (`iteration-close-loop`,
-`vibe-coding-manager`, `vibe-coding-install`) into its global skills directory, and verifies.
-No account authorization is needed for a public asset. Verify its `.sha256` companion file before
-installation; an update backs up existing skills and restores them if verification fails.
-GitHub is the authoritative source; a Gitee mirror URL and release policy live in
-[docs/release-sources.md](docs/release-sources.md).
-
-Build the zip yourself with `python tools/build_dist.py --verify` (writes
-`dist/vibecoding-manager-<version>.zip`), or use a published release zip.
-
-### 2. Install from the repo (secondary)
+### 1. Install from the repo (primary)
 
 ```bash
 # 1. Get the kit
@@ -122,6 +112,14 @@ install.bat            # Windows
 ./install.sh           # macOS / Linux
 ```
 
+### 2. Install by message (archived)
+
+The published GitHub `v0.1.0` release zip is retired. If you want the one-message flow, build the zip
+yourself with `python tools/build_dist.py --verify` (writes `dist/vibecoding-manager-<version>.zip`
+plus `.sha256` and a manifest), host it where you control it, then send that URL in a message. Verify
+the `.sha256` companion before install; an update backs up existing skills and restores them if
+verification fails. See [docs/release-sources.md](docs/release-sources.md).
+
 ### 3. Use it
 
 Open your project folder (empty or existing), start a new conversation, and invoke:
@@ -130,9 +128,9 @@ Open your project folder (empty or existing), start a new conversation, and invo
 $vibe-coding-manager
 ```
 
-Empty folder → it asks what you're building and scaffolds it. Existing code or a GitHub URL → it
-first produces a read-only workflow assessment. You select `keep`, `map`, or `managed` for each
-workflow before anything is written.
+Empty folder → describe what you want in one sentence; the manager resolves the profile, restates
+it, and scaffolds. Existing code or a GitHub URL → it first produces a read-only workflow
+assessment. You select `keep`, `map`, or `managed` for each workflow before anything is written.
 
 Already installed? Invoke `$vibe-coding-install` anytime to update the skills, run the doctor
 self-check, or adopt/scaffold a project folder.
@@ -149,16 +147,18 @@ evidence-backed optimization bundle and never applies it automatically.
 ```bash
 python skills/vibe-coding-manager/scripts/bootstrap.py <folder> --name <project> \
     [--template default] \
+    [--intent "one-sentence description"] [--dry-run] \
     [--module "name=keywords"] [--code "name=dir"] \
-    [--profile saas|c-end|vector-db|cli-tool|path/to/custom.toml] \
+    [--profile saas|c-end|vector-db|cli-tool|content-site|ecommerce|admin-dashboard|bot|path/to/custom.toml] \
     [--dimension "deploy=saas" --dimension "data=vector-db"] \
     [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
+    [--skills-dir PATH] [--skill-location auto|project|global|skip] [--discover-skills] \
     [--force] [--no-venv] [--no-install-skill]
 ```
 
 | Tool | Purpose |
 | --- | --- |
-| `tools/install_skills.py` | Install skills into `$CODEX_HOME/skills`; `--doctor` self-checks the kit |
+| `tools/install_skills.py` | Install skills into `--skills-dir`, `VIBECODING_SKILLS_HOME`, or Codex fallback; `--discover` lists candidates read-only; `--doctor` self-checks the kit |
 | `tools/one_click_install.py` | One-click install: skills + doctor + optional project scaffold (`install.bat` / `install.sh` wrappers) |
 | `tools/rollup_round.py` | Create an archive round file + insert the changelog row |
 | `tools/hydrate.py` | Keyword-retrieve relevant docs; reserved `--semantic` backend |
@@ -170,6 +170,19 @@ python skills/vibe-coding-manager/scripts/bootstrap.py <folder> --name <project>
 | `tools/workflow_optimize.py` | Propose up to three receipt-backed workflow improvements; user confirmation required |
 | `tools/check_package.py` | Scan tracked source and reachable history for token-like secrets before a public release |
 | `tools/gen_llms_txt.py` | Generate the root `llms.txt` doc index |
+| `tools/artifact_store.py` | Typed authority-artifact store: content-addressed writes, revisioning, idempotency, integrity/reference validation |
+| `tools/context_compiler.py` | Deterministic context compiler: L0/L1 views per phase, hard-budget degradation, delta continuation |
+| `tools/behavior_harness.py` | Behavior-evaluation harness for the local core (store + compiler, plus analysis-label scoring) |
+| `tools/analysis_labels.py` | Validate and score labeled analysis against ground-truth fixtures |
+| `tools/analysis_provider.py` | Provider registry + config + deterministic local fallback (no core import) |
+| `tools/analysis.py` | Analysis orchestrator: intent -> labeled `analysis` authority artifact (idempotent, degradable) |
+| `tools/analysis_eval.py` | Score a provider against sentence-level gold fixtures (bge-m3 semantic default, optional char-bigram) and gate promotion by an aggregate F1 threshold (default 0.25) |
+| `tools/artifact_consistency.py` | Cross-artifact consistency check: missing acceptance, state-without-receipt, supersedes gaps, accepted-but-superseded |
+| `tools/artifact_generate.py` | Turn a labeled analysis artifact into draft product/decision authority artifacts |
+| `tools/task_graph.py` | P4 task graph: dependency readiness, acceptance validation, and next-task dispatch |
+| `tools/receipt_loop.py` | P5 loop: checks -> verdict -> receipts artifact -> task status -> project-state sync |
+| `tools/experience_loop.py` | P6 loop: failed/blocked receipts -> draft `[AI-DRAFT]` experience candidates + shadow red-line evaluation |
+| `tools/mvp_walkthrough.py` | P8 end-to-end MVP: analysis -> artifacts -> dispatch -> receipt -> reflection with budget gate |
 
 ## How we compare
 
@@ -212,10 +225,10 @@ vibecoding_manager/
 
 The kit ships several **self-contained payload copies**: the manager skill carries the project
 template (`assets/project` ↔ `templates/`) and a close-loop copy (for scaffolding new projects),
-and the install skill bundles both skills (so `$vibe-coding-install` can install/update from
-inside Codex). Sources are the repo copies; payloads must stay identical — `tools/check_drift.py`
-gates the 4 sync pairs plus the single-sourced version, and `tools/sync_copies.py` propagates
-source → payload in one command:
+and the install skill bundles both skills (so `$vibe-coding-install` can install/update from any
+Agent). Sources are the repo copies; payloads must stay identical — `tools/check_drift.py` gates
+the 4 sync pairs plus the single-sourced version, and `tools/sync_copies.py` propagates source →
+payload in one command:
 
 ```bash
 python tools/sync_copies.py            # propagate (edit a source, then run this)
@@ -229,6 +242,8 @@ python tools/check_drift.py            # verify gates are green before committin
   token-saving design, and a migration guide (minimal set → standard set → full set).
 - [docs/distillation.md](docs/distillation.md) — the self-iteration distillation loop (four lift
   directions; the pitfalls direction is implemented).
+- [docs/provider-boundary.md](docs/provider-boundary.md) — where a model backend may appear, how it
+  is selected, degraded, idempotent, and gated by the analysis F1 threshold.
 
 ## License
 

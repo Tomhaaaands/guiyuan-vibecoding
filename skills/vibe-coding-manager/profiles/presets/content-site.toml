@@ -1,0 +1,7 @@
+name = "content-site"
+description = "Content site / blog / docs site"
+dimensions = { deploy = "local-tool", data = "files", runtime = "node", surface = "web" }
+
+constraints = [
+  "Use a flat content model until search/editor complexity requires a CMS",
+]

@@ -1,45 +1,32 @@
-# Release Sources
+# Release Sources (archived)
 
-> Authoritative source is GitHub. Domestic users may fall back to the Gitee raw mirror or a GitHub
-> proxy after verifying the same SHA-256.
+> Status: archived (2026-09-03). The GitHub-published `v0.1.0` zip release is retired. The kit is
+> installed from the repository (`git clone` + `install.bat`/`install.sh`) or as a user-built zip
+> that you host yourself. This file documents the retired distribution; it is not an active install
+> source.
 
-## Current public line: 0.1.x
+## Retired published zip (v0.1.0)
 
-The previous `v1.2.0` tag remains a historical development snapshot. New releases start at
-`0.1.0` and continue as `0.1.x` until the product reaches a 1.0 release bar.
-
-## v0.1.0 assets
-
-| Source | URL |
-| --- | --- |
-| GitHub (authoritative) | https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip |
-| GitHub SHA-256 | https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
-| GitHub proxy 1 (gh-proxy.com) | https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip |
-| GitHub proxy 1 SHA-256 | https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
-| GitHub proxy 2 (ghfast.top) | https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip |
-| GitHub proxy 2 SHA-256 | https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip.sha256 |
-
-The Gitee repository and Release are published under `tomhands/vibecoding-manager`. Public web
-access should be verified from a normal browser; some automated environments may receive a 403
-from Gitee's anti-bot layer while the Gitee API still serves the original files. The Gitee raw
-path under `releases/0.1.0/` returned `Access denied` in a browser test, so it is not an install
-source.
-
-Domestic fallback order: `gh-proxy.com` -> `ghfast.top`. Proxy services are third-party and may
-change; always verify the downloaded zip against the published SHA-256.
-
-## Install message
+The public release asset `vibecoding-manager-0.1.0.zip` and its `.sha256` were removed from the GitHub
+release. The install-by-message flow is still valid, but the URL must come from a zip you build and
+host:
 
 ```text
 请安装 VibeCoding_Manager Skill
-技能地址：<URL from the GitHub or Gitee row above>
+技能地址：<URL of a separately hosted vibecoding-manager-<version>.zip>
 ```
 
-## Verification rules
+Build it yourself:
 
-1. Download the zip and its `.sha256` companion file.
-2. Verify that the zip hash matches the published checksum.
-3. Confirm the zip root contains exactly `iteration-close-loop/`, `vibe-coding-manager/`, and
-   `vibe-coding-install/`.
-4. Verify `vibe-coding-install/VERSION` matches `0.1.0`.
-5. Back up existing same-named skills before replacement; restore the backup if verification fails.
+```bash
+python tools/build_dist.py --verify   # writes dist/vibecoding-manager-<version>.zip + .sha256 + manifest
+```
+
+Host that zip where you control it, then send the message above. Verify the `.sha256` companion file
+on install; update backs up existing skills and restores them if verification fails. GitHub proxy
+mirrors only apply to the retired published asset and are no longer referenced.
+
+## Old public line
+
+The earlier `v1.2.0` tag is a historical development snapshot, not a current release. The current
+version line is `0.1.x`.

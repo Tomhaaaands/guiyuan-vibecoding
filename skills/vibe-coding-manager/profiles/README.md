@@ -16,11 +16,23 @@ The skeleton itself stays identical — only the injected content differs.
 | `c-end` | deploy=c-end, data=relational, runtime=python, surface=web | auth/payment modules, payment/PII red lines, compliance stub |
 | `vector-db` | deploy=local-tool, data=vector-db, runtime=python, surface=api-first | kb module, derived-index red lines, vector-layer stub |
 | `cli-tool` | deploy=local-tool, data=files, runtime=python, surface=cli | cli module, local-tool constraints |
+| `content-site` | deploy=local-tool, data=files, runtime=node, surface=web | content-site constraints |
+| `ecommerce` | deploy=saas, data=relational, runtime=python, surface=web | catalog/cart/order payment red lines, data/deployment stubs |
+| `admin-dashboard` | deploy=saas, data=relational, runtime=python, surface=web | admin authorization red line, data-layer stub |
+| `bot` | deploy=local-tool, data=files, runtime=python, surface=api-first | bot secret red line |
 
 The `script` / `plugin` / `page` presets are artifact-oriented: they match what a novice
 actually uploads. In **adopt mode** `bootstrap.py` picks them automatically by fingerprint
 (manifest.json -> plugin, package.json deps -> page, single root script -> script);
-in **scaffold mode** they are offered as the first question ("what are you building?").
+in **scaffold mode** `profiles/intent-map.toml` resolves a free-text description to a preset.
+
+## Intent mapping
+
+`profiles/intent-map.toml` is the deterministic layer for "what are you building?". The Skill
+prompt asks users for one plain sentence, then `bootstrap.py --intent "<description>"` maps it to
+the preset whose signal terms have the highest score. Longer matched signals win; low/medium
+confidence falls back to a plain-language clarification instead of a menu. Add aliases there
+rather than changing prompts, so the same description resolves to the same profile every time.
 
 ## Dimensions (composable, not exhaustive)
 

@@ -19,9 +19,11 @@ Usage:
       [--existing-system NAME] [--compat-policy POLICY] [--system-policy POLICY] \
       [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|path/to.toml] \
       [--module "name=kw1,kw2"] [--code "name=dir"] [--template default] \
+      [--intent "one-sentence project description"] \
       [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
       [--deps auto|commands|skip] [--github <repo-url>] [--push] \
-      [--force] [--no-venv] [--no-install-skill]
+      [--skills-dir PATH] [--skill-location auto|project|global|skip] \
+      [--discover-skills] [--dry-run] [--force] [--no-venv] [--no-install-skill]
 
 Default module catalog (used by --template default or bare --module names):
   web=apps/web · api=apps/api · db=data/db · worker=workers · tests=tests
@@ -36,6 +38,7 @@ Python runtime (--python, default auto):
 Dependency policy (--env, default auto):
   auto: reuse an existing .venv; else `uv venv` (shared dependency cache);
         else project-local `python -m venv`
+  uv:   create the env with uv; auto-install uv when missing and --deps auto
   shared: project .venv with --system-site-packages (sees the base Python's packages)
   isolated: clean project-local .venv (--no-venv equals skip; legacy create/uv map to isolated/auto)
   reuse: only reuse an existing .venv, never create
@@ -46,6 +49,13 @@ Dependency disclosure (--deps, default auto) — always decided with the user BE
   commands: only print the exact commands; never run them
   skip: no dependency handling at all
 
+Skill install (--skill-location, default auto):
+  auto: project-local `.vibecoding-manager/skills/` unless `--skills-dir` or
+        VIBECODING_SKILLS_HOME is set
+  project: always install close-loop into `.vibecoding-manager/skills/`
+  global: install close-loop into an explicit `--skills-dir` or VIBECODING_SKILLS_HOME
+  skip: no skill copy (legacy --no-install-skill alias)
+
 GitHub (--github <url>): set the origin remote (never overwrites an existing origin).
 --push: attempt `git push -u origin HEAD` (user must already be authenticated).
 
@@ -53,6 +63,7 @@ For an existing project, `auto` is intentionally read-only and prints an assessm
 `--mode assess --json` output outside the project, then pass it back to `--mode adopt` with
 the workflow choices the user confirmed.  Adopt never installs dependencies, initializes Git,
 changes business code, or installs global Skills.
+Global Skills are never written without an explicit user-chosen path.
 """
 
 from __future__ import annotations
@@ -79,6 +90,8 @@ FRONTEND_SKELETONS = {
     "admin": SKILL_ROOT / "assets" / "frontend" / "admin",
 }
 PROFILES_DIR = SKILL_ROOT / "profiles"
+INTENT_MAP = PROFILES_DIR / "intent-map.toml"
+VIBECODING_SKILLS_HOME = "VIBECODING_SKILLS_HOME"
 PLACEHOLDER_RE = re.compile(r"\{\{[^}]+\}\}")
 LIST_KEYS = ("modules", "red_lines", "constraints", "docs_stubs", "gitignore_add")
 DEFAULT_MODULES = {
@@ -677,6 +690,42 @@ def _run_quiet(cmd: list[str]) -> tuple[bool, str]:
         return False, ""
 
 
+def _has_uv() -> bool:
+    ok, _ = _run_quiet(["uv", "--version"])
+    return ok
+
+
+def _install_uv() -> tuple[bool, str]:
+    """Best-effort uv install for the auto-dependency path; never required."""
+    if _has_uv():
+        return True, "uv already installed"
+    try:
+        r = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--user", "uv"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if r.returncode == 0 and _has_uv():
+            return True, "uv installed via pip"
+    except (OSError, subprocess.SubprocessError):
+        pass
+    if os.name == "nt":
+        try:
+            r = subprocess.run(
+                ["winget", "install", "-e", "--id", "astral-sh.uv",
+                 "--accept-source-agreements", "--accept-package-agreements"],
+                capture_output=True,
+                text=True,
+                timeout=180,
+            )
+            if r.returncode == 0 and _has_uv():
+                return True, "uv installed via winget"
+        except (OSError, subprocess.SubprocessError):
+            pass
+    return False, "uv install failed; python -m venv remains the fallback"
+
+
 def _gh_cmd() -> list[str]:
     """gh CLI: PATH lookup first, then the standard Windows install location."""
     exe = shutil.which("gh")
@@ -779,16 +828,60 @@ def _install_precommit_gate(root: Path) -> None:
         print(f"  pre-commit gate: installed ({dst.relative_to(root).as_posix()})")
 
 
-def _install_skill(force: bool) -> Path | None:
-    home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
-    dest = home / "skills" / "iteration-close-loop"
+def _known_skill_roots() -> list[tuple[str, Path]]:
+    """Known candidates for read-only discovery. Never a complete registry."""
+    candidates: list[tuple[str, Path]] = []
+    codex_env = os.environ.get("CODEX_HOME")
+    codex = Path(codex_env).expanduser() / "skills" if codex_env else Path.home() / ".codex" / "skills"
+    candidates.append(("Codex", codex))
+    candidates.append(("Claude Code", Path.home() / ".claude" / "skills"))
+    candidates.append(("Cursor", Path.home() / ".cursor" / "skills"))
+    return candidates
+
+
+def _resolve_skills_root(skills_dir: str | None) -> Path | None:
+    if skills_dir:
+        return Path(skills_dir).expanduser().resolve()
+    env = os.environ.get(VIBECODING_SKILLS_HOME)
+    if env:
+        return Path(env).expanduser().resolve()
+    return None
+
+
+def _discover_skill_roots() -> None:
+    print("== known agent skill roots (read-only, not exhaustive) ==")
+    found = False
+    for label, root in _known_skill_roots():
+        status = "exists" if root.exists() else "not found"
+        print(f"  {label}: {root} ({status})")
+        found = found or root.exists()
+    if not found:
+        print("  none found; use --skills-dir <path> for an explicit global directory")
+    else:
+        print("  confirm one path with --skills-dir <path> before writing")
+
+
+def _copy_close_loop_skill(dest: Path, force: bool) -> Path | None:
     if dest.exists() and not force:
         return None
-    dest.mkdir(parents=True, exist_ok=True)
-    (dest / "agents").mkdir(exist_ok=True)
-    shutil.copy2(SKILL_ASSETS / "SKILL.md", dest / "SKILL.md")
-    shutil.copy2(SKILL_ASSETS / "agents" / "openai.yaml", dest / "agents" / "openai.yaml")
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(SKILL_ASSETS, dest)
     return dest
+
+
+def _handle_close_loop_install(root: Path, skills_dir: str | None,
+                               location: str, force: bool) -> tuple[Path | None, str]:
+    if location == "skip":
+        return None, "skipped"
+    explicit_root = _resolve_skills_root(skills_dir)
+    if location == "global" or (location == "auto" and explicit_root):
+        if explicit_root is None:
+            raise ValueError("global skill install requires --skills-dir or VIBECODING_SKILLS_HOME")
+        dest = _copy_close_loop_skill(explicit_root / "iteration-close-loop", force)
+        return dest, f"global skills dir: {explicit_root}"
+    dest = _copy_close_loop_skill(root / ADOPTION_DIR / "skills" / "iteration-close-loop", force)
+    return dest, "project-local skills dir: .vibecoding-manager/skills"
 
 
 def _parse_module(value: str) -> dict:
@@ -806,6 +899,77 @@ def _parse_module(value: str) -> dict:
 def _load_toml(path: Path) -> dict:
     with open(path, "rb") as f:
         return tomllib.load(f)
+
+
+def _load_intent_map() -> dict:
+    try:
+        return _load_toml(INTENT_MAP)
+    except (OSError, tomllib.TOMLDecodeError):
+        return {}
+
+
+def _normalize_intent(text: str) -> str:
+    return re.sub(r"\s+", " ", text.strip().casefold())
+
+
+def _resolve_intent(text: str | None, explicit_profile: str | None) -> dict:
+    """Deterministically map a free-text description to one built-in profile."""
+    if explicit_profile:
+        return {
+            "profile": explicit_profile,
+            "source": "explicit",
+            "signals": [],
+            "score": 100,
+            "confidence": "high",
+            "description": text or "",
+        }
+    normalized = _normalize_intent(text or "")
+    best_profile = "default"
+    best_score = 0
+    second_score = 0
+    best_signals: list[str] = []
+    for profile, spec in _load_intent_map().get("profile", {}).items():
+        profile_score = 0
+        hits: list[str] = []
+        for raw_signal in spec.get("signals", []) or []:
+            signal = raw_signal.strip().casefold()
+            if signal and signal in normalized:
+                hits.append(raw_signal.strip())
+                profile_score += max(3, len(signal))
+        if profile_score > best_score:
+            second_score = best_score
+            best_profile = profile
+            best_score = profile_score
+            best_signals = hits
+        elif profile_score > second_score:
+            second_score = profile_score
+    confidence = (
+        "high"
+        if best_score >= 6 or (best_score >= 3 and second_score == 0)
+        else "medium" if best_score >= 3 else "low"
+    )
+    return {
+        "profile": best_profile,
+        "source": "intent-map",
+        "signals": best_signals,
+        "score": best_score,
+        "confidence": confidence,
+        "description": text or "",
+    }
+
+
+def _write_intent_plan(root: Path, plan: dict) -> Path:
+    state_dir = root / ADOPTION_DIR
+    state_dir.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema_version": 1,
+        "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "description_hash": hashlib.sha256(plan.get("description", "").encode("utf-8")).hexdigest()[:16],
+        **plan,
+    }
+    path = state_dir / "scaffold-plan.json"
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 def _merge_profile(merged: dict, part: dict) -> dict:
@@ -959,6 +1123,8 @@ def _env_preflight(runtime: str) -> list[str]:
     print("== environment preflight (read-only) ==")
     for k, v in tools.items():
         print(f"  {k}: {v or 'missing'}")
+    if runtime == "python" and not tools.get("uv"):
+        print("  note: uv is recommended for Python projects (shared cache + managed Python); .venv still works without it")
     needed = {"python"} if runtime == "python" else {"node"} if runtime == "node" else set()
     missing = [k for k in sorted(needed) if not tools.get(k)]
     print("  needed for this project: " + (", ".join(sorted(needed)) or "none"))
@@ -1107,7 +1273,18 @@ def main() -> None:
                     help="similar-system decision: keep-map|auto-takeover|abandon")
     ap.add_argument("--json", action="store_true", help="print assessment JSON (assess mode only)")
     ap.add_argument("--force", action="store_true", help="overwrite existing management files")
-    ap.add_argument("--no-install-skill", action="store_true", help="skip iteration-close-loop install")
+    ap.add_argument("--intent", default=None,
+                    help="one-sentence project description used by scaffold intent resolution")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="resolve scaffold intent/profile and print the plan without writing")
+    ap.add_argument("--skills-dir", default=None,
+                    help="explicit global skills root; writes only when the user chose it")
+    ap.add_argument("--skill-location", choices=["auto", "project", "global", "skip"], default="auto",
+                    help="auto=project unless --skills-dir/VIBECODING_SKILLS_HOME; "
+                         "project=.vibecoding-manager/skills; global=explicit path; skip=none")
+    ap.add_argument("--discover-skills", action="store_true",
+                    help="list known agent skill roots read-only and exit")
+    ap.add_argument("--no-install-skill", action="store_true", help="alias for --skill-location skip")
     ap.add_argument("--module", action="append", default=[], metavar="name=kw1,kw2",
                     help="business modules (scaffold only; repeatable)")
     ap.add_argument("--code", action="append", default=[], metavar="name=dir",
@@ -1120,19 +1297,28 @@ def main() -> None:
     ap.add_argument("--env", choices=["auto", "shared", "isolated", "reuse", "skip", "create", "uv"],
                     default="auto",
                     help="dependency policy: auto=reuse existing/uv venv/project-local (default); "
-                         "shared=--system-site-packages; isolated=clean local .venv; reuse=existing only; "
-                         "skip=none (legacy create/uv mapped)")
+                         "uv=prefer uv and guide its install; shared=--system-site-packages; "
+                         "isolated=clean local .venv; reuse=existing only; skip=none "
+                         "(legacy create/uv mapped)")
     ap.add_argument("--deps", choices=["auto", "commands", "skip"], default="auto",
                     help="dependency installs: auto=run them (default); commands=print only; skip=none")
     ap.add_argument("--profile", default=None,
-                    help="project-type preset: script|plugin|page|default|saas|c-end|vector-db|cli-tool, "
-                         "or a custom .toml path")
+                    help="project-type preset: script|plugin|page|default|saas|c-end|vector-db|"
+                         "cli-tool|content-site|ecommerce|admin-dashboard|bot, or a custom .toml path")
     ap.add_argument("--dimension", action="append", default=[], metavar="key=value",
                     help="dimension override (repeatable): deploy/data/runtime/surface")
     ap.add_argument("--github", default=None, help="GitHub repo URL to set as origin")
     ap.add_argument("--push", action="store_true", help="attempt initial push after git init/remote")
     ap.add_argument("--no-venv", action="store_true", help="alias for --env skip")
     args = ap.parse_args()
+
+    if args.discover_skills:
+        _discover_skill_roots()
+        return
+    if args.dry_run:
+        plan = _resolve_intent(args.intent, args.profile)
+        print(json.dumps(plan, ensure_ascii=False, indent=2))
+        return
 
     target = Path(args.target).resolve()
     name = args.name or target.name
@@ -1162,6 +1348,10 @@ def main() -> None:
         except ValueError as exc:
             ap.error(str(exc))
         return
+
+    intent_plan = None
+    if mode == "scaffold":
+        intent_plan = _resolve_intent(args.intent, args.profile)
 
     # --- copy management files -------------------------------------------
     copied, skipped = [], []
@@ -1201,6 +1391,8 @@ def main() -> None:
 
     # --- profile + dimensions --------------------------------------------
     profile = args.profile
+    if mode == "scaffold" and not profile and intent_plan:
+        profile = intent_plan["profile"]
     dimensions = list(args.dimension)
     if mode == "adopt":
         profile = profile or DETECT_PROFILE.get(detected["type"])
@@ -1219,6 +1411,10 @@ def main() -> None:
                 "kw": pm.get("keywords", pm["name"]),
                 "code": pm.get("code", ""),
             })
+        if intent_plan and args.intent:
+            intent_path = _write_intent_plan(target, intent_plan)
+            print(f"  intent plan: {intent_path.relative_to(target).as_posix()} "
+                  f"-> {intent_plan['profile']} ({intent_plan['confidence']})")
     profile_created = _apply_profile(target, merged)
 
     if mode == "scaffold":
@@ -1270,12 +1466,25 @@ def main() -> None:
             if args.deps == "commands":
                 venv_status = "commands-only"
                 if python_exe:
-                    install_commands.append(f"{python_exe} -m venv .venv")
+                    if runtime == "python" and not _has_uv():
+                        install_commands.append(
+                            f"uv is recommended: {python_exe} -m pip install --user uv"
+                        )
+                    install_commands.append(
+                        "uv venv .venv" if runtime == "python" else f"{python_exe} -m venv .venv"
+                    )
                 else:
                     install_commands.append("install Python 3.12 (uv python install 3.12 or winget), then python -m venv .venv")
             elif python_exe is not None and env_mode != "skip":
                 try:
+                    uv_note = ""
+                    if env_mode in ("auto", "uv") and args.deps == "auto":
+                        uv_ready, uv_note = _install_uv()
+                        if not uv_ready:
+                            uv_note += " (python -m venv fallback)"
                     venv_status = _handle_venv(target, env_mode, python_exe)
+                    if uv_note:
+                        print(f"  uv: {uv_note}")
                 except (subprocess.CalledProcessError, OSError):
                     venv_status = "failed"
             elif python_exe is None:
@@ -1292,9 +1501,13 @@ def main() -> None:
     github_status = _github_remote(target, args.github or "")
     push_status = _git_push(target) if (args.github and args.push) else "not requested"
 
-    installed = None
-    if not args.no_install_skill:
-        installed = _install_skill(args.force)
+    skill_location = "skip" if args.no_install_skill else args.skill_location
+    skill_dest, skill_note = _handle_close_loop_install(
+        target,
+        args.skills_dir,
+        skill_location,
+        args.force,
+    )
 
     # --- report -----------------------------------------------------------
     print(f"\n{'Adoption' if mode == 'adopt' else 'Deployment'} complete: {target}")
@@ -1340,10 +1553,16 @@ def main() -> None:
     if args.github and args.push:
         print(f"  push: {push_status}")
     print("  commit: git add -A && git commit -m \"chore: init\"")
-    if installed:
-        print(f"  installed skill: {installed}")
+    if skill_dest:
+        try:
+            shown = skill_dest.relative_to(target)
+        except ValueError:
+            shown = skill_dest
+        print(f"  close-loop skill: {shown} ({skill_note})")
+    elif skill_note == "skipped":
+        print("  close-loop skill: skipped")
     else:
-        print("  iteration-close-loop already present, not reinstalled")
+        print("  close-loop skill: already present, not reinstalled")
     if remaining:
         print("  remaining placeholders: " + "、".join(remaining))
     else:

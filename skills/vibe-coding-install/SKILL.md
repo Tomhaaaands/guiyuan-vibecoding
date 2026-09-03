@@ -1,22 +1,33 @@
 ---
 name: vibe-coding-install
-description: One-click installer for the VibeCoding_Manager kit (coding-project manager, repo vibecoding_manager). Distributed as a single zip and installed by sending an agent a "技能地址" message; also installs/updates the iteration-close-loop and vibe-coding-manager skills into $CODEX_HOME/skills, runs a self-check, and can scaffold an existing project folder. Explicit-only: invoke with $vibe-coding-install.
+description: One-click installer for the VibeCoding_Manager kit (coding-project manager, repo vibecoding_manager). Installs/updates the iteration-close-loop and vibe-coding-manager skills into the current agent's global skills directory or an explicit --skills-dir, runs a self-check, and can scaffold an existing project folder. The published GitHub release zip is retired; install from the repo or a user-hosted zip. Explicit-only: invoke with $vibe-coding-install.
 ---
 
 # VibeCoding Manager · 安装与更新
 
-Primary install is a one-message, one-zip flow (Quark-style). Use this skill for install, update,
-self-check, or redeploy of the VibeCoding_Manager kit skills, or to scaffold an existing project
-folder with the iteration system.
+Install, update, self-check, or redeploy the VibeCoding_Manager kit skills, or scaffold an existing
+project folder with the iteration system. The published GitHub `v0.1.0` release zip is retired
+(archived); the convenience path is repo clone + `install.bat`/`install.sh`.
 
-## Primary install — install by message (推荐)
+## Installation
 
-The kit ships as one self-contained zip: `vibecoding-manager-<version>.zip`. The user installs it
-by sending the agent a single message, e.g.:
+### From the repo (recommended)
+
+```bash
+git clone <your-repo-url> vibecoding_manager
+cd vibecoding_manager
+install.bat            # Windows
+./install.sh           # macOS / Linux
+```
+
+### By message (self-hosted zip)
+
+Build the zip with `python tools/build_dist.py --verify` (writes `dist/vibecoding-manager-<version>.zip`
+plus `.sha256` and a manifest), host it where you control it, then send a message:
 
 ```
 请安装 VibeCoding_Manager Skill
-技能地址：https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip
+技能地址：<URL of a separately hosted vibecoding-manager-<version>.zip>
 ```
 
 The agent receiving the message must:
@@ -26,19 +37,14 @@ The agent receiving the message must:
    `iteration-close-loop/`, `vibe-coding-manager/`, `vibe-coding-install/`.
 3. Back up any existing same-named directories, then copy the three directories into the **current agent's global skills directory**
    (install 到全局 skills 目录，确保所有项目可用；不要装到项目级或临时目录).
-4. Verify: each skill has `SKILL.md` + `agents/openai.yaml`; the bundled
-   `vibe-coding-install/VERSION` matches the kit version printed in the zip name.
+4. Verify: each skill has `SKILL.md`; `agents/openai.yaml` is an optional Codex adapter. Check
+   the bundled `vibe-coding-install/VERSION` matches the kit version printed in the zip name.
 5. Report the installed version and that the kit is ready
    (a new project conversation can invoke `$vibe-coding-manager`).
 
-GitHub is the authoritative source. Domestic fallback order:
-
-1. GitHub proxy 1: `https://gh-proxy.com/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
-2. GitHub proxy 2: `https://ghfast.top/https://github.com/Tomhaaaands/vibecoding-manager/releases/download/v0.1.0/vibecoding-manager-0.1.0.zip`
-
-Every mirror must host the exact same zip and `.sha256`; never skip checksum verification. If a
-fallback URL fails or returns a mismatched checksum, try the next one and restore the backup on
-final failure. Gitee raw returned `Access denied` in a browser test and is not an install source.
+Every hosted zip must carry a matching `.sha256`; never skip checksum verification. If the URL fails or
+returns a mismatched checksum, restore the backup. Gitee raw returned `Access denied` in a browser test
+and is not an install source.
 
 **Update**: resend the same message with the newer zip URL — verify the checksum, back up the
 three old directories, replace them, then re-verify. If verification fails, restore the backup.
@@ -46,7 +52,7 @@ three old directories, replace them, then re-verify. If verification fails, rest
 **No account authorization is needed** (unlike Quark); the "并授权账号" clause is not part of the
 VibeCoding_Manager install message.
 
-## Secondary install — from a copy of the repo / inside Codex
+## Secondary install — from a copy of the repo
 
 Use when the user wants to install, update, self-check, or redeploy the skills from the repo, or
 scaffold an existing project folder with the iteration system.
@@ -55,7 +61,9 @@ scaffold an existing project folder with the iteration system.
    - install / update skills only, or
    - also scaffold a target project folder (ask for the folder; default: current directory).
 2. Run the bundled installer (deterministic — do not re-type its steps):
-   - `python <this skill dir>/scripts/install.py` — install/update skills + doctor;
+   - `python <this skill dir>/scripts/install.py [--skills-dir <path>]` — install/update skills + doctor;
+   - `python <this skill dir>/scripts/install.py --discover` — list known agent skill roots
+     read-only before choosing one;
    - add `--target <folder>` to also scaffold that project;
    - add `--force` to overwrite existing skill copies; `--no-doctor` skips the self-check.
 3. Report the outcome: which skills were installed/updated, doctor result, and (when scaffolded)
@@ -64,8 +72,10 @@ scaffold an existing project folder with the iteration system.
 ## Rules
 
 - Explicit-only: never auto-trigger on ordinary tasks; run only when invoked via `$vibe-coding-install`.
-- Primary zip install writes only into the current agent's global skills directory; scaffolding
-  touches only the target folder.
+- Primary zip install writes only into the current agent's global skills directory; if the agent
+  cannot resolve one, ask the user to choose: read-only discovery, an explicit shared directory,
+  or project-local installation under `.vibecoding-manager/skills/`. Scaffolding touches only the
+  target folder.
 - `--target` manages that folder via the installed vibe-coding-manager skill's `bootstrap.py`
-  (pass-through: `--name/--profile/--module/--dimension/--python/--env/--no-venv/--mode/--assessment/--workflow/--existing-system/--compat-policy/--system-policy/--deps/--github/--push`).
+  (pass-through: `--name/--intent/--profile/--module/--dimension/--python/--env/--no-venv/--mode/--assessment/--workflow/--existing-system/--compat-policy/--system-policy/--deps/--github/--push/--skills-dir/--skill-location`).
 - Build the distributable zip with `python tools/build_dist.py --verify` in the repo.

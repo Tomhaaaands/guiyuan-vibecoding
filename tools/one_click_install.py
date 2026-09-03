@@ -9,7 +9,7 @@ Usage:
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
   2. Installs the three kit skills (iteration-close-loop, vibe-coding-manager, vibe-coding-install)
-     into $CODEX_HOME/skills (idempotent; --force overwrites);
+     into --skills-dir, VIBECODING_SKILLS_HOME, or the Codex fallback (idempotent; --force overwrites);
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
   5. Prints next steps.
@@ -58,6 +58,8 @@ def main() -> None:
                     help="business module (repeatable)")
     ap.add_argument("--code", action="append", default=[], metavar="name=dir",
                     help="module code dir (repeatable)")
+    ap.add_argument("--intent", default=None,
+                    help="one-sentence project description used by scaffold intent resolution")
     ap.add_argument("--template", choices=["default"], default=None,
                     help="default template: web + api + db + worker + tests")
     ap.add_argument("--python", default="auto", metavar="auto|system|install|<path>",
@@ -83,12 +85,19 @@ def main() -> None:
     ap.add_argument("--push", action="store_true", help="attempt initial push after git init/remote")
     ap.add_argument("--force", action="store_true", help="overwrite existing skills")
     ap.add_argument("--no-doctor", action="store_true", help="skip the post-install doctor")
+    ap.add_argument("--skills-dir", default=None, help="explicit global skills root")
+    ap.add_argument("--skill-location", choices=["auto", "project", "global", "skip"], default=None,
+                    help="close-loop install location for the scaffolded project")
+    ap.add_argument("--discover", action="store_true", help="list known agent skill roots read-only")
     args = ap.parse_args()
 
     check_python()
+    if args.discover:
+        run([str(INSTALL), "--discover"])
+        return
     print(f"VibeCoding_Manager one-click installer v{version()}")
     print(f"kit root : {ROOT}")
-    print("skills   : $CODEX_HOME/skills (default ~/.codex/skills)")
+    print("skills   : explicit --skills-dir > VIBECODING_SKILLS_HOME > Codex fallback")
     print()
 
     # Diagnostics must not change either the target project or the global skill root.
@@ -103,10 +112,16 @@ def main() -> None:
         run(assess)
         return
 
-    run([str(INSTALL), *(["--force"] if args.force else [])])
+    install_cmd = [str(INSTALL), *(["--force"] if args.force else [])]
+    if args.skills_dir:
+        install_cmd += ["--skills-dir", args.skills_dir]
+    run(install_cmd)
 
     if not args.no_doctor:
-        run([str(INSTALL), "--doctor"])
+        doctor_cmd = [str(INSTALL), "--doctor"]
+        if args.skills_dir:
+            doctor_cmd += ["--skills-dir", args.skills_dir]
+        run(doctor_cmd)
 
     if args.target:
         bootstrap_args = [str(BOOTSTRAP), args.target]
@@ -120,8 +135,14 @@ def main() -> None:
             bootstrap_args += ["--module", m]
         for c in args.code:
             bootstrap_args += ["--code", c]
+        if args.intent:
+            bootstrap_args += ["--intent", args.intent]
         if args.template:
             bootstrap_args += ["--template", args.template]
+        if args.skills_dir:
+            bootstrap_args += ["--skills-dir", args.skills_dir]
+        if args.skill_location:
+            bootstrap_args += ["--skill-location", args.skill_location]
         if args.python != "auto":
             bootstrap_args += ["--python", args.python]
         if args.env != "auto":
