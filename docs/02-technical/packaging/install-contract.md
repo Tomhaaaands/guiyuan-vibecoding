@@ -45,6 +45,14 @@ the output, so the page opens directly with `file://` and does not require port 
 server, or a live API. Markdown, code, and Git remain authoritative; `status.html` is disposable
 and should stay gitignored.
 
+## Release artifact loop (decision 2026-09-05)
+
+一个版本只创建一个 annotated tag 和一个同名 GitHub Release。GitHub 自动提供 source zip/tar.gz；
+VCM 额外上传安装 zip、`.sha256` 和 `.manifest.json`。发布顺序固定为：安全闸门 → QA →
+`release_prepare.py`（版本、clean worktree、构建、哈希）→ tag → push commit/tag →
+`publish_release.py --publish` → 远端回读资产、tag、draft 状态和安装包哈希 → 写 RELEASE anchor。
+发布工具默认 dry-run，避免重复创建 Release；`--publish` 是唯一外部写操作开关。
+
 ## MCP trigger conditions (closes R18)
 
 The runtime stays CLI/script-first and does not add an MCP server yet. MCP becomes a channel only

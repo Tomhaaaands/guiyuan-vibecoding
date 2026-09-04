@@ -145,13 +145,16 @@ def main() -> int:
         results.append(_run("delivery:architecture", [PY, str(ROOT / "tools" / "architecture_audit.py"), ".", "--json"]))
     if "delivery:package" not in skip:
         results.append(_run("delivery:package", [PY, str(ROOT / "tools" / "check_package.py")]))
+    if "delivery:security" not in skip:
+        results.append(_run("delivery:security", [PY, str(ROOT / "tools" / "git_safety_gate.py")]))
     if args.coverage:
         results.append(_coverage_gate())
     if args.frontend:
         results.append(_frontend_gate())
 
     blocking = [r for r in results if r["name"] in ("unittest", "behavior", "delivery:drift",
-                                                    "delivery:build", "delivery:architecture", "delivery:package")]
+                                                    "delivery:build", "delivery:architecture", "delivery:package",
+                                                    "delivery:security")]
     failed = [r for r in blocking if not r["ok"]]
 
     report = {

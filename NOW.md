@@ -1,13 +1,14 @@
 # NOW - Guiyuan Vibecoding state card (2026-09-05)
 
 ## Focus
+- R69 secure-git-release-loop: scaffold/adopt now materializes profile-aware `.gitignore`; staged
+  `git_safety_gate.py` is a fail-closed pre-commit/CI/QA gate; release preparation and remote asset
+  verification are scripted as one-tag/one-Release flow. Existing cache/dist history was removed
+  from the index while preserving local files.
 - R67 functional-module-directory: 新增面向人的中文功能模块目录与 `functionalModules` 数据块；status.html 直接引用，PB 明确为可选 provider 桥；无 PB 独立 QA 与 suanming_os 虚拟接管渲染均通过。
 - R66 registry-confirmation-anchors: scaffold now creates a topology-independent machine layer;
   registry indexes human PRD/acceptance/technical docs and immutable REQ/PLAN/QA/RELEASE anchors
   preserve user confirmations with hashes.
-- R65 composable-templates: 四种项目拓扑、三档规模与能力 Overlay 已接入 scaffold；生成项目携带 manifest/template lock，工具通过语义 artifact 映射路径。
-- R62 static-project-home-assets: 修复直接打开 `templates/guiyuan-vibecoding-home.html` 时背景图相对路径失效；模板旁补齐资源副本并同步安装载荷。R61 的静态 `status.html` 仍由 bootstrap / rollup_round 自动生成，不依赖 8010 监听。
-- R60 guiyuan-lifecycle-close: 对外 Skill 全量迁移为 `guiyuan-*`；Agent 原生安装适配器已覆盖预检/安装/更新/卸载，卸载后残留检查与三阶段协议已同步到内部版和发布载荷。
 - R63 pb-similarity: PB 已提供 `guiyuan_butler_similarity` v1；VCM 桥与 `hydrate --semantic`
   已改为真实 MCP 调用，超过 PB 字节预算或服务不可用时仍回退关键词。
 - R64 pb-embedding-ownership: `analysis_eval --mode semantic` 也已改为 PB

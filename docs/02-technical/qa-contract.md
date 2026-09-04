@@ -20,7 +20,7 @@ Guiyuan Vibecoding 把“验证”分成两层，职责与分发边界不同：*
 | --- | --- | --- |
 | 单元 | `artifact_store` / `context_compiler` / `context_budget` / `analysis` / `analysis_provider` / `analysis_labels` / `artifact_consistency` / `artifact_generate` / `task_graph` / `receipt_loop` / `experience_loop` / `mvp_walkthrough` | `python -m unittest discover -s tests -t .` |
 | 行为 | `behavior_harness.py` 的 P0-P8 场景 | 随 `run_qa.py` 一起跑；也可单跑 `python tools/behavior_harness.py` |
-| 交付 | `build_dist --verify` / `check_drift` / `architecture_audit` / `check_package` / `sync_copies --dry-run` / `gen_llms_txt` | 均被 `run_qa.py` 聚合 |
+| 交付 | `build_dist --verify` / `check_drift` / `architecture_audit` / `check_package` / `git_safety_gate` / `sync_copies --dry-run` / `gen_llms_txt` | 均被 `run_qa.py` 聚合 |
 | 安装 | `install_skills.py` 与发布版 `install.py` 的事务化回滚 | `tests/test_install.py` |
 
 CLI 工具（build_dist、check_package、gen_llms_txt、architecture_audit、sync_copies）通过子进程调用

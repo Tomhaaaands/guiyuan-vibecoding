@@ -71,6 +71,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -124,6 +125,17 @@ ENV_TEMPLATES = {
     "app": ["DATABASE_URL=", "SECRET_KEY=", "API_KEY=", "PORT=8000"],
     "generic": ["SECRET_KEY=", "API_KEY="],
 }
+
+# The project template carries this helper so scaffold/adopt work without importing
+# VCM's repository-internal package. Load it without mutating ``sys.path``.
+ensure_gitignore = None
+_gi_path = ASSETS / "tools" / "gitignore_profiles.py"
+if _gi_path.is_file():
+    _gi_spec = importlib.util.spec_from_file_location("_guiyuan_gitignore_profiles", _gi_path)
+    if _gi_spec and _gi_spec.loader:
+        _gi_mod = importlib.util.module_from_spec(_gi_spec)
+        _gi_spec.loader.exec_module(_gi_mod)
+        ensure_gitignore = _gi_mod.ensure
 
 # Existing projects are never converted in one step.  These groups are the only
 # management surfaces Guiyuan Vibecoding can own; source code is deliberately
@@ -1278,7 +1290,7 @@ def _inject_constraints(agents_path: Path, constraints: list[str]) -> None:
     agents_path.write_text("\n".join(out) + "\n", encoding="utf-8")
 
 
-def _apply_profile(target: Path, merged: dict) -> list[str]:
+def _apply_profile(target: Path, merged: dict, template_spec: dict | None = None) -> list[str]:
     """Inject profile content: constraints, red-line stub, doc stubs, gitignore additions."""
     created: list[str] = []
     if merged.get("constraints"):
@@ -1304,7 +1316,20 @@ def _apply_profile(target: Path, merged: dict) -> list[str]:
             p.write_text(f"# {title}\n\n> Placeholder — fill in per the project profile.\n", encoding="utf-8")
             created.append(stub)
     gi = target / ".gitignore"
-    if merged.get("gitignore_add") and gi.exists():
+    spec = template_spec or {}
+    if ensure_gitignore:
+        had_gitignore = gi.exists()
+        changed = ensure_gitignore(
+            gi,
+            topology=spec.get("topology"),
+            scale=spec.get("scale"),
+            capabilities=spec.get("capabilities", []),
+            extra=merged.get("gitignore_add", []),
+            replace=not gi.exists(),
+        )
+        if changed:
+            created.append(".gitignore" if not had_gitignore else ".gitignore (profile overlay)")
+    elif merged.get("gitignore_add") and gi.exists():
         existing = gi.read_text(encoding="utf-8")
         add = [x for x in merged["gitignore_add"] if x not in existing]
         if add:
@@ -1715,7 +1740,7 @@ def main() -> None:
                   f"-> {intent_plan['profile']} ({intent_plan['confidence']})")
     if template_spec:
         _merge_profile(merged, template_spec.get("profile", {}))
-    profile_created = _apply_profile(target, merged)
+    profile_created = _apply_profile(target, merged, template_spec)
 
     if mode == "scaffold":
         _fill_routing_tables(target, modules)

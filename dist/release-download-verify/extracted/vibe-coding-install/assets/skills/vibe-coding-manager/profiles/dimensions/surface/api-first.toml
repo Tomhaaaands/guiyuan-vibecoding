@@ -1,6 +1,0 @@
-name = "api-first"
-description = "API-first surface"
-
-constraints = [
-  "api.md is the only interface authority; frontends consume the contract",
-]

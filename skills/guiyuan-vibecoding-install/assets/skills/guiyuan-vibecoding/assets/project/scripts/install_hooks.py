@@ -4,8 +4,8 @@
 Usage:
   python scripts/install_hooks.py
 
-Every commit then runs `tools/check_drift.py`; a failing drift check blocks the
-commit (bypass: `git commit --no-verify`).
+Every commit then runs `tools/git_safety_gate.py` followed by `tools/check_drift.py`; a failing
+check blocks the commit (Git's `--no-verify` remains an explicit emergency escape hatch).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ def main() -> int:
         return 1
     shutil.copy2(SRC, DST)
     print(f"[gate] pre-commit installed: {DST}")
-    print("       every commit now runs tools/check_drift.py (bypass: git commit --no-verify)")
+    print("       every commit runs staged safety + drift checks (bypass: git commit --no-verify)")
     return 0
 
 

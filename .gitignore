@@ -1,3 +1,37 @@
+# Common generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+build/
+dist/
+out/
+.tmp/
+.cache/
 .qa/
-/.preview/
-/status.html
+.preview/
+status.html
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local credentials and data
+credentials/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db

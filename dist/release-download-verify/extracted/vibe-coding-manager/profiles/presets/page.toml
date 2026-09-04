@@ -1,3 +1,0 @@
-name = "page"
-description = "Web page / frontend app"
-dimensions = { deploy = "local-tool", data = "files", surface = "web", runtime = "node" }

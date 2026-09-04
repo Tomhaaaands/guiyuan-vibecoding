@@ -1,5 +1,0 @@
-interface:
-  display_name: "VibeCoding Manager"
-  short_description: "Put any coding project under local iteration management — adopt an existing repo or scaffold a new one (explicit $vibe-coding-manager only)"
-policy:
-  allow_implicit_invocation: false

@@ -1,11 +1,16 @@
 #!/bin/sh
-# Guiyuan Vibecoding pre-commit gate: run the project's drift checks before every commit.
+# Guiyuan Vibecoding pre-commit gate: fail closed on staged secrets/artifacts, then drift.
 # Installed by scripts/install_hooks.py (or automatically by the bootstrap scaffold).
 # Bypass only when you know what you're doing: git commit --no-verify
 
 PY=python3
 command -v python3 >/dev/null 2>&1 || PY=python
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+
+if [ -f "$ROOT/tools/git_safety_gate.py" ] && ! "$PY" "$ROOT/tools/git_safety_gate.py"; then
+  echo "[gate] staged safety check failed - remove secrets/cache/build artifacts and re-stage."
+  exit 1
+fi
 
 if [ ! -f "$ROOT/tools/check_drift.py" ]; then
   exit 0

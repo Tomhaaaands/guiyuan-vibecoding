@@ -1,7 +1,0 @@
-name = "python"
-description = "Python runtime"
-
-constraints = [
-  "Pin the Python version (.python-version / pyproject.toml)",
-  "Dependencies go into requirements.txt or pyproject.toml",
-]

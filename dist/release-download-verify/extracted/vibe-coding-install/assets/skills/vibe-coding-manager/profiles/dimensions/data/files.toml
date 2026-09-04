@@ -1,7 +1,0 @@
-name = "files"
-description = "File/asset storage first"
-
-constraints = [
-  "Assets live on local disk; no OSS dependency",
-  "Path helpers are centralized; no hand-rolled paths",
-]
