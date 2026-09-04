@@ -8,6 +8,7 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R67 | 09-05 | functional-module-directory | 新增中文功能模块目录与 status.html 数据引用；PB 明确仅 provider 桥且无 PB 独立 QA、虚拟 suanming_os 接管渲染、发布包完整性均通过 | [r67](archive/2026-09-05-r67.md) |
 | R66 | 09-05 | registry-confirmation-anchors | scaffold now creates a topology-independent machine layer and generated manifest registry; project_registry indexes human PRD/acceptance/technical docs, while immutable REQ/PLAN/QA/RELEASE anchors preserve user confirmation with hashes; 170 tests, check_drift and distribution verification pass | [r66](docs/04-workflow/archive/2026-09-05-r66.md) |
 
 ## 2026-09-04

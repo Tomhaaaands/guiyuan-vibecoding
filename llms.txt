@@ -17,6 +17,7 @@
 ## 00-system
 
 - [fact-ownership.md](docs/00-system/fact-ownership.md): Fact ownership — which manager owns which memory
+- [functional-module-directory.md](docs/00-system/functional-module-directory.md): 功能模块目录
 - [manager-architecture.md](docs/00-system/manager-architecture.md): Guiyuan Vibecoding cognitive and execution architecture
 
 ## 01-product

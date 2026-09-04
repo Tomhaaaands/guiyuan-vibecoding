@@ -1,6 +1,7 @@
 # NOW - Guiyuan Vibecoding state card (2026-09-05)
 
 ## Focus
+- R67 functional-module-directory: 新增面向人的中文功能模块目录与 `functionalModules` 数据块；status.html 直接引用，PB 明确为可选 provider 桥；无 PB 独立 QA 与 suanming_os 虚拟接管渲染均通过。
 - R66 registry-confirmation-anchors: scaffold now creates a topology-independent machine layer;
   registry indexes human PRD/acceptance/technical docs and immutable REQ/PLAN/QA/RELEASE anchors
   preserve user confirmations with hashes.

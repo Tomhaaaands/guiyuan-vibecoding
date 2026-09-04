@@ -82,6 +82,8 @@
   .tabs button.active{background:var(--card);color:var(--teal-d);box-shadow:0 2px 8px rgba(60,50,30,.08);}
   .tabpane{display:none;}.tabpane.active{display:block;}
   .arch-note{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .func-directory{margin:0 0 18px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.55)}
+  .func-title{font-weight:700;margin-bottom:10px}.func-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}.func-card{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:10px;background:var(--paper);color:var(--ink);text-decoration:none}.func-card b{font-size:13px}.func-card span{font-size:12px;color:var(--muted)}.func-source{margin-top:10px;font-size:12px}
   .empty{border:1.5px dashed var(--line);border-radius:16px;background:var(--card);padding:44px 20px;text-align:center;color:var(--muted);}
   .empty .big{font-size:17px;color:var(--ink);font-weight:700;margin-bottom:6px;}
   .empty .hint{font-size:13px;}
@@ -317,6 +319,7 @@
 
     <div class="tabpane active" id="tab-arch">
       <p class="arch-note">左侧为真实分层，点模块在右侧看职责 / 步骤 / 本地文档（移动端从底部弹出）。沉淀层回写认知层形成闭环。</p>
+      <div class="func-directory" id="functionalDirectory"></div>
       <div class="arch-layout">
         <div class="arch-left" id="archStack"></div>
         <div class="arch-detail" id="archDetail"><button class="sheet-close" id="archClose">×</button><div id="archDetailBody"></div></div>
@@ -395,7 +398,7 @@
  * 派生逻辑见 docs/02-technical/project-home-blueprint.md
  *  - identity : README H1 明确名优先，文件夹名兜底；version 取项目 VERSION
  *  - installed: 生成器探测 .guiyuan-vibecoding/ 、.codex/hooks.json(vcm)、技能目录等标记
- *  - archLayers / modules / roadmap / principleFlow / docTree 均由权威文档与目录扫描派生
+ *  - archLayers / modules / functionalModules / roadmap / principleFlow / docTree 均由权威文档与目录扫描派生
  *  - 空项目：以下数组留空，页面自动显示“暂未检测到项目”，缺字段显示 “--”
  * =================================================================================== */
 var PROJECT = {
@@ -566,6 +569,8 @@ var PROJECT = {
     /* ===== 架构（左右；移动端底部弹层） ===== */
     var stack=document.getElementById("archStack"),detailBody=document.getElementById("archDetailBody"),
         detail=document.getElementById("archDetail"),mask=document.getElementById("sheetMask");
+    var fd=document.getElementById("functionalDirectory"), fmods=PROJECT.functionalModules||[];
+    if(fd){fd.innerHTML=fmods.length?'<div class="func-title">功能模块目录</div><div class="func-grid">'+fmods.map(function(m){return '<a class="func-card" href="'+(m.entry||'#')+'" target="_blank" rel="noopener"><b>'+dash(m.name)+'</b><span>'+dash(m.plain)+'</span></a>';}).join("")+'</div><div class="func-source"><a href="docs/00-system/functional-module-directory.md" target="_blank">查看完整目录与结构化数据 ↗</a></div>':"";}
     var modMap={};
     function closeSheet(){detail.classList.remove("open");mask.classList.remove("open");}
     document.getElementById("archClose").addEventListener("click",closeSheet);

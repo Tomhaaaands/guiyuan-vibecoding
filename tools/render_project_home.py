@@ -287,6 +287,45 @@ def _principle_flow() -> list[dict]:
     ]
 
 
+def _functional_modules(root: Path) -> list[dict]:
+    """Read the human-facing functional directory's embedded JSON data block."""
+    candidates = (
+        root / "docs" / "00-system" / "functional-module-directory.md",
+        root / "docs" / "04-workflow" / "functional-module-directory.md",
+    )
+    text = next((_read(path) for path in candidates if path.is_file()), "")
+    match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.S)
+    if not match:
+        defaults = [
+            ("intake", "项目接入与生命周期", "把项目接入归园流程", "tools/bootstrap.py"),
+            ("analysis", "需求接收与分析", "把想法整理成可确认的事实与选择", "tools/analysis.py"),
+            ("brain", "权威工件与上下文", "只读取必要的项目事实，控制上下文成本", "tools/context_compiler.py"),
+            ("planning", "规划与任务编排", "按依赖选出下一件能做的事", "tools/task_graph.py"),
+            ("execution", "执行、验证与交付", "做完就测试并留下回执", "tools/receipt_loop.py"),
+            ("reflection", "反思与经验回流", "把踩过的坑沉淀成可复用做法", "tools/experience_loop.py"),
+        ]
+        return [{"id": i, "name": n, "plain": p, "entry": e if (root / e).is_file() else "", "docs": []} for i, n, p, e in defaults]
+    try:
+        value = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return []
+    modules = value.get("functionalModules") if isinstance(value, dict) else None
+    if not isinstance(modules, list):
+        return []
+    result = []
+    for item in modules:
+        if not isinstance(item, dict) or not item.get("id") or not item.get("name"):
+            continue
+        entry = str(item.get("entry", ""))
+        result.append({
+            "id": str(item["id"]), "name": str(item["name"]),
+            "plain": str(item.get("plain", "")), "entry": entry,
+            "docs": [["功能目录", "docs/00-system/functional-module-directory.md"]]
+            + ([["主要入口", entry]] if entry else []),
+        })
+    return result
+
+
 def build_project(root: Path, agent: str, rounds: int) -> dict:
     managed, layers = _managed(root)
     changelog = _changelog_rows(root, rounds)
@@ -297,7 +336,7 @@ def build_project(root: Path, agent: str, rounds: int) -> dict:
     return {
         "githubVibe": origin if "github.com" in origin else "#", "githubButler": "#", "installed": managed,
         "identity": {"title": _project_title(root), "desc": _first_sentence(_read(root / "README.md")), "address": "./", "addressLabel": "./（本地项目，相对路径）", "version": _project_version(root), "versionNote": "来自项目 VERSION / manifest", "iter": " · ".join(x for x in (date_match.group(0) if date_match else "", latest_round) if x), "internal": f"{root.name} · {branch or '未绑定 Git 分支'}"},
-        "archLayers": _arch_layers(root), "modules": _module_rows(root, changelog), "roadmap": _roadmap_rows(root), "principleFlow": _principle_flow(), "docTree": _doc_tree(root),
+        "archLayers": _arch_layers(root), "modules": _module_rows(root, changelog), "functionalModules": _functional_modules(root), "roadmap": _roadmap_rows(root), "principleFlow": _principle_flow(), "docTree": _doc_tree(root),
         "meta": {"managed": managed, "layers": layers, "generatedAt": datetime.now().isoformat(timespec="minutes")},
     }
 
