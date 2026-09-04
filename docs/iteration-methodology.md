@@ -98,7 +98,7 @@ skills delegate to, and it ships as repo-internal `tools/` helpers (not the mana
 | Phase | Engine | Tool | Acceptance |
 | --- | --- | --- | --- |
 | P1 context | L0/L1 views + hard token budget | `context_compiler.py`, `context_budget.py` | zero-history startup; target 1.8k / ceiling 2.5k |
-| P2 analysis | intent -> labeled facts/assumptions/options/decisions/questions | `analysis.py`, `analysis_provider.py`, `analysis_eval.py` | ambiguity becomes labeled; `local-fallback` ~0.169 vs real backend ~0.299 (bge-m3 similarity) |
+| P2 analysis | intent -> labeled facts/assumptions/options/decisions/questions | `analysis.py`, `analysis_provider.py`, `analysis_eval.py` | ambiguity becomes labeled; semantic scoring is delegated to PB (local-fallback remains the deterministic baseline) |
 | P3 artifacts | labeled analysis -> draft authority artifacts + consistency | `artifact_generate.py`, `artifact_consistency.py` | generated product/decision artifacts pass missing-acceptance/state-without-receipt/supersedes checks |
 | P4 tasks | dependency graph, readiness, next-task dispatch | `task_graph.py` | the manager can pick the next executable task without a board |
 | P5 delivery | checks -> verdict -> receipt -> state sync | `receipt_loop.py` | a task reaches delivered only with a receipt; fail repairs, no-budget blocks |
@@ -132,6 +132,19 @@ The one-line conclusion must stand alone: what changed, why, and how it was veri
 - archive file naming `YYYY-MM-DD-rNN.md`; pre-numbering history by date;
 - red lines / pitfalls / key decisions never archived;
 - use `tools/rollup_round.py` to generate archive + insert the ledger row in one step.
+
+### 6.3 Four user-confirmation gates
+
+Every requirement loop has four explicit decision points. The human sees the evolving product or
+technical document; the machine records only the decision, references, hashes and next state:
+
+1. **REQ** — turn the sentence into a scoped PRD/technical need and confirm the interpretation;
+2. **PLAN** — confirm the dependency-ordered execution plan and acceptance checks;
+3. **QA** — confirm verification evidence, known pitfalls and any remaining blocker;
+4. **RELEASE** — confirm packaging, changelog/state back-sync, and readiness for `get`/`push`.
+
+Use `tools/anchor.py` to write immutable records under `.guiyuan-vibecoding/anchors/`. Anchors are
+evidence of consent, not a replacement for human docs, NOW, roadmap or receipts.
 
 ## 7. Goal-locking
 
@@ -193,7 +206,7 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | Tool | Responsibility | Trigger |
 | --- | --- | --- |
 | `tools/rollup_round.py` | archive volume + ledger row | every round closure |
-| `tools/hydrate.py` | keyword retrieval; reserved `--semantic` backend | before work |
+| `tools/hydrate.py` | keyword retrieval; PB-backed `--semantic` backend | before work |
 | `tools/context_budget.py` | estimate selected context; block hard-ceiling regressions | every full drift check / runtime assembly |
 | `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
 | `tools/check_drift.py` | markers + links + startup budget + distribution sync | periodic / closure |
@@ -272,5 +285,5 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 - tool changes -> sync template copies and re-run tests;
 - the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
   consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.
-  Distillation reads project archives only — no Private_butler dependency;
+  Distillation reads project archives only — no Guiyuan Butler dependency;
 - every round ends with: changelog row + archive volume + NOW.md update.

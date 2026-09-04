@@ -1,0 +1,4 @@
+id = "content-pipeline"
+add_dirs = ["data/content"]
+docs_stubs = ["01-product/content-pipeline/acceptance.md", "02-technical/content-pipeline/technical-spec.md"]
+

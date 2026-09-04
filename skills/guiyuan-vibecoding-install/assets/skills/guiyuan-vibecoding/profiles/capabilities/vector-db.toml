@@ -1,0 +1,5 @@
+id = "vector-db"
+add_dirs = ["data/vector"]
+docs_stubs = ["02-technical/vector-db/technical-spec.md"]
+red_lines = ["Keep vector indexes derived and rebuildable; source records remain authoritative."]
+

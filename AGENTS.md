@@ -33,7 +33,9 @@ use a one-line answer/verification plan.
 | guided bootstrap / scaffold / one-click deploy | [skills/guiyuan-vibecoding/SKILL.md](skills/guiyuan-vibecoding/SKILL.md) | `skills/guiyuan-vibecoding/` |
 | iteration close-out / changelog / archive / round wrap-up | [skills/guiyuan-iteration-close-loop/SKILL.md](skills/guiyuan-iteration-close-loop/SKILL.md) | `skills/guiyuan-iteration-close-loop/` |
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
+| registry / confirmation anchor / four gates | [docs/02-technical/project-registry-anchor-contract.md](docs/02-technical/project-registry-anchor-contract.md) | `tools/project_registry.py`, `tools/anchor.py` |
 | project-type profiles / presets / dimensions | `skills/guiyuan-vibecoding/profiles/README.md` | `skills/guiyuan-vibecoding/profiles/` |
+| template contract / topology / manifest / scale / capability overlay | [docs/02-technical/template-contract.md](docs/02-technical/template-contract.md), [skills/guiyuan-vibecoding/profiles/README.md](skills/guiyuan-vibecoding/profiles/README.md) | `skills/guiyuan-vibecoding/scripts/bootstrap.py`, `tools/project_manifest.py` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
 | QA / testing / self-check | [docs/02-technical/qa-contract.md](docs/02-technical/qa-contract.md) | `tools/run_qa.py`, `tests/`, `tools/selfqa.py` |
 | project hook / SessionStart / agent scope | [docs/02-technical/project-hook.md](docs/02-technical/project-hook.md), [docs/02-technical/agent-hook-methods.md](docs/02-technical/agent-hook-methods.md) | `tools/install_project_hook.py`, `tools/vcm_session_hook.py`, `.codex/hooks.json` |

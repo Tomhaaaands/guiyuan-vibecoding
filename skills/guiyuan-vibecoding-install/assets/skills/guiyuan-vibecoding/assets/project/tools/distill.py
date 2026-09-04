@@ -13,7 +13,7 @@ are stubs pending their own work.
   promote     私有 → 共性：lift a reusable lesson from one project into the shared kit. (stub)
 
 Distillation reads the project's own archive/state files only. It does NOT depend on
-Private_butler or any external memory/embedding service — that coupling was a mistake and is removed.
+Guiyuan Butler or any external memory/embedding service — that coupling was a mistake and is removed.
 """
 
 from __future__ import annotations
@@ -22,6 +22,8 @@ import argparse
 import re
 import sys
 from pathlib import Path
+
+from project_manifest import artifact_path, root_path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -71,10 +73,10 @@ def _source_root(source: str | None) -> Path:
 
 def _scan_files(root: Path) -> list[Path]:
     files: list[Path] = []
-    archive = root / "docs" / "04-workflow" / "archive"
+    archive = artifact_path(root, "archive", must_exist=True)
     if archive.is_dir():
         files.extend(sorted(archive.glob("*.md")))
-    tech = root / "docs" / "02-technical"
+    tech = root_path(root, "human_docs", "docs") / "02-technical"
     if tech.is_dir():
         files.extend(sorted(tech.glob("*/iteration.md")))
     return files
@@ -123,7 +125,7 @@ def run_pitfalls(root: Path, limit: int, apply: bool) -> None:
         line = f"- [AI-DRAFT] {excerpt}  (from {rel}:{i}, matched “{tok}”)"
         print(line)
         rel_lines.append(line)
-    red = root / "docs" / "00-system" / "constitution" / "red-lines.md"
+    red = artifact_path(root, "red_lines")
     if apply:
         draft = red.with_name("red-lines.draft.md")
         draft.parent.mkdir(parents=True, exist_ok=True)
@@ -163,7 +165,7 @@ def main() -> None:
     print(f"distill/{args.direction}: {meta['desc']}")
     print(f"  inputs : {', '.join(meta['inputs'])}")
     print(f"  output : {meta['output']}")
-    print("  status : stub — implement next; not blocked on Private_butler")
+    print("  status : stub — implement next; not blocked on Guiyuan Butler")
 
 
 if __name__ == "__main__":

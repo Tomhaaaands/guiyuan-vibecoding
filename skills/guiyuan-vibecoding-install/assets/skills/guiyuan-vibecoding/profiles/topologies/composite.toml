@@ -1,0 +1,11 @@
+id = "composite"
+version = "1.0.0"
+topology = "composite"
+runtime = ["python", "node"]
+surface = ["web", "api-first"]
+core_dirs = ["apps", "tests"]
+
+[paths]
+code = ["apps"]
+tests = ["tests"]
+

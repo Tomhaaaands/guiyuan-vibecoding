@@ -2,7 +2,27 @@
 
 Profiles inject **content and constraints per project type** into the scaffold: extra routing
 rows, red-line stubs, technical constraints, doc placeholders, and .gitignore additions.
-The skeleton itself stays identical — only the injected content differs.
+Topology templates additionally choose the code layout; the shared Guiyuan governance skeleton
+remains stable.
+
+## Composable topology templates
+
+Scaffold can combine one topology, one scale, and repeatable capability overlays:
+
+```bash
+python scripts/bootstrap.py TARGET --mode scaffold --template web-app --scale medium \
+  --capability auth --capability worker
+```
+
+Built-in topologies live under `topologies/`: `python-service`, `web-app`, `monorepo`, `cli`, and
+`composite`. Scales (`small`, `medium`, `large`) add only the directories appropriate to the
+selected size. Capability files under `capabilities/` add directories, document stubs, and
+red-line constraints. A generated project records the resolved layout in
+`.guiyuan-vibecoding/project-manifest.toml` and its source identity in `template.lock.toml`.
+
+The manifest is the machine-facing path adapter: tools resolve semantic artifacts such as
+`project-state`, `changelog`, `roadmap`, and `red-lines` through it. A project may therefore
+change its physical directory layout without changing the iteration contract.
 
 ## Built-in presets
 

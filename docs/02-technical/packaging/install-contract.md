@@ -14,7 +14,7 @@ Guiyuan 自有 Skill 包整体事务化替换；用户修改过的组件不覆�
 Guiyuan 内容；旧名称仅作为迁移识别，不得据名称删除其他 Skill。
 
 卸载必须按精确命名空间处理 MCP：当前 VCM 没有自有 MCP Server，因此无 VCM 注册时不操作；
-`guiyuan_butler_*` 属于 Private Butler，永远不得删除或注销。
+`guiyuan_butler_*` 属于 Guiyuan Butler，永远不得删除或注销。
 
 ## Runtime packaging boundary (decision 2026-09-03)
 
@@ -28,10 +28,10 @@ Guiyuan 内容；旧名称仅作为迁移识别，不得据名称删除其他 Sk
   `one_click_install`) are VCM product runtime, invoked locally and not copied into host projects.
 - **No MCP server yet**: integration stays a local script/CLI; `agents/openai.yaml` remains the only
   adapter. MCP becomes a channel only when multi-agent or cloud orchestration is actually needed.
-- **Local model wiring is not shipped**: the shared local model hub (`LOCAL_MODELS_DIR`, e.g.
-  `Z:/codeprojects/models`) holds model weights for across-agent reuse; the semantic/embedding gate
-  reaches them only through a local embedding endpoint, which is a product runtime component, not a
-  template dependency.
+- **Local embedding wiring is not shipped**: a shared local model hub may hold weights for other
+  products, but VCM never starts or calls an embedding endpoint and never stores vectors. When
+  `pb_enabled` is on, semantic scoring goes only through Guiyuan Butler's public MCP contract;
+  when it is off, VCM uses its documented non-semantic path.
 - **Primary channel**: repo-direct install; the install-by-message zip is self-hosted with SHA-256
   and a manifest (published GitHub release retired).
 
@@ -50,7 +50,7 @@ and should stay gitignored.
 The runtime stays CLI/script-first and does not add an MCP server yet. MCP becomes a channel only
 when at least one of these triggers is concrete:
 
-- external clients (Private Butler or a third-party router) must submit task candidates or consume
+- external clients (Guiyuan Butler or a third-party router) must submit task candidates or consume
   result receipts programmatically beyond a local inbox/file drop;
 - multi-agent or cloud orchestration requires a standard, remotely callable surface (JSON-RPC/MCP);
 - a hosted deployment needs to serve the manager loop behind an API contract to thin clients.

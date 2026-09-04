@@ -1,0 +1,3 @@
+id = "local-deploy"
+docs_stubs = ["02-technical/deployment/local.md"]
+

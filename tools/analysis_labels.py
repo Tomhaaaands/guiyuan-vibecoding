@@ -113,36 +113,78 @@ def _match_embedding(
     return tp, len(cand_items) - tp, len(remaining)
 
 
+def _match_remote_similarity(
+    cand_items: list[dict],
+    want_items: list[dict],
+    scorer: Callable[[str, list[str]], list[float]],
+    threshold: float,
+) -> tuple[int, int, int]:
+    """Greedily match statements using a remote scorer such as PB.
+
+    The scorer receives one candidate statement and the currently unmatched gold
+    statements, and returns scores in the same order.  Keeping the operation
+    query-against-texts (rather than requesting vectors) lets PB remain the sole
+    owner of the embedding model and vector representation.
+    """
+    remaining = list(want_items)
+    tp = 0
+    for candidate in cand_items:
+        if not remaining:
+            break
+        query = str(candidate.get("statement", ""))
+        texts = [str(item.get("statement", "")) for item in remaining]
+        scores = scorer(query, texts)
+        if len(scores) != len(texts):
+            raise ValueError("similarity scorer returned a mismatched score count")
+        best, best_i = -1.0, -1
+        for i, score in enumerate(scores):
+            try:
+                value = float(score)
+            except (TypeError, ValueError):
+                continue
+            if value > best:
+                best, best_i = value, i
+        if best_i >= 0 and best >= threshold:
+            tp += 1
+            remaining.pop(best_i)
+    return tp, len(cand_items) - tp, len(remaining)
+
+
 def score_labels(
     candidate: dict,
     gold: dict,
     mode: str = "id",
     embedder: Callable[[list[str]], list[list[float]]] | None = None,
+    similarity_scorer: Callable[[str, list[str]], list[float]] | None = None,
     threshold: float = 0.7,
 ) -> dict:
     """Score a candidate against a gold fixture, per bucket.
 
     mode="id" requires the exact expected item ids (deterministic fixtures); mode="similarity"
     matches statements by character-bigram Dice; mode="semantic" matches by embedding cosine
-    (embedder must be a callable list[str] -> list[list[float]]) so meaning, not wording, is
-    measured.
+    (``embedder`` must be a callable ``list[str] -> list[list[float]]``) or by a remote
+    query-against-texts scorer (``similarity_scorer``).  The latter is the production path for
+    PB-managed embeddings because VCM never receives or stores vectors.
     """
     if mode not in ("id", "similarity", "semantic"):
         raise ValueError("mode must be 'id', 'similarity', or 'semantic'")
 
     vec_map: dict = {}
     if mode == "semantic":
-        if embedder is None:
-            raise ValueError("semantic mode requires an embedder callable")
-        all_texts: list[str] = []
-        for bucket in LABEL_BUCKETS:
-            all_texts.extend(
-                i.get("statement", "")
-                for i in candidate.get(bucket, []) + gold.get(bucket, [])
-                if isinstance(i, dict) and i.get("statement")
-            )
-        vectors = embedder(all_texts)
-        vec_map = {t: v for t, v in zip(all_texts, vectors)}
+        if embedder is None and similarity_scorer is None:
+            raise ValueError("semantic mode requires an embedder or similarity_scorer callable")
+        if embedder is not None and similarity_scorer is not None:
+            raise ValueError("provide only one of embedder or similarity_scorer")
+        if embedder is not None:
+            all_texts: list[str] = []
+            for bucket in LABEL_BUCKETS:
+                all_texts.extend(
+                    i.get("statement", "")
+                    for i in candidate.get(bucket, []) + gold.get(bucket, [])
+                    if isinstance(i, dict) and i.get("statement")
+                )
+            vectors = embedder(all_texts)
+            vec_map = {t: v for t, v in zip(all_texts, vectors)}
 
     result: dict[str, dict] = {"overall": {"tp": 0, "fp": 0, "fn": 0}}
     for bucket in LABEL_BUCKETS:
@@ -156,8 +198,14 @@ def score_labels(
             fn = len(want - cand)
         elif mode == "similarity":
             tp, fp, fn = _match_similarity(cand_items, want_items)
-        else:
+        elif embedder is not None:
             tp, fp, fn = _match_embedding(cand_items, want_items, vec_map, threshold)
+        else:
+            # The remote scorer is deliberately called per bucket and candidate so
+            # it can enforce its own request/byte budgets without exposing vectors.
+            tp, fp, fn = _match_remote_similarity(
+                cand_items, want_items, similarity_scorer, threshold  # type: ignore[arg-type]
+            )
         precision = tp / (tp + fp) if (tp + fp) else 0.0
         recall = tp / (tp + fn) if (tp + fn) else 0.0
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0

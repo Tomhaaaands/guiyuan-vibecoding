@@ -18,7 +18,7 @@ delivery → reflection and self-iteration.
 
 Product contract: [docs/01-product/product-spec.md](docs/01-product/product-spec.md). Architecture and delivery plan:
 [docs/00-system/manager-architecture.md](docs/00-system/manager-architecture.md) and [docs/01-product/roadmap.md](docs/01-product/roadmap.md).
-The current independent-product baseline, including optional Private Butler inbox/result integration
+The current independent-product baseline, including optional Guiyuan Butler inbox/result integration
 and the single/multi-project management direction, is
 [docs/01-product/product-baseline-v0.1.0.md](docs/01-product/product-baseline-v0.1.0.md).
 
@@ -87,9 +87,11 @@ heavier, more general tools; this kit deliberately isn't.
   `templates/guiyuan-vibecoding-home.html` project-home template, and `.gitignore`.
 - **Project-type profiles** — built-in presets (`saas` / `c-end` / `vector-db` / `cli-tool`) and
   four composable dimensions (`deploy` / `data` / `runtime` / `surface`) inject per-type modules,
-  red-line stubs, constraints, and doc placeholders; custom `.toml` profiles cover the long tail.
+  red-line stubs, constraints, and doc placeholders; topology templates (`python-service`,
+  `web-app`, `monorepo`, `cli`) add scale-aware layouts and capability overlays; custom `.toml`
+  profiles cover the long tail. Generated projects carry a machine-readable manifest and template lock.
 - **Twenty-eight deterministic tools** — build the distributable zip, install skills (with `--doctor`
-  self-check), one-click install, roll up rounds, hydrate docs (keyword + reserved semantic
+  self-check), one-click install, roll up rounds, hydrate docs (keyword + PB-backed semantic
   backend), check drift, sync payload copies, generate `llms.txt`, a typed authority-artifact
   store, a deterministic context compiler, a behavior-evaluation harness, labeled-analysis
   validation/scoring, an isolated provider registry with local fallback, an analysis
@@ -153,7 +155,8 @@ no local 8010 server is started.
 
 ```bash
 python skills/guiyuan-vibecoding/scripts/bootstrap.py <folder> --name <project> \
-    [--template default] \
+    [--template default|python-service|web-app|monorepo|cli|composite] \
+    [--scale small|medium|large] [--capability rag --capability worker] \
     [--intent "one-sentence description"] [--dry-run] \
     [--module "name=keywords"] [--code "name=dir"] \
     [--profile saas|c-end|vector-db|cli-tool|content-site|ecommerce|admin-dashboard|bot|path/to/custom.toml] \
@@ -168,7 +171,7 @@ python skills/guiyuan-vibecoding/scripts/bootstrap.py <folder> --name <project> 
 | `tools/install_skills.py` | Install skills into `--skills-dir`, `VIBECODING_SKILLS_HOME`, or Codex fallback; `--discover` lists candidates read-only; `--doctor` self-checks the kit |
 | `tools/one_click_install.py` | One-click install: skills + doctor + optional project scaffold (`install.bat` / `install.sh` wrappers) |
 | `tools/rollup_round.py` | Create an archive round file + insert the changelog row |
-| `tools/hydrate.py` | Keyword-retrieve relevant docs; reserved `--semantic` backend |
+| `tools/hydrate.py` | Keyword-retrieve relevant docs; PB-backed `--semantic` backend |
 | `tools/context_budget.py` | Estimate selected context and block hard-ceiling regressions |
 | `tools/distill.py` | Project-memory distillation (pitfalls → red-lines implemented; others stubbed) |
 | `tools/check_drift.py` | Scan markers, links, startup budget, distribution-copy drift, and the version gate |
@@ -183,7 +186,7 @@ python skills/guiyuan-vibecoding/scripts/bootstrap.py <folder> --name <project> 
 | `tools/analysis_labels.py` | Validate and score labeled analysis against ground-truth fixtures |
 | `tools/analysis_provider.py` | Provider registry + config + deterministic local fallback (no core import) |
 | `tools/analysis.py` | Analysis orchestrator: intent -> labeled `analysis` authority artifact (idempotent, degradable) |
-| `tools/analysis_eval.py` | Score a provider against sentence-level gold fixtures (bge-m3 semantic default, optional char-bigram) and gate promotion by an aggregate F1 threshold (default 0.25) |
+| `tools/analysis_eval.py` | Score a provider against sentence-level gold fixtures (PB-managed semantic default, optional char-bigram) and gate promotion by an aggregate F1 threshold (default 0.25) |
 | `tools/artifact_consistency.py` | Cross-artifact consistency check: missing acceptance, state-without-receipt, supersedes gaps, accepted-but-superseded |
 | `tools/artifact_generate.py` | Turn a labeled analysis artifact into draft product/decision authority artifacts |
 | `tools/task_graph.py` | P4 task graph: dependency readiness, acceptance validation, and next-task dispatch |
@@ -191,7 +194,7 @@ python skills/guiyuan-vibecoding/scripts/bootstrap.py <folder> --name <project> 
 | `tools/experience_loop.py` | P6 loop: failed/blocked receipts -> draft `[AI-DRAFT]` experience candidates + shadow red-line evaluation |
 | `tools/mvp_walkthrough.py` | P8 end-to-end MVP: analysis -> artifacts -> dispatch -> receipt -> reflection with budget gate |
 | `tools/render_project_home.py` | Render the visual project-home template into a self-contained static `status.html` from NOW / changelog / roadmap / docs / read-only git; open it directly with a browser (no 8010 listener) |
-| `tools/pb_bridge.py` | VCM-side bridge to 归园大管家 / Guiyuan Butler: config-driven JSON-RPC calls for `similarity`/`memory_context`/`memory_result`, graceful degradation when PB is off/unreachable |
+| `tools/pb_bridge.py` | VCM-side bridge to 归园大管家 / Guiyuan Butler: config-driven JSON-RPC calls for `guiyuan_butler_similarity` / `guiyuan_butler_chat_context` / `guiyuan_butler_capture`, with graceful degradation when PB is off/unreachable |
 
 ## How we compare
 

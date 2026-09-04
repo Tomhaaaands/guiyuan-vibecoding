@@ -20,5 +20,7 @@ status: draft
 静态项目状态页会读取该文件并展示 VCM 接管状态；页面由
 `python tools/render_project_home.py` 生成，直接打开项目根 `status.html`，不需要 8010
 端口或常驻进程。Admin/Web 设置界面仍可作为可选的交互入口；PB 接入一律以
-`private_butler/docs/api-contract.md` 为准（MCP `/mcp`、Bearer token、工具名 `guiyuan_butler_*`；
-`similarity` 尚未实现，VCM 用关键词降级）。
+PB 包内 `docs/api-contract.md` 为准（MCP `/mcp`、Bearer token、工具名 `guiyuan_butler_*`）。
+其中 `guiyuan_butler_similarity`、`guiyuan_butler_chat_context` 和
+`guiyuan_butler_capture` 已有固定 v1 形状；PB 不可达或 Embedding 不可用时 VCM 用关键词/空上下文
+降级，不阻塞迭代循环。

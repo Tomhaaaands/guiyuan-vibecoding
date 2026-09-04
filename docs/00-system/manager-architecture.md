@@ -88,7 +88,7 @@ manager/
   execution/       executor adapters and receipts
   verification/    build/test/acceptance gates
   reflection/      experiences, red lines, shadow policies
-  bridges/         Private_butler and optional external context
+  bridges/         Guiyuan Butler and optional external context
   evaluation/      fixtures, metrics and regression thresholds
 providers/
   agent/ git/ design/ browser/ deploy/ memory/
@@ -130,14 +130,14 @@ Project-private facts never become universal policy. Promotion requires repeated
 quality regression, and review for high-risk behavior. Product/code improvements become planned
 work; the manager never silently rewrites its production implementation.
 
-## 7. Private_butler bridge
+## 7. Guiyuan Butler bridge
 
 The bridge uses an optional provider seam:
 
 - read: budgeted user preferences, prior interests, and project pointers;
 - write: milestone-level digest and authoritative artifact reference;
 - never copy full project specifications into personal memory;
-- never make project execution depend on Private_butler availability;
+- never make project execution depend on Guiyuan Butler availability;
 - preserve lineage when an idea dispatch starts a project.
 - expose project-analysis, implementation, verification and documentation capabilities through an
   optional executor declaration; inbox receipt never grants execution permission.
@@ -147,7 +147,7 @@ The bridge uses an optional provider seam:
 ### 7.1 Embedding/vector ownership (decision 2026-09-03)
 
 VCM never owns an embedding model or a vector database. All embedding/semantic/vector state lives in
-Private Butler (bge-m3 + a vector store). VCM exposes a single `pb_enabled` toggle:
+Guiyuan Butler (bge-m3 + a vector store). VCM exposes a single `pb_enabled` toggle:
 
 - `pb_enabled=off` (default, standalone VCM): no PB connection, no model, no index. Retrieval is
   deterministic (docs + L0/L1/L2 + keyword), and the LLM provider runs analysis/judgement. This is
@@ -156,12 +156,19 @@ Private Butler (bge-m3 + a vector store). VCM exposes a single `pb_enabled` togg
   interface and never touches vectors. PB unreachable degrades to keyword + no user context, and
   never blocks the iteration loop.
 
-The interface is stateless and does not copy project facts into personal memory:
+The public interface is stateless for candidate scoring and does not copy project facts into personal memory:
 
-- `similarity(query, texts[]) -> ranked ids + scores` — on-demand scoring for VCM's own candidate
-  spans; nothing is persisted by VCM, and the index for project facts stays in the project repo.
-- `memory_context(query) -> budgeted user preferences/project pointers` — existing read path.
-- `memory_result(...) -> idempotent result receipt` — existing write path.
+- `guiyuan_butler_similarity({api_version, query, texts, limit?}) -> {results:[{index, score}], count}` —
+  on-demand scoring for VCM's own candidate spans; candidates are not persisted and the index for
+  project facts stays in the project repo.
+- `guiyuan_butler_chat_context({query, max_tokens?}) -> budgeted user preferences/project pointers` —
+  the silent read path.
+- `guiyuan_butler_capture({api_version, content, source_instance, source_event_id, client_request_id})`
+  `-> {observation_id, job_id, status, duplicate}` — the idempotent evidence/result path.
+
+All three calls are JSON-RPC `tools/call` requests to `POST <pb_endpoint>/mcp` with a scoped Bearer
+token. PB enforces the 64 KiB similarity request budget; VCM builds the candidate list by UTF-8 bytes
+and falls back to keyword retrieval when PB is unavailable.
 
 PB may change its model or index implementation without a VCM redeploy, because both sides depend on
 the contract, never on PB internals.

@@ -46,8 +46,11 @@ Check the target before asking anything else:
   want to build?" Resolve it with `--intent "<description>"` against `profiles/intent-map.toml`;
   do not present a project-type menu. When confidence is high, restate the resolved profile in
   one sentence and proceed. When medium/low, ask one open clarifying question before choosing.
-  Preset modules and dimensions come from the resolved profile; the default template remains
-  `web+api+db+worker+tests` for full apps unless the profile defines a more specific module set.
+  Preset modules and dimensions come from the resolved profile. For an explicit topology, scaffold
+  supports `python-service`, `web-app`, `monorepo`, `cli`, or `composite`, with `small|medium|large`
+  scale and repeatable capability overlays (`rag`, `vector-db`, `worker`, `auth`, `admin`,
+  `payments`, `content-pipeline`, `local-deploy`). The generated project records its resolved
+  layout in `.guiyuan-vibecoding/project-manifest.toml` and its source in `template.lock.toml`.
 - **Folder has code** → **assess path first**. Run the read-only assessment (fingerprints:
   `manifest.json` → plugin; `package.json` deps → page/app; `pyproject.toml`/`requirements.txt`
   → app/script; `index.html` → static page; a single root script file → script). It must not write
@@ -108,7 +111,9 @@ python <skill path>/scripts/bootstrap.py <folder> --name <project> --mode auto|a
     [--existing-system NAME] [--compat-policy full-takeover|takeover|defer|abandon] \
     [--system-policy keep-map|auto-takeover|abandon] \
     [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|content-site|ecommerce|admin-dashboard|bot|path/to.toml] \
-    [--module web --module api ...] [--code "name=dir"] [--template default] \
+    [--module web --module api ...] [--code "name=dir"] \
+    [--template default|python-service|web-app|monorepo|cli|composite] \
+    [--scale small|medium|large] [--capability rag --capability worker] \
     [--dimension "key=value"] [--python auto|system|install|<path>] \
     [--env auto|shared|isolated|reuse|skip] [--deps auto|commands|skip] \
     [--skills-dir PATH] [--skill-location auto|project|global|skip] \
@@ -120,9 +125,13 @@ python <skill path>/scripts/bootstrap.py <folder> --name <project> --mode auto|a
 - assess: existing code defaults here; use `--json` and save the output outside the target project;
 - adopt: requires a fresh assessment plus confirmed workflow choices; it owns only `managed`
   workflow files and creates a local backup before replacing one;
-- scaffold: artifact choice maps to `--profile script|plugin|page`; full app uses modules/presets;
+- scaffold: artifact choice maps to `--profile script|plugin|page`; explicit topology templates
+  select the physical code layout while profiles/overlays add constraints and document stubs;
 - scaffold with `--intent`: semantic resolver picks the profile deterministically; use
   `--dry-run` to inspect the resolved plan before writing.
+- scaffold also creates the topology-independent `.guiyuan-vibecoding/` machine layer and
+  regenerates its registry/doc-tree index. Record user decisions at the REQ, PLAN, QA and RELEASE
+  gates with `tools/anchor.py`; anchors preserve hashes and consent but do not replace human docs.
 - close-loop skill: default is project-local `.guiyuan-vibecoding/skills/`; install to a global
   or shared directory only after the user selects `--skills-dir` or `VIBECODING_SKILLS_HOME`.
   `--discover-skills` lists known candidate roots read-only.

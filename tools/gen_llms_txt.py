@@ -19,6 +19,8 @@ import re
 import sys
 from pathlib import Path
 
+from project_manifest import manifest_path
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
@@ -61,6 +63,8 @@ def main() -> None:
         "- [README.md](README.md): project overview",
         "- [AGENTS.md](AGENTS.md): agent startup contract + module routing",
     ]
+    if manifest_path(ROOT).is_file():
+        lines.append("- [.guiyuan-vibecoding/project-manifest.toml](.guiyuan-vibecoding/project-manifest.toml): machine-readable layout and artifact mapping")
     if (ROOT / "README.zh-CN.md").exists():
         lines.append("- [README.zh-CN.md](README.zh-CN.md): 中文说明 / Chinese guide")
     for rel, desc in (

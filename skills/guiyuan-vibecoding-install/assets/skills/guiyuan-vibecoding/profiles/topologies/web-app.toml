@@ -1,0 +1,11 @@
+id = "web-app"
+version = "1.0.0"
+topology = "web"
+runtime = ["node"]
+surface = ["web"]
+core_dirs = ["app", "tests"]
+
+[paths]
+code = ["app", "components", "lib"]
+tests = ["tests"]
+

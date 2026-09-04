@@ -2,7 +2,7 @@
 
 > Status: `pitfalls` (坑 → 红线) implemented (2026-08-30, deterministic first pass); the other
 > three directions are stubs. Distillation reads project archives only — it does **not** depend
-> on Private_butler or any external memory/embedding service. CLI: `tools/distill.py`.
+> on Guiyuan Butler or any external memory/embedding service. CLI: `tools/distill.py`.
 
 ## Why distillation
 
@@ -33,5 +33,5 @@ conclusions — into reusable assets, so the next project starts smarter.
   `[AI-DRAFT]` candidate list, and a human promotes confirmed items into `red-lines.md`
   (the tool never auto-writes the authoritative red-line doc).
 - Only **reusable** lessons are promoted; project-private facts stay in the project.
-- The life-manager memory system (Private_butler) handles *personal* memory separately; this
+- The life-manager memory system (Guiyuan Butler) handles *personal* memory separately; this
   pipeline distills *project* experience only.

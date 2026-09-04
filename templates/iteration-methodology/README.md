@@ -28,6 +28,8 @@ tools/
   context_budget.py             # conservative token estimate + hard budget gate
   check_drift.py                # markers + links + startup budget + copy sync
   gen_llms_txt.py               # generate root llms.txt
+  project_registry.py           # index human docs into machine-readable derived views
+  anchor.py                     # record immutable REQ/PLAN/QA/RELEASE confirmations
   workflow_optimize.py          # receipt-backed, user-approved workflow suggestions
 scripts/
   hooks/pre-commit              # commit gate: runs check_drift before every commit
@@ -68,6 +70,21 @@ skill triggers; otherwise the project rules point to the local close-loop `SKILL
 
 Principles and migration guide: `docs/04-workflow/iteration-methodology.md` (§11).
 This template = the minimal set (four files) + standard set (toolchain), materialized.
+
+## Machine-facing template contract
+
+When a topology template is selected, bootstrap writes
+`.guiyuan-vibecoding/project-manifest.toml` with the resolved layout and semantic artifact paths,
+plus `template.lock.toml` with the source template identity. A human-facing explanation is written
+to `docs/03-reference/template-usage.md`. The manifest lets tools locate project-state, changelog,
+roadmap, red-lines, and archive files even when a project changes its physical directory layout;
+those artifacts remain project-owned and continue to record iteration progress.
+
+The generated machine layer also contains `registry/` (derived artifact/module indexes),
+`state/tasks/`, `receipts/`, `anchors/` and `indexes/`. The four human confirmation points are
+recorded as immutable `REQ`, `PLAN`, `QA` and `RELEASE` anchor JSON files; use `tools/anchor.py`.
+These records preserve consent and hashes but never replace the human PRD, technical spec, NOW,
+roadmap or changelog.
 
 ## Existing-project adoption
 

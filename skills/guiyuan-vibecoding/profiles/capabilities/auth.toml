@@ -1,0 +1,4 @@
+id = "auth"
+docs_stubs = ["01-product/auth/acceptance.md", "02-technical/auth/technical-spec.md"]
+red_lines = ["Never log credentials, tokens, or raw authentication secrets."]
+

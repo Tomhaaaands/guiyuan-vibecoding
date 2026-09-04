@@ -15,11 +15,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+from project_manifest import artifact_path
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-ARCH = ROOT / "docs" / "04-workflow" / "archive"
-CL = (ROOT / "docs" / "04-workflow" / "changelog.md") if (ROOT / "docs" / "04-workflow" / "changelog.md").is_file() else ROOT / "CHANGELOG.md"
+ARCH = artifact_path(ROOT, "archive")
+CL = artifact_path(ROOT, "changelog", must_exist=True)
 
 NOTE = (
     "> Full iteration records (archive volumes of the changelog ledger). Not read daily; "

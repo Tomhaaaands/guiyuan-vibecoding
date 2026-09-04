@@ -1,0 +1,11 @@
+id = "monorepo"
+version = "1.0.0"
+topology = "monorepo"
+runtime = ["python", "node"]
+surface = ["web", "api-first"]
+core_dirs = ["apps", "packages", "tests"]
+
+[paths]
+code = ["apps", "packages"]
+tests = ["tests"]
+

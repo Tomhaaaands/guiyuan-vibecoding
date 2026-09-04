@@ -4,10 +4,19 @@
 > [docs/iteration-methodology.md](docs/iteration-methodology.md).
 > Row format: `| R1 | MM-DD | module | one-line conclusion (what/why/how-verified) | [r1](archive/...) |`
 
-## 2026-09-03
+## 2026-09-05
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R66 | 09-05 | registry-confirmation-anchors | scaffold now creates a topology-independent machine layer and generated manifest registry; project_registry indexes human PRD/acceptance/technical docs, while immutable REQ/PLAN/QA/RELEASE anchors preserve user confirmation with hashes; 170 tests, check_drift and distribution verification pass | [r66](docs/04-workflow/archive/2026-09-05-r66.md) |
+
+## 2026-09-04
+
+| Round | Date | Module | One-line conclusion | Archive |
+| --- | --- | --- | --- | --- |
+| R65 | 09-04 | composable-templates | 新增共享治理基座上的 python-service/web-app/monorepo/cli/composite 拓扑、small/medium/large 规模和 RAG/Worker/Auth 等 Overlay；bootstrap 支持 `--template/--scale/--capability`，生成 manifest + template lock，工具按语义 artifact 映射路径；168 项测试与 check_drift 通过 | [r65](docs/04-workflow/archive/2026-09-04-r65.md) |
+| R64 | 09-04 | pb-embedding-ownership | 语义评估彻底改为 PB 托管：VCM 移除 SiliconFlow `/embeddings`/BGE 调用，`analysis_eval --mode semantic` 通过 PB `guiyuan_butler_similarity`（含 initialize/tools/list/capabilities、分块字节预算与异常响应失败闭合）；桥增加能力发现缓存与契约测试，发布副本同步 | [r64](docs/04-workflow/archive/2026-09-04-r64.md) |
+| R63 | 09-04 | pb-similarity | PB v1 `guiyuan_butler_similarity` 已接入桥与 `hydrate --semantic`；按 UTF-8 字节预算组装候选，PB 不可达/超限/Embedding 不可用时回退关键词；四套发布副本同步，真实 PB/NAS 联调仍待端点可达 | [r63](docs/04-workflow/archive/2026-09-04-r63.md) |
 | R62 | 09-04 | static-project-home-assets | 修复直接打开 `templates/guiyuan-vibecoding-home.html` 时背景图丢失：模板旁补齐资源副本并增加内嵌资源回归测试；同步安装载荷并忽略临时 `.preview/` | [r62](archive/2026-09-04-r62.md) |
 | R61 | 09-04 | static-project-home | 视觉项目主页进入安装载荷；静态 status.html 由 bootstrap/rollup 自动生成，移除 8010 服务并通过临时项目、分发包与漂移门禁验证 | [r61](archive/2026-09-04-r61.md) |
 | R60 | 09-04 | guiyuan-lifecycle-close | Agent 原生 `openai.yaml` 入口覆盖预检/安装/更新/卸载；卸载后增加 Guiyuan 路径残留检查，三阶段协议同步至独立安装/收口 Skill；check_drift、完整 QA、发布 ZIP 验证通过 | [r60](docs/04-workflow/archive/2026-09-04-r60.md) |

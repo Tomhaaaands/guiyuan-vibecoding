@@ -19,7 +19,7 @@ and it only accepts a validated, structured `AnalysisResult` back.
 | `tools/analysis_labels.py` | labeled-output validation + gold scoring | no |
 | `tools/analysis_provider.py` | provider registry + config + local fallback | self only |
 | `tools/analysis.py` | orchestration, idempotency, persistence | yes (via registry) |
-| `tools/analysis_eval.py` | score a provider against gold fixtures | yes (via registry) |
+| `tools/analysis_eval.py` | score a provider against gold fixtures; semantic mode calls PB's public scorer | yes (via registry + PB bridge) |
 
 Call chain: `analysis -> provider (JSON only) -> context_compiler (read-only) -> artifact_store
 (sole writer)`. A provider never touches the store or the compiler directly.
@@ -72,23 +72,31 @@ Gold fixtures live under `tools/fixtures/analysis/` and are written at **sentenc
 (matching how a real analysis expresses a fact/decision), which is what makes the semantic metric
 meaningful.
 
-Measured on the live five-fixture suite:
+Historical local calibration (before PB became the semantic scorer; these numbers are not current
+PB acceptance evidence):
 
 | backend | model | aggregate F1 |
 | --- | --- | --- |
 | `local-fallback` | heuristic-v1 | ~0.169 |
 | `siliconflow` | Qwen/Qwen3-8B | ~0.299 |
 
+The current semantic gate has no production aggregate until a reachable PB endpoint with its
+configured embedder is exercised; fixture and bridge tests prove only protocol behavior.
+
 The `siliconflow` backend is registered in `tools/analysis_provider.py` and reads its API key from
 `VCM_SILICONFLOW_API_KEY` (never from a committed file); model/base-url default to
 `Qwen/Qwen3-8B` and `https://api.siliconflow.cn/v1`.
 
-The default gate is `--mode semantic` (bge-m3 cosine, cutoff 0.70) with `--min-f1 0.25`, which
-separates the heuristic (~0.169) from a real backend (~0.299). The lexical char-bigram
+The default gate is `--mode semantic` (PB-managed cosine, cutoff 0.70) with `--min-f1 0.25`.
+The lexical char-bigram
 `--mode similarity` is retained but documented as **not sound on sentence-level gold**: it is fooled
-by `local-fallback` echoing the intent (it scores ~0.418 there), so it is only suitable for
+by `local-fallback` echoing the intent, so it is only suitable for
 dependency-free feature/regression experiments, not as the promotion gate.
 
-Semantic scoring currently needs an embedding provider; with the SiliconFlow credential it uses
-`BAAI/bge-m3`. A local bge-m3 endpoint can be wired later so the exact gate runs without a
-third-party key. Red-line enforcement inside the analysis step is implemented (see section 5).
+Semantic scoring delegates query-against-text comparisons to PB's
+`guiyuan_butler_similarity` v1 tool. VCM receives only scores and never receives, stores or
+selects an embedding model; the PB endpoint and token come from the project's
+`.guiyuan-vibecoding/config.json`. The gate first performs PB's
+`initialize` → `tools/list` → `guiyuan_butler_capabilities` handshake and fails closed when the
+semantic capability is unavailable. Red-line enforcement inside the analysis step is implemented
+(see section 5).

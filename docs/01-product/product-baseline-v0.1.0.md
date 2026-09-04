@@ -9,7 +9,7 @@
 Guiyuan Vibecoding 是独立封装的低 Token 软件项目管理与迭代治理产品。用户通过 Agent、
 Skill 或本地管理界面描述目标，VCM 负责建立项目事实、规划工作、验证交付并维持可追溯状态。
 
-VCM 不依赖 Private Butler。安装 PB 后可以获得跨场景候选任务和用户偏好，但项目仍由 VCM
+VCM 不依赖 Guiyuan Butler。安装 PB 后可以获得跨场景候选任务和用户偏好，但项目仍由 VCM
 及其仓库独立管理。
 
 ## 2. v0.1.0 核心能力

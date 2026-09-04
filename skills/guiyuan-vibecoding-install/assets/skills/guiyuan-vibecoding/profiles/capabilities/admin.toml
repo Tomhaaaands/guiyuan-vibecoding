@@ -1,0 +1,3 @@
+id = "admin"
+docs_stubs = ["01-product/admin/acceptance.md", "02-technical/admin/technical-spec.md"]
+

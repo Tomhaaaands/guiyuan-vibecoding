@@ -1,0 +1,4 @@
+id = "worker"
+add_dirs = ["workers"]
+docs_stubs = ["02-technical/workers/technical-spec.md"]
+

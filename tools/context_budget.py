@@ -20,6 +20,11 @@ import math
 import sys
 from pathlib import Path
 
+try:
+    from project_manifest import artifact_path
+except ImportError:  # pragma: no cover - direct use from a minimal copied toolkit
+    artifact_path = None
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(
@@ -39,9 +44,12 @@ def estimate_tokens(text: str) -> int:
 
 def default_startup_paths(root: Path = ROOT) -> list[Path]:
     paths = [root / "AGENTS.md"]
-    root_now = root / "NOW.md"
-    workflow_now = root / "docs" / "04-workflow" / "NOW.md"
-    paths.append(root_now if root_now.is_file() else workflow_now)
+    if artifact_path:
+        paths.append(artifact_path(root, "project_state", must_exist=True))
+    else:
+        root_now = root / "NOW.md"
+        workflow_now = root / "docs" / "04-workflow" / "NOW.md"
+        paths.append(root_now if root_now.is_file() else workflow_now)
     return paths
 
 

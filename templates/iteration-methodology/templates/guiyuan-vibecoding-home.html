@@ -369,7 +369,7 @@
       <div class="bpain">
         <div class="b"><b>想法不用你挨个交代</b><span>说一句话，自动拆成任务、派给对应项目的归园撸代码，不用在多个仓库间反复切、重复讲背景。</span></div>
         <div class="b"><b>记得你，但不串味</b><span>记住个人偏好与跨项目指针；项目事实始终锁在各自仓库，互不污染，隐私边界清晰。</span></div>
-        <div class="b"><b>装上就有「大脑」，挂了也不卡你</b><span>启用即得 bge-m3 语义检索 + 个人上下文 + 想法收件箱；PB 不可达自动降级为关键词，绝不阻塞写代码。</span></div>
+        <div class="b"><b>装上就有「大脑」，挂了也不卡你</b><span>启用即得 PB 托管语义检索 + 个人上下文 + 想法收件箱；PB 不可达自动降级为关键词，绝不阻塞写代码。</span></div>
       </div>
       <a class="btn btn-light" id="ghButler" href="#" target="_blank" rel="noopener">前往归园大管家 GitHub →</a>
     </section>
@@ -428,10 +428,10 @@ var PROJECT = {
         steps:["预留安全/验收槽位","按优先级填状态/权威字段/证据","输出 context manifest（含负检索清单）","超预算按 5 级降级，必要时阻断"],
         docs:[["技术文档","docs/02-technical/token-budget.md"],["技术文档","docs/02-technical/artifact-context-contract.md"],["实现代码","tools/context_compiler.py"],["实现代码","tools/context_budget.py"]]},
       {id:"analysis",name:"自然语言分析",sub:"事实/假设/选项/决策",duty:"把自然语言意图转成带标签的事实、假设、选项、决策与开放问题，保留来源与不确定性；provider 可插拔，红线模型裁决。",
-        steps:["标注已知 / 未知 / 假设 / 选项","红线主题命中→升级为待确认","provider 打分（local-fallback / SiliconFlow bge-m3）"],
+        steps:["标注已知 / 未知 / 假设 / 选项","红线主题命中→升级为待确认","provider 打分（local-fallback；语义评分经 PB `guiyuan_butler_similarity`）"],
         docs:[["产品文档","docs/01-product/analysis/prd.md"],["验收标准","docs/01-product/analysis/acceptance.md"],["技术文档","docs/02-technical/provider-boundary.md"],["实现代码","tools/analysis.py"],["实现代码","tools/analysis_labels.py"],["实现代码","tools/analysis_provider.py"],["实现代码","tools/analysis_eval.py"]]},
       {id:"pbbridge",name:"可选 · PB 桥",sub:"认知层的 provider 缝",duty:"属于认知层的可插拔 provider：VCM 不持有 embedding 模型 / 向量库。off=独立 VCM（零模型、确定性检索+LLM provider）；on=把语义排序与用户上下文委托给归园大管家，PB 不可达即降级关键词，绝不阻塞迭代。规划层 hydrate --semantic 也经此缝。",
-        steps:["读 .guiyuan-vibecoding/config.json 的 pb_enabled / pb_endpoint","similarity / memory_context / memory_result 走 JSON-RPC","PB 关或不可达 → 关键词回退（不伪造能力）","MCP /mcp、Bearer token、guiyuan_butler_* 工具、/healthz 探活"],
+        steps:["读 .guiyuan-vibecoding/config.json 的 pb_enabled / pb_endpoint","`guiyuan_butler_similarity` / `guiyuan_butler_chat_context` / `guiyuan_butler_capture` 走 JSON-RPC","PB 关、不可达或 Embedding 不可用 → 关键词/空上下文回退（不伪造能力）","MCP /mcp、Bearer token、guiyuan_butler_* 工具、/healthz 探活"],
         docs:[["系统架构 §7","docs/00-system/manager-architecture.md"],["事实边界","docs/00-system/fact-ownership.md"],["品牌/契约","docs/03-reference/guiyuan-brand.md"],["设置能力","docs/01-product/settings/prd.md"],["实现代码(发布模板)","templates/iteration-methodology/tools/pb_bridge.py"],["语义注水","tools/hydrate.py"]]}
     ]},
     {cls:"l-plan",name:"规划派发层 · Planning & Dispatch",mods:[
@@ -470,7 +470,7 @@ var PROJECT = {
       docs:[["产品 PRD","docs/01-product/settings/prd.md"],["验收","docs/01-product/settings/acceptance.md"],["设置页技术","docs/02-technical/frontend/settings-page.md"],["组件库","docs/02-technical/frontend/component-library.md"]]},
     {id:"analysis",name:"analysis 分析",st:"b-run",stxt:"已实现·依赖 provider",pct:80,phase:"P2 implemented",date:"2026-09-03",round:"R36 / R33 / R30",
       change:"意图→事实/假设/选项/决策/开放问题；接入 provider 注册表与降级、句子粒度金标准评分、红线模型裁决（SiliconFlow 可判真违规）。",
-      block:"语义门需 embedding provider（今 SiliconFlow bge-m3；本地 bge-m3 端点可去第三方 key）；红线 local-fallback 仅返回 unknown。",
+      block:"语义门需可达 PB（Embedding 由 PB 配置的 bge-m3 提供）；VCM 不持有模型；红线 local-fallback 仅返回 unknown。",
       docs:[["产品 PRD","docs/01-product/analysis/prd.md"],["验收","docs/01-product/analysis/acceptance.md"],["Provider 边界","docs/02-technical/provider-boundary.md"],["分析主程序","tools/analysis.py"],["标注","tools/analysis_labels.py"],["Provider","tools/analysis_provider.py"],["评分","tools/analysis_eval.py"]]},
     {id:"dispatch",name:"dispatch 派发",st:"b-ok",stxt:"已实现",pct:90,phase:"P4 implemented",date:"2026-09-03",round:"R39",
       change:"任务依赖图 + 就绪判定（依赖全 done）+ 优先级排序 + 下一任务派发，不维护独立于仓库事实的看板副本。",
@@ -487,7 +487,7 @@ var PROJECT = {
   ],
   // 时间从近到远
   roadmap:[
-    {ph:"P7",title:"可选 PB 能力 / 收件箱 / 结果桥",cls:"partial",pct:70,when:"2026-09-03 · R58 / R57 / R52",status:"VCM 侧完成，PB 侧待联调",
+    {ph:"P7",title:"可选 PB 能力 / 收件箱 / 结果桥",cls:"partial",pct:70,when:"2026-09-04 · R63 / R58 / R57 / R52",status:"桥与 PB v1 surface 已实现，等待真实 PB/NAS 联调",
       acc:"候选用户门控且幂等；embedding/语义在 PB 内运行，VCM 不持有模型与向量库。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r58","docs/04-workflow/archive/2026-09-03-r58.md"]]},
     {ph:"P9",title:"设置 UI / 完整脚手架拓扑 / 迁移审计",cls:"partial",pct:45,when:"2026-09-03 · R56 / R55 / R45",status:"部分完成",
       acc:"用户能在管理界面配置 VCM，并以只读冲突报告 + 确认式增量迁移接管旧布局。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r56","docs/04-workflow/archive/2026-09-03-r56.md"]]},

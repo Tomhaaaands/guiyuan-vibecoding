@@ -18,6 +18,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+try:
+    from project_manifest import artifact_path
+except ImportError:  # supports importlib-based tests and direct copied assets
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from project_manifest import artifact_path
+
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
@@ -106,7 +112,7 @@ def _project_version(root: Path) -> str:
 
 
 def _changelog_rows(root: Path, rounds: int) -> list[list[str]]:
-    text = _read(root / "docs" / "04-workflow" / "changelog.md") or _read(root / "CHANGELOG.md")
+    text = _read(artifact_path(root, "changelog", must_exist=True))
     rows: list[list[str]] = []
     for line in text.splitlines():
         if not line.strip().startswith("|") or re.match(r"^\|\s*-+\s*\|", line):
@@ -120,7 +126,8 @@ def _changelog_rows(root: Path, rounds: int) -> list[list[str]]:
 
 
 def _roadmap_table(root: Path) -> tuple[Path, list[list[str]]]:
-    for path in (root / "docs" / "01-product" / "roadmap.md", root / "docs" / "04-workflow" / "roadmap.md", root / "roadmap.md"):
+    configured = artifact_path(root, "roadmap", must_exist=True)
+    for path in (configured, root / "docs" / "01-product" / "roadmap.md", root / "docs" / "04-workflow" / "roadmap.md", root / "roadmap.md"):
         text = _read(path)
         if not text:
             continue
@@ -285,7 +292,7 @@ def build_project(root: Path, agent: str, rounds: int) -> dict:
     changelog = _changelog_rows(root, rounds)
     origin, branch = _git(root, "remote", "get-url", "origin"), _git(root, "branch", "--show-current")
     latest_round = changelog[0][0] if changelog else ""
-    now = _read(root / "docs" / "04-workflow" / "NOW.md") or _read(root / "NOW.md")
+    now = _read(artifact_path(root, "project_state", must_exist=True))
     date_match = re.search(r"20\d{2}-\d{2}-\d{2}", now)
     return {
         "githubVibe": origin if "github.com" in origin else "#", "githubButler": "#", "installed": managed,

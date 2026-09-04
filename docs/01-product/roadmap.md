@@ -15,10 +15,12 @@
 | P4 | milestone/task graph, dependencies, readiness, acceptance and next-task dispatch | implemented | the manager can explain and select the next executable task without a user-maintained board |
 | P5 | code -> checks -> repair/block -> receipt -> artifact/state sync loop | implemented | one real task progresses from ready to delivered only with verification evidence |
 | P6 | experience candidates, project red lines, shadow policy evaluation and rollback | implemented (red-line judgement requires a real LLM provider; local-fallback returns unknown) | a repeated failure becomes one evidence-backed candidate and cannot silently change production behavior |
-| P7 | optional Private Butler capability/inbox/result bridge | VCM-side bridge implemented (`tools/pb_bridge.py` + `hydrate --semantic`); PB-side gateway/tools + response-shape consumption pending | candidates are user-gated and idempotent; embedding/semantic runs inside PB; VCM never owns a model or vector store |
+| P7 | optional 归园大管家 capability/inbox/result bridge | implemented in source: VCM bridge + `guiyuan_butler_similarity`/`chat_context`/`capture` response handling and PB-backed semantic evaluation; live PB/NAS interop pending | candidates are user-gated and idempotent; all embedding/semantic runs inside PB; VCM never owns a model or vector store |
 | P8 | end-to-end MVP evaluation and packaging decision | complete (R42 walkthrough) | one scripted small-product journey completes analysis through reflection within token and quality budgets |
 | P9 | settings UI, complete scaffold topology, reference capture, migration audit | partial (static project home + adopt/assess; complete scaffold topology and reference capture pending) | a user can configure VCM in the admin UI and adopt a legacy layout with a read-only conflict report and confirmed incremental migration |
 | P10 | Guiyuan naming, universal request protocol, install preflight/update/uninstall lifecycle | complete 2026-09-04 | every public Skill uses the `guiyuan-` namespace, every request exposes understanding → solution → plan, and install/uninstall only changes manifest-owned VCM components while preserving user data and Butler MCP |
+| P11 | composable project templates and manifest-based layout compatibility | implemented 2026-09-04 | four topology templates, three scale profiles, and capability overlays generate a machine-readable artifact map so the iteration loop survives code-layout changes |
+| P12 | human document registry and four confirmation anchors | implemented 2026-09-05 | a generated registry indexes product/technical modules and immutable REQ/PLAN/QA/RELEASE records preserve each user decision without coupling the loop to directory names |
 
 Existing-project adoption is a compatibility layer, not a Creator OS migration.
 It may preserve, map, or manage one workflow at a time and never changes a project automatically.
@@ -29,9 +31,9 @@ The roadmap is the delivery-order authority, not a one-time plan. When a new req
 change is accepted into the product (`docs/01-product/`), the same round must also update this table:
 add or revise the affected phase/milestone, set its status to the actual evidence state, and update
 its acceptance sentence. A phase is only `implemented` when its deterministic gate and an execution
-receipt exist; provider/backend-dependent items (such as semantic scoring via the PB bridge, or
-red-line judgement via a real LLM provider) stay flagged as pending until that endpoint is wired.
-Embedding and vector ownership always live in Private Butler, never in VCM. Never leave a status here
+receipt exist; provider/backend-dependent items (such as live PB semantic scoring, or red-line
+judgement via a real LLM provider) stay flagged as pending until that endpoint is wired and exercised.
+Embedding and vector ownership always live in Guiyuan Butler, never in VCM. Never leave a status here
 ahead of or behind the implementation evidence in `CHANGELOG.md` and the archive.
 
 ## MVP scope lock

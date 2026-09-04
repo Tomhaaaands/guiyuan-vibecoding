@@ -1,0 +1,4 @@
+id = "medium"
+description = "Explicit application boundaries with shared support directories."
+add_dirs = ["configs", "scripts"]
+

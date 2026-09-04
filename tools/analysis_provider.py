@@ -244,45 +244,6 @@ def _parse_judge(content: str) -> dict:
     return {"verdict": verdict, "confidence": confidence, "reason": str(data.get("reason", ""))}
 
 
-def embed_statements(
-    texts: list[str],
-    *,
-    api_key: str | None = None,
-    base_url: str | None = None,
-    model: str = "BAAI/bge-m3",
-    batch: int = 64,
-) -> list[list[float]]:
-    """Embed a list of statements via SiliconFlow's OpenAI-compatible /embeddings endpoint."""
-    key = api_key or os.environ.get("VCM_SILICONFLOW_API_KEY") or os.environ.get("SILICONFLOW_API_KEY")
-    if not key:
-        raise ProviderError("siliconflow API key is not configured (set VCM_SILICONFLOW_API_KEY)")
-    base = (base_url or os.environ.get("VCM_SILICONFLOW_BASE_URL") or SiliconFlowProvider.default_base).rstrip("/")
-    vectors: list[list[float]] = []
-    for start in range(0, len(texts), batch):
-        chunk = texts[start : start + batch]
-        payload = {"model": model, "input": chunk}
-        request = urllib.request.Request(
-            f"{base}/embeddings",
-            data=json.dumps(payload).encode("utf-8"),
-            method="POST",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=60) as response:
-                body = json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as exc:
-            err = exc.read().decode("utf-8", "replace")[:300]
-            raise ProviderError(f"siliconflow embedding HTTP {exc.code}: {err}") from exc
-        except urllib.error.URLError as exc:
-            raise ProviderError(f"siliconflow embedding unreachable: {exc.reason}") from exc
-        data = body.get("data", [])
-        order = sorted(data, key=lambda item: item.get("index", 0))
-        if len(order) != len(chunk):
-            raise ProviderError("siliconflow embedding returned a mismatched batch")
-        vectors.extend(item["embedding"] for item in order)
-    return vectors
-
-
 def _config_file(root: Path) -> Path:
     return Path(root) / ".vibecoding" / "provider.toml"
 

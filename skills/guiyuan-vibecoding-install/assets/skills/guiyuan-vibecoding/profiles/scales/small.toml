@@ -1,0 +1,4 @@
+id = "small"
+description = "Minimal project layout for a personal MVP or focused tool."
+add_dirs = []
+

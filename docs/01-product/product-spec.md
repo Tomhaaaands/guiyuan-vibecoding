@@ -94,7 +94,7 @@ The first end-to-end MVP supports:
 - dependency-aware task selection;
 - one complete task loop: context -> code -> checks -> receipt -> artifact/state sync;
 - milestone reflection that emits reviewable experience/red-line candidates;
-- optional Private Butler inbox, context read and structured result/digest write-back;
+- optional Guiyuan Butler inbox, context read and structured result/digest write-back;
 - token accounting and blocking context-budget gates.
 
 Deferred until the core loop is stable:
@@ -135,9 +135,9 @@ become routine chores for the user.
 - Repeated failures converge into one evidence-backed experience candidate rather than prompt
   accumulation.
 
-## 8. Private Butler boundary
+## 8. Guiyuan Butler boundary
 
-Guiyuan Vibecoding owns project truth. Private_butler owns personal memory and lightweight project
+Guiyuan Vibecoding owns project truth. Guiyuan Butler owns personal memory and lightweight project
 pointers. Integration is optional and low-coupling:
 
 - at project start, read approved user preferences and related project pointers when available;
@@ -146,7 +146,7 @@ pointers. Integration is optional and low-coupling:
 - at milestone close, return a short project digest plus artifact pointer;
 - either system remains fully usable when the other is unavailable.
 - deduplicate candidates by idempotency key and return status, artifact pointers and verification evidence.
-- embed/vectorize only inside Private_butler (bge-m3 + vector store); VCM exposes a `pb_enabled`
+- embed/vectorize only inside Guiyuan Butler (bge-m3 + vector store); VCM exposes a `pb_enabled`
   toggle and never owns a model or a vector database.
 - never mix embedding models in one index; PB owns its index and VCM stays out of it.
 

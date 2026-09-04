@@ -113,6 +113,19 @@ The one-line conclusion must stand alone: what changed, why, and how it was veri
 - red lines / pitfalls / key decisions never archived;
 - use `tools/rollup_round.py` to generate archive + insert the ledger row in one step.
 
+### 6.3 Four user-confirmation gates
+
+Each requirement loop has four explicit decision points. Human documents carry the evolving
+product/technical facts; the machine records the decision and evidence in an immutable anchor:
+
+1. **REQ** — confirm the interpretation and the generated PRD/technical need;
+2. **PLAN** — confirm the dependency-ordered execution plan and acceptance checks;
+3. **QA** — confirm verification evidence, pitfalls and remaining blockers;
+4. **RELEASE** — confirm packaging, changelog/state back-sync and readiness for `get`/`push`.
+
+Run `tools/anchor.py` to write `.guiyuan-vibecoding/anchors/<id>.json`. Anchors preserve consent
+and hashes but never replace NOW, roadmap, changelog or receipts.
+
 ## 7. Goal-locking
 
 Goal-locking prevents context drift: at task start, lock the target in three layers.
@@ -173,7 +186,7 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | Tool | Responsibility | Trigger |
 | --- | --- | --- |
 | `tools/rollup_round.py` | archive volume + ledger row | every round closure |
-| `tools/hydrate.py` | keyword retrieval; reserved `--semantic` backend | before work |
+| `tools/hydrate.py` | keyword retrieval; PB-backed `--semantic` backend | before work |
 | `tools/context_budget.py` | estimate selected context; block hard-ceiling regressions | every full drift check / runtime assembly |
 | `tools/distill.py` | project-memory distillation (pitfalls → red-lines implemented; others stubbed) | milestone / self-iteration |
 | `tools/check_drift.py` | markers + links + startup budget + distribution sync | periodic / closure |
@@ -239,5 +252,5 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 - tool changes -> sync template copies and re-run tests;
 - the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
   consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.
-  Distillation reads project archives only — no Private_butler dependency;
+  Distillation reads project archives only — no Guiyuan Butler dependency;
 - every round ends with: changelog row + archive volume + NOW.md update.

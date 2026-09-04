@@ -1,0 +1,11 @@
+id = "cli"
+version = "1.0.0"
+topology = "cli"
+runtime = ["python"]
+surface = ["cli"]
+core_dirs = ["src/cli", "tests"]
+
+[paths]
+code = ["src/cli"]
+tests = ["tests"]
+

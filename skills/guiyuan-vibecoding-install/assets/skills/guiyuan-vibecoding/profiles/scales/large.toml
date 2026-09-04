@@ -1,0 +1,4 @@
+id = "large"
+description = "Full layout for multi-service or multi-package products."
+add_dirs = ["configs", "scripts", "workers"]
+

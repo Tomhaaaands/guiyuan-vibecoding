@@ -1,0 +1,11 @@
+id = "python-service"
+version = "1.0.0"
+topology = "service"
+runtime = ["python"]
+surface = ["api-first"]
+core_dirs = ["src", "tests"]
+
+[paths]
+code = ["src"]
+tests = ["tests"]
+

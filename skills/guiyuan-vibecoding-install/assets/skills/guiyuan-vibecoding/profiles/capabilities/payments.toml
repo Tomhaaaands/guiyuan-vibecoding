@@ -1,0 +1,4 @@
+id = "payments"
+docs_stubs = ["01-product/payments/acceptance.md", "02-technical/payments/technical-spec.md"]
+red_lines = ["Do not store payment credentials or expose payment provider secrets to the client."]
+

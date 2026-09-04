@@ -15,6 +15,7 @@ from analysis import (
     analyze,
     parse_analysis,
 )
+from analysis_eval import _parse_pb_similarity_scores
 from analysis_labels import (
     LABEL_BUCKETS,
     score_labels,
@@ -100,9 +101,43 @@ class AnalysisLabelsTest(unittest.TestCase):
         score = score_labels(cand, gold, mode="similarity")
         self.assertEqual(score["known_facts"]["f1"], 1.0)
 
+    def test_score_semantic_with_remote_scorer(self):
+        cand = {
+            "known_facts": [{"id": "x1", "statement": "candidate fact"}],
+            "assumptions": [], "options": [], "decisions": [], "open_questions": [],
+        }
+        gold = {
+            "known_facts": [{"id": "g1", "statement": "gold fact"}],
+            "assumptions": [], "options": [], "decisions": [], "open_questions": [],
+        }
+
+        def scorer(query, texts):
+            self.assertEqual(query, "candidate fact")
+            self.assertEqual(texts, ["gold fact"])
+            return [0.91]
+
+        score = score_labels(cand, gold, mode="semantic", similarity_scorer=scorer)
+        self.assertEqual(score["known_facts"]["f1"], 1.0)
+
+    def test_score_semantic_rejects_two_scorers(self):
+        with self.assertRaises(ValueError):
+            score_labels({}, {}, mode="semantic", embedder=lambda _: [], similarity_scorer=lambda _q, _t: [])
+
     def test_score_invalid_mode(self):
         with self.assertRaises(ValueError):
             score_labels({}, {}, mode="bad")
+
+
+class PbSimilarityResponseTest(unittest.TestCase):
+    def test_validates_complete_indexed_scores(self):
+        response = {"results": [{"index": 1, "score": 0.2}, {"index": 0, "score": 0.9}]}
+        self.assertEqual(_parse_pb_similarity_scores(response, 2), [0.9, 0.2])
+
+    def test_rejects_partial_or_malformed_scores(self):
+        with self.assertRaises(RuntimeError):
+            _parse_pb_similarity_scores({"results": [{"index": 0, "score": 0.9}]}, 2)
+        with self.assertRaises(RuntimeError):
+            _parse_pb_similarity_scores({"results": [{"index": 0, "score": "nan"}]}, 1)
 
 
 class LocalProviderTest(unittest.TestCase):
