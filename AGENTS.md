@@ -1,4 +1,4 @@
-# VibeCoding_Manager Agent Rules (mandatory · startup contract + index)
+# Guiyuan Vibecoding Agent Rules (mandatory · startup contract + index)
 
 > Highest priority. This file holds only the required reading order, routing table, discipline,
 > constraints, and index pointers; methodology lives in
@@ -15,14 +15,25 @@
 Do not replay chat history or preload README, changelog, archives, full methodology, or unrelated
 module docs. Startup context is budgeted by `python tools/context_budget.py`.
 
+### Universal request protocol
+
+Every new requirement, optimization, or question must be answered in this order:
+
+1. semantic understanding (request type, goal, scope, constraints, unknowns);
+2. recommended solution (alternatives and material trade-offs);
+3. executable plan (steps, acceptance evidence, and user decision gates).
+
+This is a concise, visible reasoning summary, not hidden chain-of-thought. Question-only requests may
+use a one-line answer/verification plan.
+
 ## 1. Module routing table (keywords → docs → code)
 
 | Keywords | Required reading | Code |
 | --- | --- | --- |
-| guided bootstrap / scaffold / one-click deploy | [skills/vibe-coding-manager/SKILL.md](skills/vibe-coding-manager/SKILL.md) | `skills/vibe-coding-manager/` |
-| iteration close-out / changelog / archive / round wrap-up | [skills/iteration-close-loop/SKILL.md](skills/iteration-close-loop/SKILL.md) | `skills/iteration-close-loop/` |
+| guided bootstrap / scaffold / one-click deploy | [skills/guiyuan-vibecoding/SKILL.md](skills/guiyuan-vibecoding/SKILL.md) | `skills/guiyuan-vibecoding/` |
+| iteration close-out / changelog / archive / round wrap-up | [skills/guiyuan-iteration-close-loop/SKILL.md](skills/guiyuan-iteration-close-loop/SKILL.md) | `skills/guiyuan-iteration-close-loop/` |
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
-| project-type profiles / presets / dimensions | `skills/vibe-coding-manager/profiles/README.md` | `skills/vibe-coding-manager/profiles/` |
+| project-type profiles / presets / dimensions | `skills/guiyuan-vibecoding/profiles/README.md` | `skills/guiyuan-vibecoding/profiles/` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
 | QA / testing / self-check | [docs/02-technical/qa-contract.md](docs/02-technical/qa-contract.md) | `tools/run_qa.py`, `tests/`, `tools/selfqa.py` |
 | project hook / SessionStart / agent scope | [docs/02-technical/project-hook.md](docs/02-technical/project-hook.md), [docs/02-technical/agent-hook-methods.md](docs/02-technical/agent-hook-methods.md) | `tools/install_project_hook.py`, `tools/vcm_session_hook.py`, `.codex/hooks.json` |
@@ -33,13 +44,14 @@ module docs. Startup context is budgeted by `python tools/context_budget.py`.
 | artifacts / context builder / progressive disclosure | [docs/02-technical/artifact-context-contract.md](docs/02-technical/artifact-context-contract.md) | `docs/02-technical/` |
 | token budget / context cost / model routing | [docs/02-technical/token-budget.md](docs/02-technical/token-budget.md) | `docs/02-technical/` |
 | roadmap / delivery order / acceptance | [docs/01-product/roadmap.md](docs/01-product/roadmap.md) | `docs/01-product/` |
-| install / installer / scaffold | [docs/01-product/install/](docs/01-product/install/) + [docs/02-technical/packaging/](docs/02-technical/packaging/) | `skills/vibe-coding-install/`, `skills/vibe-coding-manager/` |
-| settings / admin UI | [docs/01-product/settings/](docs/01-product/settings/) + [docs/02-technical/frontend/](docs/02-technical/frontend/) | `skills/vibe-coding-manager/assets/frontend/admin/` |
+| install / installer / scaffold | [docs/01-product/install/](docs/01-product/install/) + [docs/02-technical/packaging/](docs/02-technical/packaging/) | `skills/guiyuan-vibecoding-install/`, `skills/guiyuan-vibecoding/` |
+| settings / admin UI | [docs/01-product/settings/](docs/01-product/settings/) + [docs/02-technical/frontend/](docs/02-technical/frontend/) | `skills/guiyuan-vibecoding/assets/frontend/admin/` |
 
 ## 2. Documentation discipline (non-negotiable)
 
 - **Same-round closure**: every change updates CHANGELOG (one row) plus affected docs in the same round;
-- **Sync rule**: `templates/iteration-methodology/` and `skills/vibe-coding-manager/assets/project/`
+- **Roadmap is current**: accepted scope/status changes update `docs/01-product/roadmap.md` in the same round;
+- **Sync rule**: `templates/iteration-methodology/` and `skills/guiyuan-vibecoding/assets/project/`
   must stay identical (edit both when the template changes);
 - No full rewrites of unrelated docs; no stale "TBD / not-synced" markers left for this change;
 - Tool changes must be tested (run once in a temp dir); `python tools/check_drift.py` must pass before commit.
@@ -48,7 +60,7 @@ module docs. Startup context is budgeted by `python tools/context_budget.py`.
 
 - Pure Python 3.11+ (tomllib for profiles), standard library only; UTF-8;
 - Paths resolve relative to the repo root (find README.md upward); no hardcoded absolute paths;
-- After doc-structure changes regenerate `llms.txt`: `python tools/gen_llms_txt.py --name "VibeCoding_Manager"`.
+- After doc-structure changes regenerate `llms.txt`: `python tools/gen_llms_txt.py --name "Guiyuan Vibecoding"`.
 
 ## 4. Index pointers
 

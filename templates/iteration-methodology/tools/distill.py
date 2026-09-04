@@ -45,7 +45,7 @@ DIRECTIONS = {
     "method": {
         "desc": "方法 → 模板",
         "inputs": ["docs/04-workflow/archive/"],
-        "output": "templates/iteration-methodology/ + skills/vibe-coding-manager/profiles/",
+        "output": "templates/iteration-methodology/ + skills/guiyuan-vibecoding/profiles/",
     },
     "consolidate": {
         "desc": "碎片 → 结论",

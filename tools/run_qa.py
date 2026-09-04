@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified QA gate for the VibeCoding_Manager internal repo (stdlib only).
+"""Unified QA gate for the Guiyuan Vibecoding internal repo (stdlib only).
 
 Single entrypoint for the internal test suite plus the delivery gates, so a round can be
 closed with one command instead of remembering each tool. Exits non-zero if any blocking gate
@@ -96,7 +96,7 @@ def _frontend_gate() -> dict:
         return {"name": "frontend", "ok": True, "returncode": 0, "detail": "skipped: node/npm not detected"}
     results: list[dict] = []
     for name in ("web", "admin"):
-        frontend_dir = ROOT / "skills" / "vibe-coding-manager" / "assets" / "frontend" / name
+        frontend_dir = ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "frontend" / name
         if not frontend_dir.is_dir():
             results.append({"name": f"frontend:{name}", "ok": True, "detail": "skipped: dir missing"})
             continue

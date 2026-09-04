@@ -1,4 +1,4 @@
-# VibeCoding_Manager cognitive and execution architecture
+# Guiyuan Vibecoding cognitive and execution architecture
 
 > Status: accepted architecture direction (2026-08-31). Implement as a modular monolith first;
 > Skills, plugins, desktop surfaces, and services are channels or packaging choices, not the core.
@@ -143,6 +143,28 @@ The bridge uses an optional provider seam:
   optional executor declaration; inbox receipt never grants execution permission.
 - return an idempotent result receipt containing status, authoritative artifact references and
   verification evidence.
+
+### 7.1 Embedding/vector ownership (decision 2026-09-03)
+
+VCM never owns an embedding model or a vector database. All embedding/semantic/vector state lives in
+Private Butler (bge-m3 + a vector store). VCM exposes a single `pb_enabled` toggle:
+
+- `pb_enabled=off` (default, standalone VCM): no PB connection, no model, no index. Retrieval is
+  deterministic (docs + L0/L1/L2 + keyword), and the LLM provider runs analysis/judgement. This is
+  the stdlib-only, zero-model release baseline.
+- `pb_enabled=on` (empowered): VCM delegates semantic ranking and user-context to PB over a stable
+  interface and never touches vectors. PB unreachable degrades to keyword + no user context, and
+  never blocks the iteration loop.
+
+The interface is stateless and does not copy project facts into personal memory:
+
+- `similarity(query, texts[]) -> ranked ids + scores` — on-demand scoring for VCM's own candidate
+  spans; nothing is persisted by VCM, and the index for project facts stays in the project repo.
+- `memory_context(query) -> budgeted user preferences/project pointers` — existing read path.
+- `memory_result(...) -> idempotent result receipt` — existing write path.
+
+PB may change its model or index implementation without a VCM redeploy, because both sides depend on
+the contract, never on PB internals.
 
 ## 8. Evaluation authority
 

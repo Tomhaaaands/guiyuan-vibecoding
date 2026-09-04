@@ -55,7 +55,7 @@ class InstallSkillsTest(unittest.TestCase):
             args, rc = install_skills._install_transactional(self.dest, self.src, names, True)
         self.assertEqual(rc, 0)
         self.assertTrue(args["backed_up"])
-        backups = list((self.dest / ".vibecoding-manager-backups").glob("*/a/SKILL.md"))
+        backups = list((self.dest / ".guiyuan-vibecoding-backups").glob("*/a/SKILL.md"))
         self.assertEqual(len(backups), 1)
         self.assertEqual(backups[0].read_text(encoding="utf-8"), "old")
         self.assertEqual((self.dest / "a" / "SKILL.md").read_text(encoding="utf-8"), "skill a")
@@ -92,6 +92,43 @@ class InstallFinishTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             with mock.patch.object(install_skills, "_validate_installed", return_value=["x: broken"]):
                 self.assertEqual(install_skills._install_finish(Path(tmp), False), 1)
+
+
+class InstallLifecycleTest(unittest.TestCase):
+    def _skill(self, root: Path, name: str, body: str = "content") -> Path:
+        path = root / name
+        path.mkdir(parents=True)
+        (path / "SKILL.md").write_text(f"---\nname: {name}\n---\n{body}\n", encoding="utf-8")
+        return path
+
+    def test_preflight_is_read_only_and_lists_similar_skill(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._skill(root, "guiyuan-vibecoding")
+            self._skill(root, "other-skill")
+            before = sorted(p.name for p in root.iterdir())
+            self.assertEqual(install_skills.preflight(root), 0)
+            self.assertEqual(before, sorted(p.name for p in root.iterdir()))
+
+    def test_uninstall_removes_owned_but_keeps_other_skill(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._skill(root, "guiyuan-vibecoding")
+            self._skill(root, "other-skill")
+            self.assertEqual(install_skills.uninstall(root), 0)
+            self.assertFalse((root / "guiyuan-vibecoding").exists())
+            self.assertTrue((root / "other-skill").exists())
+
+    def test_uninstall_preserves_manifest_hash_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            skill = self._skill(root, "guiyuan-vibecoding")
+            (root / install_skills.MANIFEST_NAME).write_text(
+                '{"skills":{"guiyuan-vibecoding":{"sha256":"not-the-current-hash"}}}\n', encoding="utf-8"
+            )
+            (skill / "SKILL.md").write_text("user edit", encoding="utf-8")
+            self.assertEqual(install_skills.uninstall(root), 0)
+            self.assertTrue(skill.exists())
 
 
 if __name__ == "__main__":

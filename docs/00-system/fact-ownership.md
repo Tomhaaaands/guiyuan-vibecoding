@@ -1,6 +1,6 @@
 # Fact ownership — which manager owns which memory
 
-> Shared boundary contract, updated 2026-09-02, between **VibeCoding Manager** (repo `vibecoding_manager`, the per-project
+> Shared boundary contract, updated 2026-09-02, between **Guiyuan Vibecoding** (repo `vibecoding_manager`, the per-project
 > manager") and **Private Butler** (repo `private_butler`, the personal "life manager"). Mirrored in both repos and kept
 > identical; if the two copies drift, fix them here and re-sync.
 

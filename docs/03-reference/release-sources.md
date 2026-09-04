@@ -7,19 +7,19 @@
 
 ## Retired published zip (v0.1.0)
 
-The public release asset `vibecoding-manager-0.1.0.zip` and its `.sha256` were removed from the GitHub
+The public release asset `guiyuan-vibecoding-0.1.0.zip` and its `.sha256` were removed from the GitHub
 release. The install-by-message flow is still valid, but the URL must come from a zip you build and
 host:
 
 ```text
-请安装 VibeCoding_Manager Skill
-技能地址：<URL of a separately hosted vibecoding-manager-<version>.zip>
+请安装 Guiyuan Vibecoding Skill
+技能地址：<URL of a separately hosted guiyuan-vibecoding-<version>.zip>
 ```
 
 Build it yourself:
 
 ```bash
-python tools/build_dist.py --verify   # writes dist/vibecoding-manager-<version>.zip + .sha256 + manifest
+python tools/build_dist.py --verify   # writes dist/guiyuan-vibecoding-<version>.zip + .sha256 + manifest
 ```
 
 Host that zip where you control it, then send the message above. Verify the `.sha256` companion file

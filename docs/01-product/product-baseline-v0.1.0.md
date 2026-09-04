@@ -1,4 +1,4 @@
-# VibeCoding Manager 产品基线 v0.1.0
+# Guiyuan Vibecoding 产品基线 v0.1.0
 
 > 状态：当前产品基线摘要；详细能力验收见同目录各 capability 文档
 > 生效日期：2026-09-02
@@ -6,7 +6,7 @@
 
 ## 1. 定位
 
-VibeCoding Manager 是独立封装的低 Token 软件项目管理与迭代治理产品。用户通过 Agent、
+Guiyuan Vibecoding 是独立封装的低 Token 软件项目管理与迭代治理产品。用户通过 Agent、
 Skill 或本地管理界面描述目标，VCM 负责建立项目事实、规划工作、验证交付并维持可追溯状态。
 
 VCM 不依赖 Private Butler。安装 PB 后可以获得跨场景候选任务和用户偏好，但项目仍由 VCM
@@ -36,6 +36,10 @@ VCM 不依赖 Private Butler。安装 PB 后可以获得跨场景候选任务和
 VCM 可声明项目分析、代码实现、测试、文档和发布等能力，并接收 PB 或第三方路由器提交的
 任务候选。候选至少包含 `dispatch_id`、`idempotency_key`、来源引用、意图、优先级、风险、
 摘要和授权状态。
+
+嵌入/向量全部由 PB 承载（bge-m3 + 向量库）；VCM 通过 `pb_enabled` 开关决定是否接入 PB，接入后
+只经稳定接口做语义评分与上下文读取，自身不持有模型或向量库，也不复制项目规格进个人记忆。
+独立 VCM（`pb_enabled=off`）保持零模型、零向量：确定性检索 + LLM provider。
 
 收到候选不等于开始执行。默认流程：
 

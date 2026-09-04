@@ -24,6 +24,7 @@ PATTERNS = (
     re.compile(r"\bsk-[A-Za-z0-9]{20,}\b"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
 )
+SKIP_PREFIXES = ("tests/", "tools/fixtures/")
 
 
 def run(*args: str) -> str:
@@ -42,6 +43,10 @@ def scan_text(label: str, text: str) -> int:
     return hits
 
 
+def _is_test_fixture(rel: str) -> bool:
+    return any(rel.startswith(prefix) for prefix in SKIP_PREFIXES)
+
+
 def main() -> None:
     try:
         tracked = [line for line in run("ls-files").splitlines() if line]
@@ -50,6 +55,8 @@ def main() -> None:
         sys.exit(1)
     hits = 0
     for rel in tracked:
+        if _is_test_fixture(rel):
+            continue
         path = ROOT / rel
         try:
             data = path.read_text(encoding="utf-8")
@@ -66,7 +73,10 @@ def main() -> None:
             if result.returncode not in (0, 1):
                 raise RuntimeError(result.stderr.strip() or "git grep failed")
             for line in result.stdout.splitlines():
-                print(f"[history-secret] {line.split(':', 2)[0]}:{line.split(':', 2)[1]}")
+                parts = line.split(":", 2)
+                if len(parts) >= 3 and _is_test_fixture(parts[1]):
+                    continue
+                print(f"[history-secret] {parts[0]}:{parts[1] if len(parts) > 1 else ''}")
                 hits += 1
     except RuntimeError as exc:
         print(f"[error] {exc}")

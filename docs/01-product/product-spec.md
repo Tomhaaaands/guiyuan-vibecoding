@@ -1,4 +1,4 @@
-# VibeCoding_Manager product overview and contract
+# Guiyuan Vibecoding product overview and contract
 
 > Status: accepted vNext direction (2026-08-31). Current v0.1.0 remains the bootstrap/iteration
 > foundation; capabilities in this document become shipped only when their roadmap acceptance gate
@@ -22,7 +22,7 @@ relevant capability slices.
 
 ## 1. One-line promise
 
-The user describes what they want to build and confirms consequential choices; VibeCoding_Manager
+The user describes what they want to build and confirms consequential choices; Guiyuan Vibecoding
 accepts the management burden of turning that intent into coherent requirements, authoritative
 artifacts, executable work, verified delivery, and reusable engineering experience.
 
@@ -76,7 +76,7 @@ not verification; a commit is not automatically a released product.
 
 Existing projects begin with a read-only workflow assessment. Each management surface is chosen
 independently by the user: **keep** leaves the prior workflow authoritative, **map** indexes it
-without rewriting it, and **managed** activates only that VibeCoding_Manager layer. A confirmed
+without rewriting it, and **managed** activates only that Guiyuan Vibecoding layer. A confirmed
 adoption records baseline hashes, backups, and a receipt in the repository; changed baselines block
 application and require reassessment. Business code and unselected workflow files are never changed.
 
@@ -116,6 +116,11 @@ Normal interaction exposes four messages, not internal management machinery:
 3. "I need your decision because ..."
 4. "This is complete; here is the evidence and next step."
 
+Every incoming requirement, optimization, or question also follows a compact three-stage response
+contract: semantic understanding → recommended solution → executable plan. The contract exposes only
+an auditable summary; it never requires hidden chain-of-thought. A question-only request may use a
+one-line answer and verification plan.
+
 Internal artifacts, task graphs, archives, Git operations, and gates remain inspectable but do not
 become routine chores for the user.
 
@@ -132,7 +137,7 @@ become routine chores for the user.
 
 ## 8. Private Butler boundary
 
-VibeCoding_Manager owns project truth. Private_butler owns personal memory and lightweight project
+Guiyuan Vibecoding owns project truth. Private_butler owns personal memory and lightweight project
 pointers. Integration is optional and low-coupling:
 
 - at project start, read approved user preferences and related project pointers when available;
@@ -141,5 +146,8 @@ pointers. Integration is optional and low-coupling:
 - at milestone close, return a short project digest plus artifact pointer;
 - either system remains fully usable when the other is unavailable.
 - deduplicate candidates by idempotency key and return status, artifact pointers and verification evidence.
+- embed/vectorize only inside Private_butler (bge-m3 + vector store); VCM exposes a `pb_enabled`
+  toggle and never owns a model or a vector database.
+- never mix embedding models in one index; PB owns its index and VCM stays out of it.
 
 The shared ownership rules remain in `docs/00-system/fact-ownership.md`.

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Guiyuan Iteration Close Loop"
+  short_description: "Round close-out: changelog/archive/state card/doc sync/gates"

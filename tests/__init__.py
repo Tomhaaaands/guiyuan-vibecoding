@@ -1,4 +1,4 @@
-"""VibeCoding_Manager internal test package (stdlib unittest)."""
+"""Guiyuan Vibecoding internal test package (stdlib unittest)."""
 
 from __future__ import annotations
 

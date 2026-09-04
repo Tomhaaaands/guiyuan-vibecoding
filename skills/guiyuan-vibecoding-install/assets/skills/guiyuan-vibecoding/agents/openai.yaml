@@ -1,0 +1,5 @@
+interface:
+  display_name: "Guiyuan Vibecoding"
+  short_description: "Put any coding project under local iteration management — adopt an existing repo or scaffold a new one (explicit $guiyuan-vibecoding only)"
+policy:
+  allow_implicit_invocation: false

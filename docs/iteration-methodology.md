@@ -215,9 +215,9 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
 | `tools/workflow_optimize.py` | receipt-backed workflow suggestion bundle; never applies changes | milestone review |
 | `tools/check_package.py` | tracked source/history secret scan before public release | release gate |
-| skill `vibe-coding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
-| skill `vibe-coding-manager` | guided manager: assess an existing project before confirmed, scoped adoption; scaffold a new one | any project's first conversation |
-| skill `iteration-close-loop` | round close-out | every round wrap-up |
+| skill `guiyuan-vibecoding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
+| skill `guiyuan-vibecoding` | guided manager: assess an existing project before confirmed, scoped adoption; scaffold a new one | any project's first conversation |
+| skill `guiyuan-iteration-close-loop` | round close-out | every round wrap-up |
 
 ## 11. Reuse & migration guide (how to apply elsewhere)
 
@@ -237,8 +237,8 @@ rollup/hydrate/check_drift/gen_llms_txt scripts; replace placeholders and you're
 ### Full set (+ behavior packaging)
 
 Install the skills globally (user-chosen agent/shared directory) or project-locally under
-`.vibecoding-manager/skills/`: `iteration-close-loop` closes rounds in any project;
-`vibe-coding-manager` first assesses an existing project without writing it, then applies only
+`.guiyuan-vibecoding/skills/`: `guiyuan-iteration-close-loop` closes rounds in any project;
+`guiyuan-vibecoding` first assesses an existing project without writing it, then applies only
 user-confirmed workflow layers, or deploys the kit into a new project. Existing-project adoption
 does not auto-install the close-loop skill.
 
@@ -268,7 +268,7 @@ Differentiators: **red-line/pitfall residency**, **three-layer record model**
 ## 13. Iterating on this system itself
 
 - changes to AGENTS.md / workflows / this doc -> sync `templates/iteration-methodology/` and
-  `skills/vibe-coding-manager/assets/project/` in the same round;
+  `skills/guiyuan-vibecoding/assets/project/` in the same round;
 - tool changes -> sync template copies and re-run tests;
 - the distillation loop (`tools/distill.py`) defines four lift directions — pitfalls / method /
   consolidate / promote; `pitfalls` is implemented (deterministic first pass), the rest are stubs.

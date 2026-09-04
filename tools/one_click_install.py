@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-click installer for the VibeCoding_Manager kit.
+"""One-click installer for the Guiyuan Vibecoding kit.
 
 Usage:
   python tools/one_click_install.py                 # install skills + doctor
@@ -8,7 +8,7 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
-  2. Installs the three kit skills (iteration-close-loop, vibe-coding-manager, vibe-coding-install)
+  2. Installs the three kit skills (guiyuan-iteration-close-loop, guiyuan-vibecoding, guiyuan-vibecoding-install)
      into --skills-dir, VIBECODING_SKILLS_HOME, or the Codex fallback (idempotent; --force overwrites);
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
@@ -26,7 +26,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
 INSTALL = ROOT / "tools" / "install_skills.py"
-BOOTSTRAP = ROOT / "skills" / "vibe-coding-manager" / "scripts" / "bootstrap.py"
+BOOTSTRAP = ROOT / "skills" / "guiyuan-vibecoding" / "scripts" / "bootstrap.py"
 MIN_PY = (3, 11)
 
 
@@ -48,7 +48,7 @@ def run(args: list[str]) -> None:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="One-click install + optional project scaffold for VibeCoding_Manager")
+    ap = argparse.ArgumentParser(description="One-click install + optional project scaffold for Guiyuan Vibecoding")
     ap.add_argument("--target", default=None, help="project folder to scaffold after install (optional)")
     ap.add_argument("--name", default=None, help="project name (default: target folder name)")
     ap.add_argument("--profile", default=None, help="project-type preset or custom .toml path")
@@ -89,13 +89,21 @@ def main() -> None:
     ap.add_argument("--skill-location", choices=["auto", "project", "global", "skip"], default=None,
                     help="close-loop install location for the scaffolded project")
     ap.add_argument("--discover", action="store_true", help="list known agent skill roots read-only")
+    ap.add_argument("--preflight", action="store_true", help="read-only inventory before install/update")
+    ap.add_argument("--uninstall", action="store_true", help="remove only Guiyuan-owned skills; no confirmation")
     args = ap.parse_args()
 
     check_python()
     if args.discover:
         run([str(INSTALL), "--discover"])
         return
-    print(f"VibeCoding_Manager one-click installer v{version()}")
+    if args.preflight or args.uninstall:
+        cmd = [str(INSTALL), "--preflight" if args.preflight else "--uninstall"]
+        if args.skills_dir:
+            cmd += ["--skills-dir", args.skills_dir]
+        run(cmd)
+        return
+    print(f"Guiyuan Vibecoding one-click installer v{version()}")
     print(f"kit root : {ROOT}")
     print("skills   : explicit --skills-dir > VIBECODING_SKILLS_HOME > Codex fallback")
     print()
@@ -174,7 +182,7 @@ def main() -> None:
     if args.target:
         print("  next: open a NEW conversation in that project and start your first real task.")
     else:
-        print("  next: invoke $vibe-coding-manager in your project conversation (empty folder = scaffold,")
+        print("  next: invoke $guiyuan-vibecoding in your project conversation (empty folder = scaffold,")
         print("        existing code = adopt), or rerun with --target <folder> to manage it now.")
 
 

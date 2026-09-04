@@ -1,6 +1,6 @@
 # Common Agent Hook Methods
 
-VibeCoding_Manager defaults to a **project-scoped Codex `SessionStart` advisory hook**. This file is
+Guiyuan Vibecoding defaults to a **project-scoped Codex `SessionStart` advisory hook**. This file is
 the local reference for the common Agent hook setups, so the installing agent can read the exact
 method from disk instead of searching the web each time.
 

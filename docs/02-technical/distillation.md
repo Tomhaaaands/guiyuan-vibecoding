@@ -6,7 +6,7 @@
 
 ## Why distillation
 
-VibeCoding_Manager is a per-project "project manager" kit. For it to self-iterate, each project
+Guiyuan Vibecoding is a per-project "project manager" kit. For it to self-iterate, each project
 must periodically distill its private experience — pitfalls, proven methods, matured
 conclusions — into reusable assets, so the next project starts smarter.
 

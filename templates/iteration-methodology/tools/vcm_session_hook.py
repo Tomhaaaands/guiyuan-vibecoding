@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Project-scoped Codex SessionStart hook for VibeCoding_Manager (stdlib only).
+"""Project-scoped Codex SessionStart hook for Guiyuan Vibecoding (stdlib only).
 
 A managed project carries this at tools/vcm_session_hook.py and a sibling
 .codex/hooks.json that wires it to the SessionStart event. The hook only reads the
@@ -13,7 +13,7 @@ On SessionStart it prints a JSON object:
   {"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}
 
 The deep read-only gates (selfqa / context_budget) run only when VCM_HOOK_CHECK=1 or
-<project>/.vibecoding-manager/hook_full exists, to keep every session start cheap.
+<project>/.guiyuan-vibecoding/hook_full exists, to keep every session start cheap.
 
 Usage:
   python tools/vcm_session_hook.py            # read a SessionStart event on stdin
@@ -43,6 +43,7 @@ CODE_SUFFIXES = {
     ".c", ".cpp", ".cs", ".kt", ".swift", ".vue", ".svelte", ".sh",
 }
 VCM_SKELETON = ("AGENTS.md", "NOW.md", "CHANGELOG.md")
+GUIYUAN_MARKERS = (".guiyuan-vibecoding", ".vibecoding-manager")
 
 
 def project_root() -> Path:
@@ -53,7 +54,7 @@ def project_root() -> Path:
         if (p / "AGENTS.md").is_file():
             return p
     for p in candidates:
-        if (p / "tools").is_dir() or (p / ".vibecoding-manager").exists():
+        if (p / "tools").is_dir() or any((p / marker).exists() for marker in GUIYUAN_MARKERS):
             return p
     return Path.cwd()
 
@@ -89,8 +90,9 @@ def _coding_signals(root: Path) -> list[str]:
 
 
 def _detect(root: Path) -> tuple[str, list[str]]:
-    if _has(root, ".vibecoding-manager"):
-        return "managed", [".vibecoding-manager/"]
+    for marker in GUIYUAN_MARKERS:
+        if _has(root, marker):
+            return "managed", [marker + "/"]
     if all(_has(root, p) for p in VCM_SKELETON) and (root / "docs" / "04-workflow").is_dir():
         return "vcm-shaped", ["AGENTS.md", "NOW.md", "CHANGELOG.md", "docs/04-workflow/"]
     signals = _coding_signals(root)
@@ -100,31 +102,31 @@ def _detect(root: Path) -> tuple[str, list[str]]:
 
 
 def _advisory(state: str, signals: list[str], root: Path, full: str = "") -> str:
-    lines = ["[vibe-coding-manager session hook]"]
+    lines = ["[guiyuan-vibecoding session hook]"]
     if state == "managed":
         lines.append(
-            "此项目已由 VibeCoding_Manager 托管（.vibecoding-manager/）。"
+            "此项目已由 Guiyuan Vibecoding 托管（.guiyuan-vibecoding/）。"
             "遵循 AGENTS.md 启动契约：先读 NOW.md，再按路由读所需权威文档；"
             "提交前运行 tools/check_drift.py，发布前运行 tools/selfqa.py。"
         )
     elif state == "vcm-shaped":
         lines.append(
-            "项目已有 VCM 结构（AGENTS.md/NOW/CHANGELOG/docs 五层），但尚缺 .vibecoding-manager/，"
-            "因此只是 dogfooding，未被正式接管。如需正式托管，显式调用 $vibe-coding-manager 走 adopt"
+            "项目已有 Guiyuan Markdown 结构（AGENTS.md/NOW/CHANGELOG/docs 五层），但尚缺 .guiyuan-vibecoding/，"
+            "因此属于 md-managed / no-skill，未被正式接管。如需正式托管，显式调用 $guiyuan-vibecoding 走 adopt"
             "（会写 baseline/备份/回执）；否则按方法论自律即可。"
         )
     elif state == "coding":
         joined = ", ".join(signals[:6])
         lines.append(
-            f"识别为 Coding 项目（信号：{joined}），当前未由 VCM 管理。"
-            "如需纳入，显式调用 $vibe-coding-manager 做一次无写入 assess，再按确认结果 adopt。"
+            f"识别为 Coding 项目（信号：{joined}），当前未由 Guiyuan Vibecoding 管理。"
+            "如需纳入，显式调用 $guiyuan-vibecoding 做一次无写入 assess，再按确认结果 adopt。"
         )
     else:
         lines.append(
             "目录为空或仅含笔记类文件，无法判定是否 Coding 项目。请确认意图："
-            "①灵感/草稿箱——仅记录，不建立 .vibecoding-manager，不接管；"
+            "①灵感/草稿箱——仅记录，不建立 .guiyuan-vibecoding，不接管；"
             "②Coding 项目——走标准 adopt（上下文预算 + selfqa + 项目级 hook）。"
-            "vibe-coding-manager 默认不自动接管。"
+            "guiyuan-vibecoding 默认不自动接管。"
         )
     if full:
         lines.append(full)
@@ -155,7 +157,7 @@ def _full_check(root: Path) -> str:
 def build_advisory(root: Path, event: dict | None = None) -> str:
     state, signals = _detect(root)
     full = ""
-    if os.environ.get("VCM_HOOK_CHECK") == "1" or _has(root, ".vibecoding-manager/hook_full"):
+    if os.environ.get("VCM_HOOK_CHECK") == "1" or _has(root, ".guiyuan-vibecoding/hook_full"):
         full = _full_check(root)
     return _advisory(state, signals, root, full)
 
@@ -173,7 +175,7 @@ def emit(root: Path, event: dict | None = None) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="VibeCoding_Manager project-scoped SessionStart hook")
+    ap = argparse.ArgumentParser(description="Guiyuan Vibecoding project-scoped SessionStart hook")
     ap.add_argument("--state", action="store_true", help="print detected state only")
     ap.add_argument("--json-out", action="store_true", help="emit advisory JSON without stdin")
     args = ap.parse_args()

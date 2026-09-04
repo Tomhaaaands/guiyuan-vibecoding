@@ -30,13 +30,13 @@ LLMS = ROOT / "llms.txt"
 SKIP_PARTS = {"archive", "_archive"}
 SYNC_PAIRS = (
     (ROOT / "templates" / "iteration-methodology",
-     ROOT / "skills" / "vibe-coding-manager" / "assets" / "project"),
-    (ROOT / "skills" / "iteration-close-loop",
-     ROOT / "skills" / "vibe-coding-manager" / "assets" / "skills" / "iteration-close-loop"),
-    (ROOT / "skills" / "iteration-close-loop",
-     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "iteration-close-loop"),
-    (ROOT / "skills" / "vibe-coding-manager",
-     ROOT / "skills" / "vibe-coding-install" / "assets" / "skills" / "vibe-coding-manager"),
+     ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "project"),
+    (ROOT / "skills" / "guiyuan-iteration-close-loop",
+     ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
+    (ROOT / "skills" / "guiyuan-iteration-close-loop",
+     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
+    (ROOT / "skills" / "guiyuan-vibecoding",
+     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-vibecoding"),
 )
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",
@@ -49,7 +49,7 @@ SKIP_FILES = {
 # Single-source version gate: the self-contained install skill carries its own VERSION
 # (it travels with the installed skill and cannot read the repo root), so it must stay equal to root.
 VERSION_FILE = ROOT / "VERSION"
-BUNDLED_VERSION = ROOT / "skills" / "vibe-coding-install" / "VERSION"
+BUNDLED_VERSION = ROOT / "skills" / "guiyuan-vibecoding-install" / "VERSION"
 STALE_RE = re.compile(r"\[OUTDATED\]|\bTODO\b|\bTBD\b|\bFIXME\b")
 SOFT_RE = re.compile(r"待补(?:充)?")
 LINK_RE = re.compile(r"\]\(([^)#]+?)\)")

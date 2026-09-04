@@ -66,7 +66,7 @@ class HookDetectTest(unittest.TestCase):
     def test_managed_detected(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / ".vibecoding-manager").mkdir()
+            (root / ".guiyuan-vibecoding").mkdir()
             state, _ = vcm_session_hook._detect(root)
             self.assertEqual(state, "managed")
 
@@ -76,7 +76,7 @@ class HookAdvisoryTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             text = vcm_session_hook.build_advisory(root)
-            self.assertIn("vibe-coding-manager", text)
+            self.assertIn("guiyuan-vibecoding", text)
             self.assertIn("意图", text)  # ambiguous intent gate
 
     def test_emit_returns_hook_specific_context(self):

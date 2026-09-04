@@ -1,0 +1,6 @@
+interface:
+  display_name: "Guiyuan Vibecoding Install"
+  short_description: "One-click install/update of Guiyuan Vibecoding skills + optional scaffold"
+  default_prompt: "Use $guiyuan-vibecoding-install to preflight, install, update, or uninstall the Guiyuan Vibecoding kit skills, and optionally scaffold a project folder. Uninstall removes only Guiyuan-owned components and leaves user data, plugins, project files, and Butler MCP untouched."
+policy:
+  allow_implicit_invocation: false

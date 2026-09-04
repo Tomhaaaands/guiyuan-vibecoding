@@ -8,7 +8,7 @@ depends_on: technical/artifact-context-contract, technical/packaging/install-con
 
 # QA & Testing Contract
 
-VibeCoding_Manager 把“验证”分成两层，职责与分发边界不同：**内部测试套件**只存在于本仓库，
+Guiyuan Vibecoding 把“验证”分成两层，职责与分发边界不同：**内部测试套件**只存在于本仓库，
 > 用于研发自身回归；**发布版自检门禁**随项目模板下发到每个被管理项目，用于验证采纳后的
 > 项目自身健康。两者都是 stdlib-only、无第三方依赖、可在任意主机直接运行。
 
@@ -61,7 +61,7 @@ CLI 工具（build_dist、check_package、gen_llms_txt、architecture_audit、sy
 ## 边界
 
 - 内部套件不进入发布 zip；`selfqa.py` 通过 `templates/iteration-methodology/tools/`
-  ↔ `skills/vibe-coding-manager/assets/project/tools/` 同步，随技能下发。
+  ↔ `skills/guiyuan-vibecoding/assets/project/tools/` 同步，随技能下发。
 - 被管项目不拥有 `behavior_harness`/`build_dist`/`check_package` 等仓库专用门禁；
   它们只对研发闭环有意义，不随分发。
 - 前端仅做 build/typecheck 冒烟，不做组件或浏览器 E2E，避免把 node/Puppeteer 引入

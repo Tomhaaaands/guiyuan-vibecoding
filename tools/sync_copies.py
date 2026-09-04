@@ -2,7 +2,7 @@
 """Propagate source-of-truth files to their distribution payload copies.
 
 The kit ships several self-contained payload copies: the manager skill carries a project
-template (assets/project) and a close-loop copy (assets/skills/iteration-close-loop); the
+template (assets/project) and a close-loop copy (assets/skills/guiyuan-iteration-close-loop); the
 install skill bundles both skills (assets/skills/*) so it can install/update from any Agent.
 check_drift detects drift; this script fixes it by copying source -> payload for the same
 SYNC_PAIRS (imported from check_drift to keep one definition), plus the version file.
@@ -70,7 +70,7 @@ def _sync_version(dry_run: bool) -> list[str]:
         return []
     if not dry_run:
         BUNDLED_VERSION.write_text(VERSION_FILE.read_text(encoding="utf-8"), encoding="utf-8")
-    return ["  [version] root VERSION -> skills/vibe-coding-install/VERSION"]
+    return ["  [version] root VERSION -> skills/guiyuan-vibecoding-install/VERSION"]
 
 
 def main() -> None:

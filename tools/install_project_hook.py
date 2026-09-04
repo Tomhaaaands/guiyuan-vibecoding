@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a project-scoped Codex SessionStart hook for VibeCoding_Manager.
+"""Install a project-scoped Codex SessionStart hook for Guiyuan Vibecoding.
 
 Writes <root>/.codex/hooks.json so the currently trusted project loads the
 advisory runner at tools/vcm_session_hook.py. The hook only reads the project,

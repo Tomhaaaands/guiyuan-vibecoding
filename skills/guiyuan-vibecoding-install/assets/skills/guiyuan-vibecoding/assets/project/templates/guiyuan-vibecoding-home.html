@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>归园撸代码 · 项目主页</title>
+<style>
+  :root{
+    --paper:#F4F0E6; --paper2:#EDE4D0; --card:#FFFDF8; --ink:#2B2A26; --muted:#7A7468;
+    --line:#E2D9C6; --teal:#3E6B5C; --teal-d:#2F5246; --teal-soft:#E3ECE7;
+    --ochre:#B0894E; --ochre-soft:#F3E9D8;
+    --ok:#3E7A45; --ok-soft:#E4EFE2; --warn:#A56A1E; --warn-soft:#F7ECD7; --err:#A23E40; --err-soft:#F6E3E2;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;scroll-padding-top:92px;}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.7 system-ui,-apple-system,"PingFang SC","Segoe UI",Roboto,Arial,sans-serif;}
+  a{color:var(--teal-d);text-decoration:none;} a:hover{text-decoration:underline;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 18px;}
+  h2.sec{font-size:21px;margin:0 0 4px;}
+  p.lead{color:var(--muted);margin:0 0 18px;font-size:14px;}
+  section{scroll-margin-top:92px;}
+
+  /* TITLEBAR */
+  .nav{position:sticky;top:10px;z-index:50;margin:10px auto 0;max-width:1080px;padding:0 14px;}
+  .nav-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:58px;
+    background:rgba(255,253,248,.82);backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+    border:1px solid rgba(70,58,32,.22);border-radius:16px;padding:11px 16px;box-shadow:0 4px 18px rgba(60,50,30,.10);}
+  .brand{font-weight:700;font-size:14.5px;margin-right:auto;padding:0 6px;letter-spacing:.3px;}
+  .brand small{color:var(--muted);font-weight:400;}
+  .nav a.item{font-size:14px;color:var(--ink);padding:9px 14px;border-radius:10px;white-space:nowrap;}
+  .nav a.item:hover{background:var(--teal-soft);color:var(--teal-d);text-decoration:none;}
+  .nav a.gh{background:var(--ink);color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;}
+  .nav a.gh:hover{background:#000;text-decoration:none;}
+
+  /* HERO：圆角卡片式（收在内容容器内），右侧融合陶渊明 */
+  .hero{position:relative;margin-top:18px;border-radius:20px;overflow:hidden;border:1px solid var(--line);
+    background:linear-gradient(92deg,#F2EAD9 0%,#EDE0C8 42%,#E9DCC4 66%,#E6D6B9 100%);min-height:330px;}
+  .hero-inner{position:relative;z-index:2;padding:32px 34px;max-width:60%;}
+  .hero-art{position:absolute;top:0;right:0;width:46%;height:100%;pointer-events:none;overflow:hidden;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 6%,#000 94%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 6%,#000 94%,transparent 100%);}
+  .hero-art .fig{position:absolute;inset:0;background:url("assets/taoyuanming-2.png") no-repeat 44px center;background-size:auto 100%;
+    -webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.35) 5%,#000 12%,#000 100%);
+    mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.35) 5%,#000 12%,#000 100%);}
+  .hero-art .fade{position:absolute;inset:0;background:linear-gradient(to right,#EADDC5 0%,rgba(234,221,197,.5) 12%,rgba(234,221,197,0) 26%);}
+  .tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .tag{font-size:12px;padding:4px 12px;border-radius:999px;font-weight:600;}
+  .tag.name{background:rgba(47,82,70,.12);color:var(--teal-d);}
+  .tag.ok{background:var(--ok-soft);color:var(--ok);}
+  .tag.run{background:rgba(255,253,248,.72);color:var(--ink);border:1px solid var(--line);}
+  .hero h1{font-size:28px;margin:0 0 8px;letter-spacing:.5px;line-height:1.3;}
+  .hero .desc{font-size:14.5px;line-height:1.7;color:#4A463C;max-width:500px;margin:0 0 18px;}
+  .meta{display:flex;flex-direction:column;align-items:flex-start;gap:8px;font-size:13.5px;color:#5A554A;}
+  .meta .k{display:inline-block;min-width:84px;color:#6E675A;}
+  .meta b{color:var(--ink);font-weight:600;}
+
+  /* 快速开始：默认折叠 */
+  details.quick{margin-top:34px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0;}
+  details.quick>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 20px;}
+  details.quick>summary::-webkit-details-marker{display:none;}
+  details.quick>summary .chev{color:var(--muted);transition:transform .2s;}
+  details.quick[open]>summary .chev{transform:rotate(90deg);}
+  details.quick>summary h2{font-size:18px;margin:0;}
+  .inst-tag{font-size:12px;font-weight:700;padding:3px 11px;border-radius:999px;}
+  .inst-tag.yes{background:var(--ok-soft);color:var(--ok);}
+  .inst-tag.no{background:var(--warn-soft);color:var(--warn);}
+  .quick-body{padding:0 20px 20px;}
+  .steps{display:flex;flex-wrap:wrap;gap:14px;}
+  .step{flex:1 1 280px;min-width:260px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;}
+  .step .no{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-bottom:8px;}
+  .step h3{margin:0 0 8px;font-size:15.5px;} .step p{margin:0 0 8px;font-size:13.5px;color:#4A463C;}
+  .grp{margin-bottom:10px;}.grp:last-child{margin-bottom:0;}
+  .grp .gl{font-size:12.5px;color:var(--muted);margin-bottom:4px;}
+  .cmd{position:relative;display:block;width:100%;text-align:left;background:#2B2A26;color:#EDE6D6;border:0;border-radius:9px;padding:10px 44px 10px 11px;font:12.5px/1.55 ui-monospace,Consolas,monospace;white-space:pre-wrap;cursor:pointer;}
+  .cmd:hover{background:#23221F;} .cmd .at{color:#9CC7B4;}
+  .cmd .cp{position:absolute;top:7px;right:8px;font:11px/1 system-ui,sans-serif;background:rgba(255,255,255,.14);color:#EDE6D6;border-radius:6px;padding:4px 7px;white-space:nowrap;}
+  .cmd.copied{background:#2F5246;}
+
+  /* TABS */
+  .body-sec{margin-top:40px;}
+  .tabs{display:flex;flex-wrap:wrap;background:var(--paper2);border-radius:14px;padding:4px;gap:4px;margin-bottom:18px;}
+  .tabs button{border:0;background:transparent;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .tabs button.active{background:var(--card);color:var(--teal-d);box-shadow:0 2px 8px rgba(60,50,30,.08);}
+  .tabpane{display:none;}.tabpane.active{display:block;}
+  .arch-note{font-size:12.5px;color:var(--muted);margin-bottom:14px;}
+  .empty{border:1.5px dashed var(--line);border-radius:16px;background:var(--card);padding:44px 20px;text-align:center;color:var(--muted);}
+  .empty .big{font-size:17px;color:var(--ink);font-weight:700;margin-bottom:6px;}
+  .empty .hint{font-size:13px;}
+
+  /* 架构：左右 master-detail */
+  .arch-layout{display:flex;gap:16px;align-items:flex-start;}
+  .arch-left{flex:1 1 auto;min-width:0;}
+  .layer{border-radius:14px;padding:12px 14px;border:1px solid var(--line);}
+  .layer .lh{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .layer .lh .lt{font-size:13px;font-weight:700;letter-spacing:.5px;}
+  .layer .lh .rule{flex:1;height:1px;background:currentColor;opacity:.18;}
+  .l-ch{background:#F1ECE2;color:#6E675A;} .l-brain{background:var(--ochre-soft);color:var(--ochre);}
+  .l-plan{background:var(--teal-soft);color:var(--teal-d);} .l-dev{background:#E6EFE6;color:#3E7A45;}
+  .l-refl{background:#F0E9F0;color:#7A5A86;}
+  .boxes{display:flex;flex-wrap:wrap;gap:10px;}
+  .abox{flex:1 1 150px;min-width:140px;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:11px;padding:10px 13px;cursor:pointer;color:var(--ink);transition:border-color .15s,box-shadow .15s;}
+  .abox b{display:block;font-size:14px;} .abox span{font-size:12px;color:var(--muted);}
+  .abox:hover{border-color:var(--teal);}
+  .abox.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(62,107,92,.18);background:#F4F9F6;}
+  .dblarrow{align-self:center;color:var(--ochre);font-size:13px;line-height:1.05;text-align:center;margin:1px 0;letter-spacing:1px;}
+  .loopback{font-size:12px;color:var(--muted);text-align:center;margin:2px 0;}
+  .base{border-radius:12px;background:var(--ink);color:#EDE6D6;font-size:13px;padding:11px 16px;text-align:center;}
+  .arch-detail{flex:0 0 360px;position:sticky;top:90px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 18px;max-height:calc(100vh - 110px);overflow:auto;}
+  .arch-detail h4{margin:0 0 2px;font-size:15.5px;}
+  .arch-detail .duty{font-size:13.5px;color:#4A463C;margin:2px 0 8px;}
+  .arch-detail ol{margin:0 0 8px;padding-left:20px;} .arch-detail li{margin:3px 0;font-size:13.5px;}
+  .doclinks{display:flex;flex-direction:column;gap:5px;margin-top:6px;border-top:1px dashed var(--line);padding-top:8px;}
+  .doclinks .dg{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.5px;}
+  .doclinks a{font-size:12.5px;font-family:ui-monospace,Consolas,monospace;overflow-wrap:anywhere;}
+  .sheet-close{display:none;}
+  .sheet-mask{display:none;}
+
+  /* 进度 */
+  .rm{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;}
+  .rm a{font-size:12px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);}
+  .rm a.c{border-color:var(--ok);color:var(--ok);background:var(--ok-soft);} .rm a.i{border-color:var(--teal);color:var(--teal-d);background:var(--teal-soft);} .rm a.p{border-color:var(--warn);color:var(--warn);background:var(--warn-soft);}
+  .prog{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;}
+  .prog-list{flex:0 0 220px;min-width:200px;display:flex;flex-direction:column;gap:6px;}
+  .prog-list button{text-align:left;border:1px solid var(--line);background:var(--card);border-radius:11px;padding:10px 13px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+  .prog-list button .dot{width:8px;height:8px;border-radius:50%;background:#C9BFA9;flex:0 0 auto;}
+  .prog-list button.active{border-color:var(--teal);background:var(--teal-soft);font-weight:600;color:var(--teal-d);}
+  .prog-list button.active .dot{background:var(--teal);}
+  .prog-detail{flex:1 1 380px;min-width:280px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;}
+  .prog-detail h3{margin:0 0 4px;font-size:17px;}
+  .pbar{height:9px;border-radius:6px;background:#ECE4D3;overflow:hidden;margin:6px 0 4px;}
+  .pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#6FA08F);border-radius:6px;}
+  .row{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13.5px;}
+  .row:last-child{border-bottom:0;} .row .k{flex:0 0 84px;color:var(--muted);} .row .v{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+  .row .v a{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;}
+  .badge{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;font-weight:600;}
+  .b-ok{background:var(--ok-soft);color:var(--ok);} .b-run{background:var(--teal-soft);color:var(--teal-d);}
+  .b-wait{background:var(--warn-soft);color:var(--warn);} .b-block{background:var(--err-soft);color:var(--err);}
+
+  /* Roadmap 时间线 */
+  .tl{position:relative;margin-left:8px;padding-left:22px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:12px;}
+  .tl-item{position:relative;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 16px;}
+  .tl-item::before{content:"";position:absolute;left:-29px;top:18px;width:12px;height:12px;border-radius:50%;background:var(--teal);border:2px solid var(--paper);}
+  .tl-item.done::before{background:var(--ok);} .tl-item.partial::before{background:var(--warn);}
+  .tl-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .tl-head .ph{font-weight:700;font-size:14px;} .tl-head .when{font-size:12px;color:var(--muted);margin-left:auto;}
+  .tl-item .scope{font-size:13.5px;margin:3px 0;}
+  .tl-item .acc{font-size:12.5px;color:#5C574D;}
+  .tl-item .pbar{margin:8px 0 4px;}
+  .tl-links{margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;}
+  .tl-links a{font-size:12px;font-family:ui-monospace,Consolas,monospace;}
+
+  /* 文档树 */
+  .tree-tools{display:flex;gap:8px;margin-bottom:10px;}
+  .tree-tools button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--teal-d);}
+  .tree{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:13.5px;}
+  .tree details{margin:2px 0;}
+  .tree summary{cursor:pointer;font-weight:600;padding:2px 4px;border-radius:6px;list-style:none;}
+  .tree summary::-webkit-details-marker{display:none;}
+  .tree summary::before{content:"▸ ";color:var(--ochre);font-size:11px;}
+  .tree details[open]>summary::before{content:"▾ ";}
+  .tree summary:hover{background:var(--teal-soft);}
+  .tree ul{list-style:none;margin:2px 0;padding-left:18px;border-left:1px dashed var(--line);}
+  .tree .f{display:flex;gap:8px;align-items:baseline;padding:1px 4px;}
+  .tree .ext{flex:0 0 auto;font:10px/1 ui-monospace,monospace;background:var(--paper2);color:var(--muted);border-radius:4px;padding:2px 5px;}
+  .tree .ext.py{background:#E3ECE7;color:var(--teal-d);}
+  .tree a{overflow-wrap:anywhere;}
+  .tree summary .ddesc{font-weight:400;color:var(--muted);font-size:12px;margin-left:8px;}
+  .tree .f{flex-wrap:wrap;}
+  .tree .fdesc{flex:1 1 100%;font-size:12px;line-height:1.5;color:var(--muted);padding-left:44px;margin-top:-1px;}
+
+  /* FOOTER 原理闭环 */
+  footer{margin-top:48px;background:linear-gradient(180deg,#EDE4D0,#E5DBC4);border-top:1px solid var(--line);}
+  .foot-inner{max-width:1080px;margin:0 auto;padding:38px 18px 30px;}
+  /* 原理：跑道式闭环圈（上行向右→右端下转→下行向左→左端回流） */
+  /* 原理：纵向单链闭环（实线箭头向下推进，末端虚线回流到第 1 步） */
+  .loop{position:relative;border:1.5px dashed var(--teal);border-radius:22px;padding:16px 16px 14px;
+    background:linear-gradient(180deg,#FCF9F1 0%,#F3EDDF 100%);}
+  .loop-v{position:relative;z-index:2;display:flex;flex-direction:column;}
+  .hub{text-align:center;background:var(--teal-d);color:#fff;border-radius:14px;padding:11px 16px;margin-bottom:4px;}
+  .hub b{font-size:14.5px;} .hub small{display:block;color:#BFD4CB;font-size:12px;margin-top:2px;font-weight:400;}
+  .varr{position:relative;height:22px;display:flex;align-items:flex-end;justify-content:center;color:var(--ochre);font-size:11px;line-height:1;}
+  .varr::before{content:"";position:absolute;top:0;bottom:4px;left:50%;border-left:2px solid var(--ochre);opacity:.45;}
+  .varr.dash::before{border-left-style:dashed;border-left-color:var(--teal);opacity:.9;}
+  .varr.dash{color:var(--teal-d);}
+  .varr span{position:relative;z-index:1;background:#F6F1E4;padding:0 5px;}
+  .vback{margin-top:2px;border:2px dashed var(--teal);background:var(--teal-soft);border-radius:12px;
+    padding:10px 14px;font-size:12.5px;line-height:1.6;color:var(--teal-d);font-weight:600;text-align:center;position:relative;z-index:2;}
+  .pnode{text-align:left;background:var(--card);border:1.5px solid var(--line);border-left:4px solid var(--teal);border-radius:11px;padding:10px 13px;cursor:pointer;color:var(--ink);display:flex;gap:10px;align-items:center;transition:border-color .15s,box-shadow .15s;font:inherit;width:100%;}
+  .pnode.enter{border-left-color:var(--ochre);} .pnode.grow{border-left-color:#7A5A86;}
+  .pnode:hover{border-color:var(--teal);}
+  .pnode.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(62,107,92,.18);background:#F4F9F6;}
+  .pnode .n{flex:0 0 auto;display:inline-flex;width:22px;height:22px;border-radius:6px;background:var(--teal);color:#fff;font-size:12px;font-weight:700;align-items:center;justify-content:center;}
+  .pnode.enter .n{background:var(--ochre);} .pnode.grow .n{background:#7A5A86;}
+  .pnode .pt{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .pnode b{font-size:14px;font-weight:600;}
+  .pnode small{color:var(--muted);font-size:11.5px;}
+  /* 详情底部：上一步 / 下一步 */
+  .pfnav{display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+  .pfbtn{flex:1;border:1px solid var(--teal);background:var(--teal-soft);color:var(--teal-d);border-radius:9px;padding:8px 6px;font-size:13px;font-weight:600;cursor:pointer;font:inherit;}
+  .pfbtn:hover{background:#E1EBE6;}
+  .pfpos{flex:0 0 auto;align-self:center;color:var(--muted);font-size:12.5px;}
+
+
+  .butler{margin-top:30px;background:var(--teal-d);color:#EAF1EC;border-radius:18px;padding:24px 26px;}
+  .butler h3{margin:0 0 2px;font-size:20px;color:#fff;}
+  .butler .slogan{margin:0 0 16px;font-size:13px;color:#BFD4CB;}
+  .bpain{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+  .bpain .b{flex:1 1 240px;min-width:220px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;}
+  .bpain .b b{color:#fff;font-size:14px;display:block;margin-bottom:3px;} .bpain .b span{font-size:12.5px;color:#D7E4DC;}
+  .btn{display:inline-block;border-radius:10px;padding:9px 20px;font-size:14px;font-weight:600;}
+  .btn-light{background:#fff;color:var(--teal-d);} .btn-light:hover{text-decoration:none;}
+
+  .uninstall{position:relative;margin-top:28px;overflow:hidden;border-radius:18px;background:linear-gradient(92deg,#FBE0A6 0%,#F9DA98 45%,#F7D692 100%);border:1px solid #E8C57E;min-height:230px;}
+  .un-art{position:absolute;top:0;right:0;width:44%;height:100%;pointer-events:none;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 8%,#000 92%,transparent 100%);}
+  .un-art .fig{position:absolute;inset:0;background:url("assets/taoyuanming-bw.jpg") no-repeat right center;background-size:contain;
+    -webkit-mask-image:linear-gradient(to left,#000 14%,rgba(0,0,0,.8) 34%,rgba(0,0,0,.4) 56%,rgba(0,0,0,.1) 76%,transparent 94%);
+    mask-image:linear-gradient(to left,#000 14%,rgba(0,0,0,.8) 34%,rgba(0,0,0,.4) 56%,rgba(0,0,0,.1) 76%,transparent 94%);}
+  .un-art .fade{position:absolute;inset:0;background:linear-gradient(to right,#F8DB9B 0%,rgba(248,219,155,0) 50%);}
+  .un-inner{position:relative;z-index:2;padding:22px 26px;max-width:62%;}
+  .uninstall h3{margin:0 0 10px;font-size:17px;}
+  .uninstall .u{display:flex;gap:10px;align-items:flex-start;margin:9px 0;font-size:13.5px;}
+  .uninstall .u .lab{flex:0 0 22px;font-weight:700;color:#7A5417;}
+  .uninstall .cmd{max-width:440px;}
+  .copy{margin-top:26px;font-size:12.5px;color:var(--muted);text-align:center;}
+
+  @media (max-width:860px){
+    .arch-layout{flex-direction:column;}
+    .arch-detail{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:82vh;flex:0 0 auto;width:100%;z-index:90;border-radius:18px 18px 0 0;
+      box-shadow:0 -10px 44px rgba(40,32,16,.32);display:none;max-width:none;}
+    .arch-detail.open{display:block;}
+    .arch-detail .sheet-close{display:inline-flex;position:sticky;top:0;float:right;margin:-6px -8px 0 6px;background:var(--paper2);border:1px solid var(--line);border-radius:50%;width:32px;height:32px;align-items:center;justify-content:center;cursor:pointer;font-size:15px;z-index:2;}
+    .sheet-mask{position:fixed;inset:0;background:rgba(40,32,16,.4);z-index:80;}
+    .sheet-mask.open{display:block;}
+  }
+  @media (max-width:720px){
+    .hero-art{width:66%;opacity:.40;}
+    .hero-inner{max-width:100%;padding:24px 20px;}
+    .hero h1{font-size:21px;overflow-wrap:anywhere;word-break:break-word;}
+    .loop{padding:14px 12px 12px;}
+    .pnode .pt{gap:8px;}
+    .un-art{width:62%;opacity:.4;} .un-inner{max-width:100%;padding:20px;}
+    .brand{width:100%;}
+    .prog-list{flex:1 1 100%;flex-direction:row;flex-wrap:wrap;} .prog-list button{flex:1 1 45%;}
+  }
+</style>
+</head>
+<body id="top">
+
+<nav class="nav"><div class="nav-inner">
+  <span class="brand">归园撸代码 <small>Guiyuan-Vibecoding</small></span>
+  <a class="item" href="#top">首页</a>
+  <a class="item" href="#quickstart">快速开始</a>
+  <a class="item" href="#detail">项目详情</a>
+  <a class="item" href="#principle">关于归园</a>
+  <a class="item" href="#butler">归园大管家</a>
+  <a class="gh" id="ghNav" href="#" target="_blank" rel="noopener">GitHub</a>
+</div></nav>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-art"><div class="fig"></div><div class="fade"></div></div>
+    <div class="hero-inner">
+      <div class="tags">
+        <span class="tag name">Guiyuan-Vibecoding</span>
+        <span class="tag ok">● 已接管</span>
+        <span class="tag run">运行中</span>
+      </div>
+      <h1 id="hTitle">--</h1>
+      <p class="desc" id="hDesc">--</p>
+      <div class="meta" id="hMeta"></div>
+    </div>
+  </section>
+
+  <!-- 快速开始：默认折叠；已安装则打 TAG -->
+  <details class="quick" id="quickstart">
+    <summary>
+      <span class="chev">▶</span><h2>三步快速开始</h2>
+      <span class="inst-tag" id="instTag"></span>
+      <span style="font-size:12.5px;color:var(--muted);margin-left:auto;">点开查看安装 / 初始化指令（点指令块一键复制）</span>
+    </summary>
+    <div class="quick-body">
+      <div class="steps">
+        <div class="step">
+          <span class="no">1</span><h3>Step 1 · 安装</h3>
+          <p>选择或创建一个本地项目，复制后在对话框发送：</p>
+          <button class="cmd cmd-copy" data-copy='为本项目安装归园撸代码，地址："https://XXXXX"'>为本项目安装归园撸代码，
+地址："https://XXXXX"<span class="cp">⧉ 复制</span></button>
+        </div>
+        <div class="step">
+          <span class="no">2</span><h3>Step 2 · 初始化</h3>
+          <div class="grp"><div class="gl">A · 新项目：</div>
+            <button class="cmd cmd-copy" data-copy="@guiyuan-vibecoding，初始化"><span class="at">@guiyuan-vibecoding</span>，初始化<span class="cp">⧉ 复制</span></button></div>
+          <div class="grp"><div class="gl">B · 已有 / 未接管项目：</div>
+            <button class="cmd cmd-copy" data-copy="在该项目中加载 @guiyuan-vibecoding">在该项目中加载 <span class="at">@guiyuan-vibecoding</span><span class="cp">⧉ 复制</span></button></div>
+          <p style="margin:6px 0 0;color:var(--muted);font-size:12.5px;">初始化后无需再显式调用。</p>
+        </div>
+        <div class="step">
+          <span class="no">3</span><h3>Step 3 · 阐述需求</h3>
+          <p>用大白话说你想做什么，它会自动梳理需求、补齐缺失决策，再开始推进。</p>
+          <div class="cmd" style="cursor:default;">我想做一个可以……的小工具</div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- 项目详情：4 TAB -->
+  <section class="body-sec" id="detail">
+    <h2 class="sec">项目详情</h2>
+    <p class="lead">架构、进度、Roadmap、文档均由本仓库真实文件派生；所有链接为相对路径，移动项目文件夹不失效。</p>
+    <div class="tabs" role="tablist">
+      <button class="active" data-tab="arch">系统架构图</button>
+      <button data-tab="prog">项目进度</button>
+      <button data-tab="roadmap">Roadmap</button>
+      <button data-tab="docs">文档总览</button>
+    </div>
+
+    <div class="tabpane active" id="tab-arch">
+      <p class="arch-note">左侧为真实分层，点模块在右侧看职责 / 步骤 / 本地文档（移动端从底部弹出）。沉淀层回写认知层形成闭环。</p>
+      <div class="arch-layout">
+        <div class="arch-left" id="archStack"></div>
+        <div class="arch-detail" id="archDetail"><button class="sheet-close" id="archClose">×</button><div id="archDetailBody"></div></div>
+      </div>
+      <div class="sheet-mask" id="sheetMask"></div>
+    </div>
+
+    <div class="tabpane" id="tab-prog">
+      <p class="arch-note">模块详情来自各能力 PRD / 验收与 CHANGELOG（最新轮次见各卡片）。</p>
+      <div id="progEmpty"></div>
+      <div class="prog" id="progWrap">
+        <div class="prog-list" id="progList"></div>
+        <div class="prog-detail" id="progDetail"></div>
+      </div>
+    </div>
+
+    <div class="tabpane" id="tab-roadmap">
+      <p class="arch-note">按时间从近到远排列，完成情况来自 <a href="docs/01-product/roadmap.md" target="_blank">docs/01-product/roadmap.md</a> 与 CHANGELOG；百分比为依据状态文字的完成度评估。</p>
+      <div id="roadmapWrap" class="tl"></div>
+    </div>
+
+    <div class="tabpane" id="tab-docs">
+      <p class="arch-note">可交互目录树：点击文件夹展开 / 收起，点击文件在本地打开（相对路径）。</p>
+      <div class="tree-tools">
+        <button id="treeExpand">全部展开</button>
+        <button id="treeCollapse">全部收起</button>
+      </div>
+      <div class="tree" id="docTree"></div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="foot-inner">
+
+    <!-- 归园代码原理介绍：真实实现链路 + 特色写进描述，闭环 -->
+    <section id="principle">
+      <h2 class="sec">归园代码原理介绍</h2>
+      <p class="lead">一次需求从进入到沉淀、再回流复用的完整闭环。点左侧节点，在右侧看这一步的技术实现（移动端点节点从底部弹出浮层）。</p>
+      <div class="arch-layout">
+        <div class="arch-left" id="principleFlow"></div>
+        <div class="arch-detail" id="pfDetail"><button class="sheet-close" id="pfClose">×</button><div id="pfDetailBody"></div></div>
+      </div>
+      <div class="sheet-mask" id="pfMask"></div>
+    </section>
+
+    <section class="butler" id="butler">
+      <h3>归园大管家 · Guiyuan Butler</h3>
+      <p class="slogan">你的事，我来管 —— 多个项目之上的「自动接单 + 自动派单」中枢（可选，不装也能单机用）</p>
+      <div class="bpain">
+        <div class="b"><b>想法不用你挨个交代</b><span>说一句话，自动拆成任务、派给对应项目的归园撸代码，不用在多个仓库间反复切、重复讲背景。</span></div>
+        <div class="b"><b>记得你，但不串味</b><span>记住个人偏好与跨项目指针；项目事实始终锁在各自仓库，互不污染，隐私边界清晰。</span></div>
+        <div class="b"><b>装上就有「大脑」，挂了也不卡你</b><span>启用即得 bge-m3 语义检索 + 个人上下文 + 想法收件箱；PB 不可达自动降级为关键词，绝不阻塞写代码。</span></div>
+      </div>
+      <a class="btn btn-light" id="ghButler" href="#" target="_blank" rel="noopener">前往归园大管家 GitHub →</a>
+    </section>
+
+    <section class="uninstall" id="uninstall">
+      <div class="un-art"><div class="fig"></div><div class="fade"></div></div>
+      <div class="un-inner">
+        <h3>卸载攻略</h3>
+        <div class="u"><span class="lab">A</span><div style="flex:1 1 auto;">仅从当前项目移除（保留 Skill 本体），复制后发送：
+          <button class="cmd cmd-copy" style="margin-top:6px;" data-copy="将 @guiyuan-vibecoding 从本项目移除">将 <span class="at">@guiyuan-vibecoding</span> 从本项目移除<span class="cp">⧉ 复制</span></button></div></div>
+        <div class="u"><span class="lab">B</span><div style="flex:1 1 auto;">从 Agent 彻底删除 Skill 及相关服务，复制后发送：
+          <button class="cmd cmd-copy" style="margin-top:6px;" data-copy="从 Agent 删除 @guiyuan-Vibecoding Skill 及相关服务">从 Agent 删除 <span class="at">@guiyuan-Vibecoding</span> Skill 及相关服务<span class="cp">⧉ 复制</span></button></div></div>
+      </div>
+    </section>
+
+    <div class="copy" id="footCopy">归园撸代码 Guiyuan-Vibecoding · 只读派生视图，不修改业务代码</div>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================================
+ * 可复用数据块：换项目时只替换 PROJECT（框架 TITLEBAR/HOOK/BODY-TAB/FOOTER 保持不变）。
+ * 派生逻辑见 docs/02-technical/project-home-blueprint.md
+ *  - identity : README H1 明确名优先，文件夹名兜底；version 取项目 VERSION
+ *  - installed: 生成器探测 .guiyuan-vibecoding/ 、.codex/hooks.json(vcm)、技能目录等标记
+ *  - archLayers / modules / roadmap / principleFlow / docTree 均由权威文档与目录扫描派生
+ *  - 空项目：以下数组留空，页面自动显示“暂未检测到项目”，缺字段显示 “--”
+ * =================================================================================== */
+var PROJECT = {
+  githubVibe:"https://github.com/Tomhaaaands/guiyuan-vibecoding", githubButler:"#",
+  installed:true,
+  identity:{
+    title:"归园撸代码 · Guiyuan Vibecoding",
+    desc:"本地优先的 vibecoding 研发管家：把一句意图转成产品 / 技术事实、可执行任务、已验证代码、可追溯交付与可复用经验。模块化单体，纯 Python 标准库。",
+    address:".", addressLabel:"./（本地 Git 仓库，相对路径）",
+    version:"v0.1.0", versionNote:"来自该项目 VERSION",
+    iter:"2026-09-03 · R58", internal:"vibecoding_manager（文件夹名兜底）· GitHub origin 已绑定"
+  },
+  archLayers:[
+    {cls:"l-ch",name:"入口 / 通道层 · Channels",mods:[
+      {id:"skills",name:"三个 Skill",sub:"对话入口",duty:"一个技能管一场对话：主管家、安装器、迭代收口；把任意脚本/插件/页面/应用或空目录纳入本地迭代管理。",
+        steps:["guiyuan-vibecoding：主管家（接管 / 脚手架）","guiyuan-vibecoding-install：安装与自托管","guiyuan-iteration-close-loop：轮次收口 / changelog / 归档"],
+        docs:[["产品/技能","skills/guiyuan-vibecoding/SKILL.md"],["产品/技能","skills/guiyuan-vibecoding-install/SKILL.md"],["产品/技能","skills/guiyuan-iteration-close-loop/SKILL.md"]]},
+      {id:"hook",name:"项目钩子",sub:"SessionStart 意图闸门",duty:"非阻断、只读取：识别 managed / vcm-shaped / coding / ambiguous 并注入意图闸门，adopt/scaffold 自动落地 .codex/hooks.json。",
+        steps:["会话开始识别项目状态","按需注入意图闸门（不阻断）","adopt/scaffold 时写入 hooks.json"],
+        docs:[["技术文档","docs/02-technical/project-hook.md"],["技术文档","docs/02-technical/agent-hook-methods.md"],["实现代码","tools/vcm_session_hook.py"],["实现代码","tools/install_project_hook.py"],["配置",".codex/hooks.json"]]},
+      {id:"surface",name:"状态页 / 设置界面",sub:"只读静态派生",duty:"迭代收口后自包含生成 status.html；浏览器直接打开文件即可，设置与接管仍由显式脚本完成。",
+        steps:["render_project_home 生成单项目状态页","直接打开 status.html 查看当前事实","/api/settings 读写 config、/api/adopt 只读门禁→确认迁移","Admin/Web 设置界面（Next.js，可选）"],
+        docs:[["产品文档","docs/01-product/settings/prd.md"],["技术文档","docs/02-technical/frontend/settings-page.md"],["技术文档","docs/02-technical/frontend/component-library.md"],["实现代码","tools/render_project_home.py"]]}
+    ]},
+    {cls:"l-brain",name:"认知层 · Project Brain（唯一事实源）",mods:[
+      {id:"artifacts",name:"权威工件库",sub:"类型化工件 + 一致性",duty:"维护产品/设计/技术/决策/任务/状态/验证/经验等权威工件，带 revision / 内容哈希 / 状态，并做跨工件一致性检查。",
+        steps:["写入带 front-matter 元数据的工件","draft→review→accepted 状态流转","跨工件一致性：缺验收/无回执状态/取代链检查"],
+        docs:[["技术文档","docs/02-technical/artifact-context-contract.md"],["产品总览","docs/01-product/product-spec.md"],["实现代码","tools/artifact_store.py"],["实现代码","tools/artifact_consistency.py"],["实现代码","tools/architecture_audit.py"],["实现代码","tools/artifact_generate.py"]]},
+      {id:"context",name:"上下文编译器",sub:"L0/L1/L2 + token 预算",duty:"按固定槽位两遍编译最小上下文包：L0 指针卡、L1 字段切片、L2 证据切片，输出含 included/excluded 的可审计清单并记账 token。",
+        steps:["预留安全/验收槽位","按优先级填状态/权威字段/证据","输出 context manifest（含负检索清单）","超预算按 5 级降级，必要时阻断"],
+        docs:[["技术文档","docs/02-technical/token-budget.md"],["技术文档","docs/02-technical/artifact-context-contract.md"],["实现代码","tools/context_compiler.py"],["实现代码","tools/context_budget.py"]]},
+      {id:"analysis",name:"自然语言分析",sub:"事实/假设/选项/决策",duty:"把自然语言意图转成带标签的事实、假设、选项、决策与开放问题，保留来源与不确定性；provider 可插拔，红线模型裁决。",
+        steps:["标注已知 / 未知 / 假设 / 选项","红线主题命中→升级为待确认","provider 打分（local-fallback / SiliconFlow bge-m3）"],
+        docs:[["产品文档","docs/01-product/analysis/prd.md"],["验收标准","docs/01-product/analysis/acceptance.md"],["技术文档","docs/02-technical/provider-boundary.md"],["实现代码","tools/analysis.py"],["实现代码","tools/analysis_labels.py"],["实现代码","tools/analysis_provider.py"],["实现代码","tools/analysis_eval.py"]]},
+      {id:"pbbridge",name:"可选 · PB 桥",sub:"认知层的 provider 缝",duty:"属于认知层的可插拔 provider：VCM 不持有 embedding 模型 / 向量库。off=独立 VCM（零模型、确定性检索+LLM provider）；on=把语义排序与用户上下文委托给归园大管家，PB 不可达即降级关键词，绝不阻塞迭代。规划层 hydrate --semantic 也经此缝。",
+        steps:["读 .guiyuan-vibecoding/config.json 的 pb_enabled / pb_endpoint","similarity / memory_context / memory_result 走 JSON-RPC","PB 关或不可达 → 关键词回退（不伪造能力）","MCP /mcp、Bearer token、guiyuan_butler_* 工具、/healthz 探活"],
+        docs:[["系统架构 §7","docs/00-system/manager-architecture.md"],["事实边界","docs/00-system/fact-ownership.md"],["品牌/契约","docs/03-reference/guiyuan-brand.md"],["设置能力","docs/01-product/settings/prd.md"],["实现代码(发布模板)","templates/iteration-methodology/tools/pb_bridge.py"],["语义注水","tools/hydrate.py"]]}
+    ]},
+    {cls:"l-plan",name:"规划派发层 · Planning & Dispatch",mods:[
+      {id:"taskgraph",name:"任务图 / 就绪选择",sub:"不建看板副本",duty:"维护里程碑与任务依赖图：依赖全部完成才算就绪，按优先级选下一个可执行任务，每个就绪任务都带验收与输入。",
+        steps:["proposed/blocked/ready/active… 生命周期","依赖全 done 才就绪","优先级排序并选出下一任务"],
+        docs:[["产品文档","docs/01-product/dispatch/prd.md"],["验收标准","docs/01-product/dispatch/acceptance.md"],["实现代码","tools/task_graph.py"]]},
+      {id:"hydrate",name:"上下文注水 / 轮次汇总",sub:"按阶段取最小包",duty:"按当前阶段检索策略组装最小上下文；语义开关经认知层 PB 桥，PB 不可达则关键词回退；轮次边界做汇总。",
+        steps:["按阶段(ANALYSIS…REFLECTION)取对应层级","语义开关：PB 优先、关键词兜底","rollup_round 汇总一轮改动"],
+        docs:[["技术文档","docs/02-technical/artifact-context-contract.md"],["实现代码","tools/hydrate.py"],["实现代码","tools/rollup_round.py"]]}
+    ]},
+    {cls:"l-dev",name:"执行验证层 · DevOps",mods:[
+      {id:"receipt",name:"执行 / 回执环",sub:"证据驱动",duty:"执行器在 provider 缝后（Codex/Claude/浏览器/Git/部署）；checks→verdict(pass/fail/blocked)→回执→任务与项目状态同步，幂等且带证据。",
+        steps:["选择就绪任务并组装最小上下文","执行器改动工件","跑构建/测试/门禁并对照验收","生成执行回执并同步状态（失败修复或记阻塞）"],
+        docs:[["产品文档","docs/01-product/delivery/prd.md"],["验收标准","docs/01-product/delivery/acceptance.md"],["技术文档","docs/02-technical/qa-contract.md"],["实现代码","tools/receipt_loop.py"],["实现代码","tools/run_qa.py"]]},
+      {id:"package",name:"打包 / 安装 / 漂移门禁",sub:"发布与一致性",duty:"构建分发包、校验包完整性、模板双副本同步、生成 llms.txt 索引；安装带备份/校验/失败回滚。",
+        steps:["build_dist 打包 + sha256/manifest","check_drift / check_package 门禁","sync_copies 同步模板与技能资产","一键安装与备份回滚"],
+        docs:[["产品文档","docs/01-product/install/prd.md"],["验收","docs/01-product/install/acceptance.md"],["技术文档","docs/02-technical/packaging/install-contract.md"],["技术文档","docs/02-technical/migration/audit-and-adoption.md"],["实现代码","tools/build_dist.py"],["实现代码","tools/check_drift.py"],["实现代码","tools/check_package.py"],["实现代码","tools/one_click_install.py"],["实现代码","tools/install_skills.py"],["实现代码","tools/sync_copies.py"],["实现代码","tools/gen_llms_txt.py"]]},
+      {id:"harness",name:"行为 / 金标准门禁",sub:"可复现评估",duty:"句子粒度金标准 + 红队场景，端到端 MVP walkthrough（分析→工件→派发→回执→反思），并在 context 预算门内复现。",
+        steps:["behavior_harness 跑行为/红队用例","mvp_walkthrough 端到端剧本","context 预算门（R42：132/2500 PASS）"],
+        docs:[["技术文档","docs/02-technical/qa-contract.md"],["实现代码","tools/behavior_harness.py"],["实现代码","tools/mvp_walkthrough.py"]]}
+    ]},
+    {cls:"l-refl",name:"沉淀演进层 · Reflection（回写认知层 ↺）",mods:[
+      {id:"reflect",name:"蒸馏 / 经验环 / 影子红线",sub:"自我迭代",duty:"在里程碑/事件边界批量蒸馏：失败或阻塞回执→经验候选→去重→影子策略→历史 fixture 评估→批准晋升，可回滚，绝不静默改生产。",
+        steps:["回执/证据生成经验候选","按任务签名去重，影子模式试运行","历史金标准评估无回归才晋升","项目私有事实不上升为通用策略"],
+        docs:[["产品文档","docs/01-product/reflection/prd.md"],["验收标准","docs/01-product/reflection/acceptance.md"],["技术文档","docs/02-technical/distillation.md"],["实现代码","tools/distill.py"],["实现代码","tools/experience_loop.py"]]}
+    ]}
+  ],
+  modules:[
+    {id:"install",name:"install 安装接入",st:"b-ok",stxt:"基本完成",pct:85,phase:"P9 部分 · 安装链路已实现",date:"2026-09-03",round:"R56 / R50 / R48",
+      change:"技能安装 / 脚手架 / 现有项目渐进接入三条路径打通，安装带备份、校验与失败回滚；新增 SessionStart 钩子提醒与开关。",
+      block:"P9 剩余：完整 scaffold topology 与 reference capture 待补。",
+      docs:[["产品 PRD","docs/01-product/install/prd.md"],["验收","docs/01-product/install/acceptance.md"],["安装契约","docs/02-technical/packaging/install-contract.md"],["迁移审计","docs/02-technical/migration/audit-and-adoption.md"],["引导脚本","skills/guiyuan-vibecoding/scripts/bootstrap.py"],["一键安装","tools/one_click_install.py"]]},
+    {id:"settings",name:"settings 设置",st:"b-run",stxt:"进行中",pct:40,phase:"P9 partial · PRD draft",date:"2026-09-03",round:"R56 / R55 / R45",
+      change:"静态状态页读取 config.json 并展示接管状态；/api/settings 与 /api/adopt 仅由可选 Admin/Web 界面使用。",
+      block:"完整 Admin 设置 UI 与完整脚手架拓扑仍在推进。",
+      docs:[["产品 PRD","docs/01-product/settings/prd.md"],["验收","docs/01-product/settings/acceptance.md"],["设置页技术","docs/02-technical/frontend/settings-page.md"],["组件库","docs/02-technical/frontend/component-library.md"]]},
+    {id:"analysis",name:"analysis 分析",st:"b-run",stxt:"已实现·依赖 provider",pct:80,phase:"P2 implemented",date:"2026-09-03",round:"R36 / R33 / R30",
+      change:"意图→事实/假设/选项/决策/开放问题；接入 provider 注册表与降级、句子粒度金标准评分、红线模型裁决（SiliconFlow 可判真违规）。",
+      block:"语义门需 embedding provider（今 SiliconFlow bge-m3；本地 bge-m3 端点可去第三方 key）；红线 local-fallback 仅返回 unknown。",
+      docs:[["产品 PRD","docs/01-product/analysis/prd.md"],["验收","docs/01-product/analysis/acceptance.md"],["Provider 边界","docs/02-technical/provider-boundary.md"],["分析主程序","tools/analysis.py"],["标注","tools/analysis_labels.py"],["Provider","tools/analysis_provider.py"],["评分","tools/analysis_eval.py"]]},
+    {id:"dispatch",name:"dispatch 派发",st:"b-ok",stxt:"已实现",pct:90,phase:"P4 implemented",date:"2026-09-03",round:"R39",
+      change:"任务依赖图 + 就绪判定（依赖全 done）+ 优先级排序 + 下一任务派发，不维护独立于仓库事实的看板副本。",
+      block:"无硬阻塞；多项目总览在核心环稳定后再做。",
+      docs:[["产品 PRD","docs/01-product/dispatch/prd.md"],["验收","docs/01-product/dispatch/acceptance.md"],["任务图","tools/task_graph.py"],["上下文注水","tools/hydrate.py"],["轮次汇总","tools/rollup_round.py"]]},
+    {id:"delivery",name:"delivery 交付",st:"b-ok",stxt:"已实现",pct:90,phase:"P5 implemented",date:"2026-09-03",round:"R40 / R48",
+      change:"checks→verdict(pass/fail/blocked)→回执→任务/项目状态同步，幂等带证据；新增 stdlib 测试套件与 run_qa 门禁、项目 selfqa。",
+      block:"无硬阻塞。",
+      docs:[["产品 PRD","docs/01-product/delivery/prd.md"],["验收","docs/01-product/delivery/acceptance.md"],["QA 契约","docs/02-technical/qa-contract.md"],["回执环","tools/receipt_loop.py"],["QA 门禁","tools/run_qa.py"],["行为门禁","tools/behavior_harness.py"],["工件生成","tools/artifact_generate.py"]]},
+    {id:"reflection",name:"reflection 沉淀",st:"b-run",stxt:"已实现·红线待 provider",pct:75,phase:"P6 implemented*",date:"2026-09-03",round:"R41 / R36",
+      change:"失败/阻塞回执→[AI-DRAFT] 经验候选 + 影子红线评估（不改权威 red-lines.md）；红线升级为模型裁决，候选去重、可回滚。",
+      block:"红线判定需真实 LLM provider；local-fallback 返回 unknown，保持保守。",
+      docs:[["产品 PRD","docs/01-product/reflection/prd.md"],["验收","docs/01-product/reflection/acceptance.md"],["蒸馏技术","docs/02-technical/distillation.md"],["蒸馏","tools/distill.py"],["经验环","tools/experience_loop.py"]]}
+  ],
+  // 时间从近到远
+  roadmap:[
+    {ph:"P7",title:"可选 PB 能力 / 收件箱 / 结果桥",cls:"partial",pct:70,when:"2026-09-03 · R58 / R57 / R52",status:"VCM 侧完成，PB 侧待联调",
+      acc:"候选用户门控且幂等；embedding/语义在 PB 内运行，VCM 不持有模型与向量库。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r58","docs/04-workflow/archive/2026-09-03-r58.md"]]},
+    {ph:"P9",title:"设置 UI / 完整脚手架拓扑 / 迁移审计",cls:"partial",pct:45,when:"2026-09-03 · R56 / R55 / R45",status:"部分完成",
+      acc:"用户能在管理界面配置 VCM，并以只读冲突报告 + 确认式增量迁移接管旧布局。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r56","docs/04-workflow/archive/2026-09-03-r56.md"]]},
+    {ph:"P8",title:"端到端 MVP 评估与打包决策",cls:"done",pct:100,when:"2026-09-03 · R42",status:"完成",
+      acc:"一个脚本化小产品旅程在 token 与质量预算内走完分析→反思（context 132/2500）。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r42","docs/04-workflow/archive/2026-09-03-r42.md"]]},
+    {ph:"P6",title:"经验候选 / 项目红线 / 影子策略与回滚",cls:"",pct:85,when:"2026-09-03 · R41 / R36",status:"已实现*（红线需真实 provider）",
+      acc:"重复失败收敛为一条有证据的候选，且不能静默改变生产行为。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r41","docs/04-workflow/archive/2026-09-03-r41.md"]]},
+    {ph:"P5",title:"代码→检查→修复/阻塞→回执→状态同步环",cls:"done",pct:95,when:"2026-09-03 · R40",status:"已实现",
+      acc:"真实任务只有带验证证据才能从 ready 走到 delivered。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r40","docs/04-workflow/archive/2026-09-03-r40.md"]]},
+    {ph:"P4",title:"里程碑/任务图、依赖、就绪、下一任务派发",cls:"done",pct:95,when:"2026-09-03 · R39",status:"已实现",
+      acc:"无需用户维护看板，管家能解释并选出下一个可执行任务。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r39","docs/04-workflow/archive/2026-09-03-r39.md"]]},
+    {ph:"P3",title:"权威工件生成与跨工件一致性",cls:"done",pct:95,when:"2026-09-03 · R38 / R37",status:"已实现",
+      acc:"Agent 能从已接受的产品/设计/技术/决策/状态工件无矛盾地理解项目。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r38","docs/04-workflow/archive/2026-09-03-r38.md"]]},
+    {ph:"P2",title:"自然语言产品/设计/技术分析",cls:"",pct:80,when:"2026-09-03 · R36–R30",status:"已实现*（启用 PB 走语义，独立=关键词/provider）",
+      acc:"模糊意图变成带标签的事实、假设、选项、决策与待澄清问题。",links:[["roadmap.md","docs/01-product/roadmap.md"],["r30","docs/04-workflow/archive/2026-09-03-r30.md"]]},
+    {ph:"P1",title:"字段/跨度上下文编译器、增量续接、token 预算与索引",cls:"done",pct:100,when:"2026-08-31",status:"硬化完成",
+      acc:"启动零历史；常规管理目标 1,800 token，超过 2,500 即阻断。",links:[["roadmap.md","docs/01-product/roadmap.md"],["token 预算","docs/02-technical/token-budget.md"]]},
+    {ph:"P0",title:"北极星 / 范围 / 状态机 / 权威边界",cls:"done",pct:100,when:"2026-08-31",status:"完成",
+      acc:"产品契约让用户成为决策者，而不是项目管理的操作员。",links:[["roadmap.md","docs/01-product/roadmap.md"],["系统架构","docs/00-system/manager-architecture.md"]]}
+  ],
+  principleFlow:[
+    {cls:"enter",t:"需求进入",plain:"说出想法",pts:["主动通道：用户在新会话直接提出需求","被动通道：归园大管家自动接单 / 转交候选，仍需用户确认","入口统一汇入 INTAKE，不区分来源地走同一条流水线"],next:"进入：零历史启动"},
+    {t:"零历史启动",plain:"超低上下文加载",pts:["不重放聊天记录 / README / 全量历史","只加载 ≤350 token 状态指针卡 + 当前任务 id","对照：朴素做法每轮全量重放，起步就 15k token 以上"],next:"进入：渐进加载上下文"},
+    {t:"渐进加载上下文",plain:"按需渐进加载",pts:["L0 指针卡 20–80 token 常驻；L1 按需取字段切片","只有创建 / 争议 / 审计 / 证据不足才取 L2 原文","内容哈希缓存命中 >85%，增量续接使不变内容 0 token 重放","常规目标 1.8K、硬顶 2.5K（朴素 15–30K），超预算按 5 级降级"],next:"进入：分析与规划"},
+    {t:"分析与规划",plain:"想清楚再拆步",pts:["把意图标注为事实 / 假设 / 选项 / 决策 / 开放问题","主动探测缺失决策，不做无依据假设","拆里程碑与任务依赖图，每个就绪任务都带验收标准"],next:"进入：执行与验证"},
+    {t:"执行与验证",plain:"做完即自检",pts:["组装最小上下文派给执行器（Codex / 浏览器 / Git 都在 provider 缝后）","跑构建 / 测试 / 门禁，结果对照验收标准","失败就修复或记录为阻塞，绝不假装完成"],next:"进入：交付回执"},
+    {t:"交付回执",plain:"给可核对回执",pts:["checks→verdict(pass/fail/blocked)→幂等执行回执","回执驱动任务与项目状态同步","原则：模型输出 ≠ 验证、commit ≠ 发布"],next:"进入：项目记忆沉淀"},
+    {cls:"grow",t:"项目记忆沉淀 · 自我迭代",plain:"踩坑变经验",pts:["失败 / 阻塞回执生成经验候选，按任务签名去重","影子模式先试运行，历史金标准无回归才晋升","全程带版本、可回滚，绝不静默修改生产配置"],next:"进入：方法论沉淀"},
+    {cls:"grow",t:"方法论沉淀",plain:"做法沉淀成模板",pts:["可复用模式写入方法论 / 模板 / profile","类似问题按任务签名检索即复用","重复踩坑收敛成一条经验，而不是越堆越长的提示词"],next:"进入：跨项目复用"},
+    {cls:"grow",t:"其他项目复用",plain:"跨项目复用",pts:["经验与个人偏好经大管家在项目间复用","项目私有事实始终锁在各自仓库，不上升为通用策略","PB 不可达时自动降级为关键词，不阻塞当前项目"],next:"↺ 回流到需求进入"}
+  ],
+  docTree:{"__files__":[{"n":"AGENTS.md","p":"AGENTS.md","d":"Agent 启动约定与模块路由表（每次任务先读什么）"},{"n":"CHANGELOG.md","p":"CHANGELOG.md","d":"全部迭代轮次的变更台账"},{"n":"NOW.md","p":"NOW.md","d":"当前焦点 / 阻塞 / 下一步（启动状态卡）"},{"n":"README.md","p":"README.md","d":"项目说明与快速上手"},{"n":"README.zh-CN.md","p":"README.zh-CN.md","d":"中文项目说明"},{"n":"VERSION","p":"VERSION","d":"当前版本号"},{"n":"llms.txt","p":"llms.txt","d":"给 AI 读取的机器可读文档索引"}],"docs":{"__files__":[{"n":"iteration-methodology.md","p":"docs/iteration-methodology.md","d":"完整迭代方法论（原则与流程）"}],"00-system":{"__files__":[{"n":"fact-ownership.md","p":"docs/00-system/fact-ownership.md","d":"VCM 与大管家(PB)各管什么、事实归谁"},{"n":"manager-architecture.md","p":"docs/00-system/manager-architecture.md","d":"管家总体架构、状态机与五层模型"}],"__d__":"系统层：总体架构、与大管家(PB)的事实边界"},"01-product":{"__files__":[{"n":"_index.md","p":"docs/01-product/_index.md","d":"产品文档索引"},{"n":"product-baseline-v0.1.0.md","p":"docs/01-product/product-baseline-v0.1.0.md","d":"v0.1.0 产品基线"},{"n":"product-spec.md","p":"docs/01-product/product-spec.md","d":"产品北极星 / MVP / 范围契约"},{"n":"roadmap.md","p":"docs/01-product/roadmap.md","d":"里程碑路线图 P0–P9 与验收标准"}],"analysis":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/analysis/acceptance.md","d":"分析能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/analysis/prd.md","d":"分析能力的产品需求（做什么、为什么）"}],"__d__":"能力·分析：把自然语言意图变成事实/假设/选项/决策"},"delivery":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/delivery/acceptance.md","d":"交付能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/delivery/prd.md","d":"交付能力的产品需求（做什么、为什么）"}],"__d__":"能力·交付：执行、验证、回执与状态同步"},"dispatch":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/dispatch/acceptance.md","d":"派发能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/dispatch/prd.md","d":"派发能力的产品需求（做什么、为什么）"}],"__d__":"能力·派发：任务图、就绪判定与下一任务"},"install":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/install/acceptance.md","d":"安装能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/install/prd.md","d":"安装能力的产品需求（做什么、为什么）"}],"__d__":"能力·安装：脚手架、渐进接入与安装契约"},"reflection":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/reflection/acceptance.md","d":"沉淀能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/reflection/prd.md","d":"沉淀能力的产品需求（做什么、为什么）"}],"__d__":"能力·沉淀：经验蒸馏、影子红线与自我迭代"},"settings":{"__files__":[{"n":"acceptance.md","p":"docs/01-product/settings/acceptance.md","d":"设置能力的验收标准（怎样算完成）"},{"n":"prd.md","p":"docs/01-product/settings/prd.md","d":"设置能力的产品需求（做什么、为什么）"}],"__d__":"能力·设置：状态页/设置界面与渐进接管"},"__d__":"产品层：产品契约、Roadmap 与六大能力的需求/验收"},"02-technical":{"__files__":[{"n":"_index.md","p":"docs/02-technical/_index.md","d":"技术文档索引"},{"n":"agent-hook-methods.md","p":"docs/02-technical/agent-hook-methods.md","d":"Agent 钩子的几种接入方式对比"},{"n":"artifact-context-contract.md","p":"docs/02-technical/artifact-context-contract.md","d":"权威工件与渐进式上下文加载契约"},{"n":"distillation.md","p":"docs/02-technical/distillation.md","d":"经验蒸馏与影子策略机制"},{"n":"project-hook.md","p":"docs/02-technical/project-hook.md","d":"SessionStart 项目钩子设计"},{"n":"provider-boundary.md","p":"docs/02-technical/provider-boundary.md","d":"模型/向量 provider 的边界与降级"},{"n":"qa-contract.md","p":"docs/02-technical/qa-contract.md","d":"自检与 QA 门禁契约"},{"n":"token-budget.md","p":"docs/02-technical/token-budget.md","d":"token 预算、分层加载与十条效率规则"}],"frontend":{"__files__":[{"n":"component-library.md","p":"docs/02-technical/frontend/component-library.md","d":"前端组件库规范"},{"n":"settings-page.md","p":"docs/02-technical/frontend/settings-page.md","d":"设置页技术方案"}],"__d__":"前端：设置页与组件库规范"},"migration":{"__files__":[{"n":"audit-and-adoption.md","p":"docs/02-technical/migration/audit-and-adoption.md","d":"旧布局只读审计→确认式增量接管"}],"__d__":"迁移：旧项目的只读审计与确认式接管"},"packaging":{"__files__":[{"n":"install-contract.md","p":"docs/02-technical/packaging/install-contract.md","d":"安装 / 卸载 / 回滚契约"}],"__d__":"打包：安装契约与分发包约定"},"__d__":"技术层：上下文契约、token 预算、钩子、QA 等实现约定"},"03-reference":{"__files__":[{"n":"README.md","p":"docs/03-reference/README.md","d":"参考目录说明"},{"n":"_index.md","p":"docs/03-reference/_index.md","d":"参考资料索引"},{"n":"guiyuan-brand.md","p":"docs/03-reference/guiyuan-brand.md","d":"归园品牌与 PB 契约口径"},{"n":"release-sources.md","p":"docs/03-reference/release-sources.md","d":"发布来源与镜像说明"}],"__d__":"参考资料：品牌口径、发布来源等"},"04-workflow":{"__files__":[{"n":"migration-protocol.md","p":"docs/04-workflow/migration-protocol.md","d":"工作流迁移协议"}],"archive":{"__files__":[{"n":"2026-08-27-r1.md","p":"docs/04-workflow/archive/2026-08-27-r1.md","d":"第 1 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-27-r2.md","p":"docs/04-workflow/archive/2026-08-27-r2.md","d":"第 2 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-27-r3.md","p":"docs/04-workflow/archive/2026-08-27-r3.md","d":"第 3 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-27-r4.md","p":"docs/04-workflow/archive/2026-08-27-r4.md","d":"第 4 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-29-r5.md","p":"docs/04-workflow/archive/2026-08-29-r5.md","d":"第 5 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-29-r6.md","p":"docs/04-workflow/archive/2026-08-29-r6.md","d":"第 6 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r10.md","p":"docs/04-workflow/archive/2026-08-30-r10.md","d":"第 10 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r11.md","p":"docs/04-workflow/archive/2026-08-30-r11.md","d":"第 11 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r12.md","p":"docs/04-workflow/archive/2026-08-30-r12.md","d":"第 12 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r13.md","p":"docs/04-workflow/archive/2026-08-30-r13.md","d":"第 13 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r14.md","p":"docs/04-workflow/archive/2026-08-30-r14.md","d":"第 14 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r15.md","p":"docs/04-workflow/archive/2026-08-30-r15.md","d":"第 15 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r7.md","p":"docs/04-workflow/archive/2026-08-30-r7.md","d":"第 7 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r8.md","p":"docs/04-workflow/archive/2026-08-30-r8.md","d":"第 8 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-30-r9.md","p":"docs/04-workflow/archive/2026-08-30-r9.md","d":"第 9 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-31-r16.md","p":"docs/04-workflow/archive/2026-08-31-r16.md","d":"第 16 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-31-r17.md","p":"docs/04-workflow/archive/2026-08-31-r17.md","d":"第 17 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-31-r18.md","p":"docs/04-workflow/archive/2026-08-31-r18.md","d":"第 18 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-08-31-r19.md","p":"docs/04-workflow/archive/2026-08-31-r19.md","d":"第 19 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r20.md","p":"docs/04-workflow/archive/2026-09-01-r20.md","d":"第 20 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r21.md","p":"docs/04-workflow/archive/2026-09-01-r21.md","d":"第 21 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r22.md","p":"docs/04-workflow/archive/2026-09-01-r22.md","d":"第 22 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r23.md","p":"docs/04-workflow/archive/2026-09-01-r23.md","d":"第 23 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r24.md","p":"docs/04-workflow/archive/2026-09-01-r24.md","d":"第 24 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r25.md","p":"docs/04-workflow/archive/2026-09-01-r25.md","d":"第 25 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r26.md","p":"docs/04-workflow/archive/2026-09-01-r26.md","d":"第 26 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-01-r27.md","p":"docs/04-workflow/archive/2026-09-01-r27.md","d":"第 27 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-02-r28.md","p":"docs/04-workflow/archive/2026-09-02-r28.md","d":"第 28 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r29.md","p":"docs/04-workflow/archive/2026-09-03-r29.md","d":"第 29 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r30.md","p":"docs/04-workflow/archive/2026-09-03-r30.md","d":"第 30 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r31.md","p":"docs/04-workflow/archive/2026-09-03-r31.md","d":"第 31 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r32.md","p":"docs/04-workflow/archive/2026-09-03-r32.md","d":"第 32 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r33.md","p":"docs/04-workflow/archive/2026-09-03-r33.md","d":"第 33 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r34.md","p":"docs/04-workflow/archive/2026-09-03-r34.md","d":"第 34 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r35.md","p":"docs/04-workflow/archive/2026-09-03-r35.md","d":"第 35 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r36.md","p":"docs/04-workflow/archive/2026-09-03-r36.md","d":"第 36 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r37.md","p":"docs/04-workflow/archive/2026-09-03-r37.md","d":"第 37 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r38.md","p":"docs/04-workflow/archive/2026-09-03-r38.md","d":"第 38 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r39.md","p":"docs/04-workflow/archive/2026-09-03-r39.md","d":"第 39 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r40.md","p":"docs/04-workflow/archive/2026-09-03-r40.md","d":"第 40 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r41.md","p":"docs/04-workflow/archive/2026-09-03-r41.md","d":"第 41 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r42.md","p":"docs/04-workflow/archive/2026-09-03-r42.md","d":"第 42 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r43.md","p":"docs/04-workflow/archive/2026-09-03-r43.md","d":"第 43 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r44.md","p":"docs/04-workflow/archive/2026-09-03-r44.md","d":"第 44 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r45.md","p":"docs/04-workflow/archive/2026-09-03-r45.md","d":"第 45 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r46.md","p":"docs/04-workflow/archive/2026-09-03-r46.md","d":"第 46 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r47.md","p":"docs/04-workflow/archive/2026-09-03-r47.md","d":"第 47 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r48.md","p":"docs/04-workflow/archive/2026-09-03-r48.md","d":"第 48 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r49.md","p":"docs/04-workflow/archive/2026-09-03-r49.md","d":"第 49 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r50.md","p":"docs/04-workflow/archive/2026-09-03-r50.md","d":"第 50 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r51.md","p":"docs/04-workflow/archive/2026-09-03-r51.md","d":"第 51 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r52.md","p":"docs/04-workflow/archive/2026-09-03-r52.md","d":"第 52 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r53.md","p":"docs/04-workflow/archive/2026-09-03-r53.md","d":"第 53 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r54.md","p":"docs/04-workflow/archive/2026-09-03-r54.md","d":"第 54 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r55.md","p":"docs/04-workflow/archive/2026-09-03-r55.md","d":"第 55 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r56.md","p":"docs/04-workflow/archive/2026-09-03-r56.md","d":"第 56 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r57.md","p":"docs/04-workflow/archive/2026-09-03-r57.md","d":"第 57 轮迭代归档记录（当轮改动与结论）"},{"n":"2026-09-03-r58.md","p":"docs/04-workflow/archive/2026-09-03-r58.md","d":"第 58 轮迭代归档记录（当轮改动与结论）"}],"__d__":"迭代归档：R1–R58 每一轮留痕（按轮次排序）"},"__d__":"工作流：迁移协议与每一轮迭代归档"},"__d__":"全部文档：系统 / 产品 / 技术 / 参考 / 工作流"},"tools":{"__files__":[{"n":"analysis.py","p":"tools/analysis.py","d":"自然语言意图→事实/假设/选项/决策标注"},{"n":"analysis_eval.py","p":"tools/analysis_eval.py","d":"分析结果的句子粒度评分"},{"n":"analysis_labels.py","p":"tools/analysis_labels.py","d":"分析标签体系定义"},{"n":"analysis_provider.py","p":"tools/analysis_provider.py","d":"分析模型 provider 注册与降级"},{"n":"architecture_audit.py","p":"tools/architecture_audit.py","d":"架构一致性审计"},{"n":"artifact_consistency.py","p":"tools/artifact_consistency.py","d":"跨工件一致性检查"},{"n":"artifact_generate.py","p":"tools/artifact_generate.py","d":"按模板生成权威工件"},{"n":"artifact_store.py","p":"tools/artifact_store.py","d":"权威工件读写/哈希/状态存储"},{"n":"behavior_harness.py","p":"tools/behavior_harness.py","d":"行为金标准与红队用例门禁"},{"n":"build_dist.py","p":"tools/build_dist.py","d":"构建分发包与清单"},{"n":"check_drift.py","p":"tools/check_drift.py","d":"模板/技能双副本漂移门禁"},{"n":"check_package.py","p":"tools/check_package.py","d":"分发包完整性校验"},{"n":"context_budget.py","p":"tools/context_budget.py","d":"上下文 token 预算与记账"},{"n":"context_compiler.py","p":"tools/context_compiler.py","d":"按槽位编译最小上下文包"},{"n":"distill.py","p":"tools/distill.py","d":"经验/红线蒸馏"},{"n":"experience_loop.py","p":"tools/experience_loop.py","d":"经验候选→影子→晋升经验环"},{"n":"gen_llms_txt.py","p":"tools/gen_llms_txt.py","d":"生成机器可读文档索引 llms.txt"},{"n":"hydrate.py","p":"tools/hydrate.py","d":"按阶段为任务注水最小上下文"},{"n":"install_project_hook.py","p":"tools/install_project_hook.py","d":"安装项目 SessionStart 钩子"},{"n":"install_skills.py","p":"tools/install_skills.py","d":"技能安装到指定目录"},{"n":"mvp_walkthrough.py","p":"tools/mvp_walkthrough.py","d":"端到端 MVP 走查剧本"},{"n":"one_click_install.py","p":"tools/one_click_install.py","d":"一键安装（备份/校验/回滚）"},{"n":"receipt_loop.py","p":"tools/receipt_loop.py","d":"执行回执环与状态同步"},{"n":"render_project_home.py","p":"tools/render_project_home.py","d":"生成单项目状态页 HTML"},{"n":"rollup_round.py","p":"tools/rollup_round.py","d":"轮次边界汇总"},{"n":"run_qa.py","p":"tools/run_qa.py","d":"运行 QA 检查并给出 verdict"},{"n":"sync_copies.py","p":"tools/sync_copies.py","d":"同步模板与技能资产双副本"},{"n":"task_graph.py","p":"tools/task_graph.py","d":"任务依赖图与就绪选择"},{"n":"vcm_session_hook.py","p":"tools/vcm_session_hook.py","d":"会话开始钩子：识别状态并注入意图闸门"}],"__d__":"Python 工具集（纯标准库）：编译、检索、门禁、打包等确定性脚本"},"skills":{"guiyuan-vibecoding":{"__files__":[{"n":"SKILL.md","p":"skills/guiyuan-vibecoding/SKILL.md","d":"主管家技能说明书：触发条件与执行流程"}],"scripts":{"__files__":[{"n":"bootstrap.py","p":"skills/guiyuan-vibecoding/scripts/bootstrap.py","d":"引导脚本：状态检测→评估/接管/脚手架→环境预检→落地"}],"__d__":"主管家脚本：引导安装与脚手架 bootstrap"},"__d__":"主管家技能：接管现有项目 / 空目录脚手架"},"guiyuan-vibecoding-install":{"__files__":[{"n":"SKILL.md","p":"skills/guiyuan-vibecoding-install/SKILL.md","d":"安装器技能说明书：安装与自托管流程"}],"__d__":"安装器技能：安装与自托管发布"},"guiyuan-iteration-close-loop":{"__files__":[{"n":"SKILL.md","p":"skills/guiyuan-iteration-close-loop/SKILL.md","d":"收口技能说明书：轮次归档流程"}],"__d__":"收口技能：轮次 changelog / 归档 / NOW"},"__d__":"对外技能 Skill：对话入口，安装后由 Agent 调用"}}
+};
+
+(function(){
+  try{
+    function dash(v){ return (v===undefined||v===null||v==="")?"--":v; }
+    function emptyHtml(hint){return '<div class="empty"><div class="big">暂未检测到项目</div><div class="hint">'+dash(hint)+'</div></div>';}
+    document.getElementById("ghNav").setAttribute("href",PROJECT.githubVibe||"#");
+    document.getElementById("ghButler").setAttribute("href",PROJECT.githubButler||"#");
+
+    /* HERO */
+    var id=PROJECT.identity||{};
+    document.getElementById("hTitle").textContent=dash(id.title);
+    document.getElementById("hDesc").textContent=dash(id.desc);
+    document.getElementById("hMeta").innerHTML=
+      '<span><span class="k">项目地址</span><a href="'+dash(id.address)+'" target="_blank" rel="noopener"><b>'+dash(id.addressLabel)+'</b></a></span>'
+      +'<span><span class="k">项目版本</span><b>'+dash(id.version)+'</b>（'+dash(id.versionNote)+'）</span>'
+      +'<span><span class="k">迭代日期</span><b>'+dash(id.iter)+'</b></span>'
+      +'<span><span class="k">内部标识</span>'+dash(id.internal)+'</span>';
+    var fc=document.getElementById("footCopy"); if(fc&&id.version) fc.textContent="归园撸代码 Guiyuan-Vibecoding · 只读派生视图，不修改业务代码 · "+id.version;
+
+    /* 已安装 TAG */
+    var it=document.getElementById("instTag");
+    if(PROJECT.installed){it.className="inst-tag yes";it.textContent="● 已安装";}else{it.className="inst-tag no";it.textContent="未安装";}
+
+    /* 复制 */
+    function fallbackCopy(t){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta);}
+    document.querySelectorAll(".cmd-copy").forEach(function(btn){btn.addEventListener("click",function(){
+      var text=btn.getAttribute("data-copy")||"",tag=btn.querySelector(".cp");
+      function done(){btn.classList.add("copied");if(tag){var o=tag.textContent;tag.textContent="已复制 ✓";setTimeout(function(){btn.classList.remove("copied");tag.textContent=o;},1500);}}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,function(){fallbackCopy(text);done();});}else{fallbackCopy(text);done();}
+    });});
+
+    /* TABS */
+    var tabBtns=document.querySelectorAll(".tabs button");
+    tabBtns.forEach(function(btn){btn.addEventListener("click",function(){
+      tabBtns.forEach(function(b){b.classList.remove("active");});btn.classList.add("active");
+      document.querySelectorAll(".tabpane").forEach(function(p){p.classList.remove("active");});
+      var pane=document.getElementById("tab-"+btn.getAttribute("data-tab"));if(pane)pane.classList.add("active");
+    });});
+    // 支持 ?tab=prog|roadmap|docs|arch 深链直达
+    try{var qt=new URLSearchParams(location.search).get("tab");
+      if(qt){var tb=document.querySelector('.tabs button[data-tab="'+qt+'"]');if(tb)tb.click();}}catch(e){}
+
+    /* ===== 架构（左右；移动端底部弹层） ===== */
+    var stack=document.getElementById("archStack"),detailBody=document.getElementById("archDetailBody"),
+        detail=document.getElementById("archDetail"),mask=document.getElementById("sheetMask");
+    var modMap={};
+    function closeSheet(){detail.classList.remove("open");mask.classList.remove("open");}
+    document.getElementById("archClose").addEventListener("click",closeSheet);
+    mask.addEventListener("click",closeSheet);
+    if(!PROJECT.archLayers||!PROJECT.archLayers.length){
+      stack.innerHTML=emptyHtml("新项目请先发送 @guiyuan-vibecoding，初始化 后生成架构。");
+      detail.style.display="none";
+    }else{
+      PROJECT.archLayers.forEach(function(layer,li){
+        var ldiv=document.createElement("div");ldiv.className="layer "+layer.cls;
+        ldiv.innerHTML='<div class="lh"><span class="lt">'+dash(layer.name)+'</span><span class="rule"></span></div><div class="boxes">'
+          +layer.mods.map(function(m){modMap[m.id]=m;return '<button class="abox" data-id="'+m.id+'"><b>'+dash(m.name)+'</b><span>'+dash(m.sub)+'</span></button>';}).join("")+'</div>';
+        stack.appendChild(ldiv);
+        if(li<PROJECT.archLayers.length-1){var ar=document.createElement("div");ar.className="dblarrow";ar.innerHTML="▲<br>▼";stack.appendChild(ar);}
+      });
+      var lb=document.createElement("div");lb.className="loopback";lb.textContent="↺ 沉淀演进层把经验 / 红线回写到认知层权威工件，下一轮直接复用";stack.appendChild(lb);
+      var base=document.createElement("div");base.className="base";base.textContent="基座：纯 Python 3.11 标准库 · 单本地 Git 仓库即事实源 · 内容哈希缓存 · 确定性脚本（PB 桥作为 provider 缝归入认知层）";stack.appendChild(base);
+    }
+    function fillArch(id){
+      var m=modMap[id];if(!m)return;
+      stack.querySelectorAll(".abox").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-id")===id);});
+      var groups={},order=[];
+      (m.docs||[]).forEach(function(d){if(!groups[d[0]]){groups[d[0]]=[];order.push(d[0]);}groups[d[0]].push(d[1]);});
+      var dl=order.map(function(g){return '<div class="dg">'+g+'</div>'+groups[g].map(function(p){return '<a href="'+p+'" target="_blank" rel="noopener">'+p+'</a>';}).join("");}).join("");
+      detailBody.innerHTML='<h4>'+dash(m.name)+' <span style="font-size:12px;color:var(--muted);font-weight:400;">· '+dash(m.sub)+'</span></h4>'
+        +'<div class="duty">'+dash(m.duty)+'</div>'
+        +((m.steps&&m.steps.length)?'<ol>'+m.steps.map(function(x){return "<li>"+dash(x)+"</li>";}).join("")+"</ol>":"")
+        +(dl?'<div class="doclinks">'+dl+'</div>':"");
+      detail.scrollTop=0;
+    }
+    function showArch(id,fromTap){
+      fillArch(id);
+      if(fromTap&&window.matchMedia&&window.matchMedia("(max-width:860px)").matches){detail.classList.add("open");mask.classList.add("open");}
+    }
+    stack.addEventListener("click",function(e){var b=e.target.closest(".abox");if(b)showArch(b.getAttribute("data-id"),true);});
+    var firstId=(PROJECT.archLayers&&PROJECT.archLayers[0]&&PROJECT.archLayers[0].mods[0]&&PROJECT.archLayers[0].mods[0].id);
+    if(firstId)fillArch(firstId); // 桌面直接填充右侧；移动端不自动弹层，点模块才上滑
+
+    /* ===== 项目进度 ===== */
+    var list=document.getElementById("progList"),pdetail=document.getElementById("progDetail"),
+        pEmpty=document.getElementById("progEmpty"),pWrap=document.getElementById("progWrap");
+    var mods=PROJECT.modules||[];
+    if(!mods.length){pWrap.style.display="none";pEmpty.innerHTML=emptyHtml("初始化并完成首轮分析后，这里出现模块进度。");}
+    function renderProg(m){
+      if(!m){pdetail.innerHTML="";return;}
+      var dl=(m.docs||[]).map(function(d){return '<div class="row"><span class="k">'+d[0]+'</span><span class="v"><a href="'+d[1]+'" target="_blank" rel="noopener">'+d[1]+'</a></span></div>';}).join("");
+      pdetail.innerHTML='<h3>'+dash(m.name)+'</h3>'
+        +'<div class="pbar"><i style="width:'+(m.pct||0)+'%"></i></div>'
+        +'<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px;">完成情况 <span class="badge '+(m.st||"")+'">'+dash(m.stxt)+' · '+dash(m.pct)+'%</span> &nbsp;阶段：'+dash(m.phase)+'</div>'
+        +'<div class="row"><span class="k">最近改动</span><span class="v">'+dash(m.date)+' · '+dash(m.round)+'</span></div>'
+        +'<div class="row"><span class="k">改动介绍</span><span class="v">'+dash(m.change)+'</span></div>'
+        +'<div class="row"><span class="k">阻塞点</span><span class="v">'+dash(m.block)+'</span></div>'+dl;
+    }
+    mods.forEach(function(m,i){var b=document.createElement("button");if(i===0)b.classList.add("active");
+      b.innerHTML='<span class="dot"></span>'+dash(m.name);
+      b.addEventListener("click",function(){list.querySelectorAll("button").forEach(function(x){x.classList.remove("active");});b.classList.add("active");renderProg(m);});
+      list.appendChild(b);});
+    if(mods.length)renderProg(mods[0]);
+
+    /* ===== Roadmap 时间线（已按近→远） ===== */
+    var rw=document.getElementById("roadmapWrap"),rp=PROJECT.roadmap||[];
+    if(!rp.length){rw.innerHTML=emptyHtml("暂无里程碑，初始化并规划后生成 Roadmap。");}
+    else rw.innerHTML=rp.map(function(x){
+      var links=(x.links||[]).map(function(l){return '<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+' ↗</a>';}).join("");
+      return '<div class="tl-item '+x.cls+'"><div class="tl-head"><span class="ph">'+dash(x.ph)+'</span><span class="badge '+(x.cls==="done"?"b-ok":x.cls==="partial"?"b-wait":"b-run")+'">'+dash(x.status)+'</span><span class="when">'+dash(x.when)+'</span></div>'
+        +'<div class="scope">'+dash(x.title)+'</div>'
+        +'<div class="pbar"><i style="width:'+(x.pct||0)+'%"></i></div>'
+        +'<div class="acc">验收：'+dash(x.acc)+'</div><div class="tl-links">'+links+'</div></div>';
+    }).join("");
+
+    /* ===== 文档树（原生 details，可交互） ===== */
+    var treeEl=document.getElementById("docTree"),tree=PROJECT.docTree;
+    function roundNo(name){var mm=name.match(/-r(\d+)\.md$/);return mm?parseInt(mm[1],10):-1;}
+    function sortKeys(node){
+      var dirs=Object.keys(node).filter(function(k){return k.slice(0,2)!=="__";});
+      dirs.sort();
+      var files=(node.__files__||[]).slice();
+      files.sort(function(a,b){return roundNo(a.n)-roundNo(b.n)||(a.n<b.n?-1:1);});
+      return {dirs:dirs,files:files};
+    }
+    function renderNode(node,name,depth){
+      var s=sortKeys(node),html="";
+      if(name!==null){ // folder
+        var cnt=countFiles(node);
+        html+='<details '+(depth<2&&name!=="archive"?"open":"")+'><summary>'+name+' <span style="color:var(--muted);font-weight:400;">('+cnt+')</span><span class="ddesc">'+dash(node.__d__)+'</span></summary><ul>';
+      }else html+="<ul>";
+      var fileHtml=s.files.map(function(f){var ext=(f.n.split(".").pop()||"file").slice(0,4);
+        return '<li><div class="f"><span class="ext '+ext+'">'+ext+'</span><a href="'+f.p+'" target="_blank" rel="noopener">'+f.n+'</a></div>'+(f.d?'<div class="fdesc">'+f.d+'</div>':"")+'</li>';}).join("");
+      if(name===null){html+=fileHtml;}              // 根层：文件在前，目录在后
+      s.dirs.forEach(function(d){html+=renderNode(node[d],d,depth+1);});
+      if(name!==null){html+=fileHtml;}              // 子目录：目录在前，文件在后
+      html+="</ul>";
+      if(name!==null)html+="</details>";
+      return html;
+    }
+    function countFiles(n){var c=(n.__files__||[]).length;Object.keys(n).forEach(function(k){if(k.slice(0,2)!=="__")c+=countFiles(n[k]);});return c;}
+    if(!tree||(!Object.keys(tree).length)){treeEl.innerHTML=emptyHtml("暂无文档，初始化后自动生成文档树。");}
+    else treeEl.innerHTML=renderNode(tree,null,0);
+    document.getElementById("treeExpand").addEventListener("click",function(){treeEl.querySelectorAll("details").forEach(function(d){d.open=true;});});
+    document.getElementById("treeCollapse").addEventListener("click",function(){treeEl.querySelectorAll("details").forEach(function(d){d.open=false;});});
+
+    /* ===== 原理闭环：左节点 / 右详情（移动端底部浮层） ===== */
+    var pf=document.getElementById("principleFlow"),flow=PROJECT.principleFlow||[],
+        pfDetail=document.getElementById("pfDetail"),pfMask=document.getElementById("pfMask"),pfBody=document.getElementById("pfDetailBody");
+    function closePf(){pfDetail.classList.remove("open");pfMask.classList.remove("open");}
+    document.getElementById("pfClose").addEventListener("click",closePf);
+    pfMask.addEventListener("click",closePf);
+    if(!flow.length){pf.innerHTML=emptyHtml("暂无原理链路。");pfDetail.style.display="none";}
+    else {
+      var n=flow.length,pfCur=0;
+      function pnode(i){var s=flow[i];
+        return '<button class="pnode '+(s.cls||"")+'" data-i="'+i+'"><span class="n">'+(i+1)+'</span>'
+          +'<span class="pt"><b>'+dash(s.plain)+'</b><small>'+dash(s.t)+'</small></span></button>';
+      }
+      pf.innerHTML='<div class="loop"><div class="loop-v">'
+        +'<div class="hub"><b>闭环核心 · Project Brain</b><small>零历史启动 · 渐进加载 · 自我迭代 —— 越用越省、越用越懂</small></div>'
+        +flow.map(function(_,i){return pnode(i);}).join('<div class="varr"><span>▼</span></div>')
+        +'<div class="varr dash"><span>↺</span></div>'
+        +'<div class="vback">虚线回流：末步沉淀的经验 / 方法论 / 个人偏好回到第 1 步「说出想法」——大管家自动处理或你发起新会话时直接复用，于是每一轮都比上一轮更省、更准（闭环）</div>'
+        +'</div></div>';
+      function fillPf(i){var s=flow[i];if(!s)return;pfCur=i;
+        pf.querySelectorAll(".pnode").forEach(function(b){b.classList.toggle("active",+b.getAttribute("data-i")===i);});
+        var pi=(i-1+n)%n,ni=(i+1)%n,
+            pl=i===0?('↺ 第 '+n+' 步'):'↑ 上一步',
+            nl=i===n-1?'↺ 回流第 1 步':'下一步 ↓';
+        pfBody.innerHTML='<h4>'+(i+1)+'. '+dash(s.t)+'</h4>'
+          +'<div class="duty">大白话：'+dash(s.plain)+'</div>'
+          +'<ol>'+(s.pts||[]).map(function(p){return "<li>"+dash(p)+"</li>";}).join("")+"</ol>"
+          +'<div class="pfnav"><button class="pfbtn" data-go="'+pi+'">'+pl+'</button>'
+          +'<span class="pfpos">'+(i+1)+' / '+n+'</span>'
+          +'<button class="pfbtn" data-go="'+ni+'">'+nl+'</button></div>';
+        pfDetail.scrollTop=0;
+      }
+      pfBody.addEventListener("click",function(e){var b=e.target.closest(".pfbtn");if(b)fillPf(+b.getAttribute("data-go"));});
+      function showPf(i,fromTap){fillPf(i);
+        if(fromTap&&window.matchMedia&&window.matchMedia("(max-width:860px)").matches){pfDetail.classList.add("open");pfMask.classList.add("open");}}
+      pf.addEventListener("click",function(e){var b=e.target.closest(".pnode");if(b)showPf(+b.getAttribute("data-i"),true);});
+      fillPf(0);
+    }
+  }catch(e){if(window&&window.console)console.error("guiyuan-home error:",e);}
+})();
+</script>
+</body>
+</html>

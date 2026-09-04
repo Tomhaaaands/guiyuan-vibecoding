@@ -2,7 +2,7 @@
 
 ## Purpose
 
-VibeCoding_Manager can install a **project-scoped** Codex `SessionStart` hook that makes its
+Guiyuan Vibecoding can install a **project-scoped** Codex `SessionStart` hook that makes its
 discipline visible without turning every session into a hard gate. The hook is advisory and
 non-blocking: on session start it detects the project's state and injects a short directive into
 the agent's developer context. It never writes to the project and never auto-takeover.
@@ -29,11 +29,11 @@ For the exact setup of Codex, Claude Code, Cursor, and Git hooks, read the local
 
 ## States
 
-`managed`: `.vibecoding-manager/` present, so the project is formally adopted; the hook points at the
+`managed`: `.guiyuan-vibecoding/` present, so the project is formally adopted; the hook points at the
 startup contract and the project gates.
 
 `vcm-shaped`: the project carries the methodology skeleton (`AGENTS.md`/`NOW.md`/`CHANGELOG.md`/
-`docs/04-workflow/`) but not `.vibecoding-manager/`, so it is dogfooding rather than adopted.
+`docs/04-workflow/`) but not `.guiyuan-vibecoding/`, so it is dogfooding rather than adopted.
 
 `coding`: relevant dependency/source markers exist; the hook suggests an explicit assess-then-adopt
 path without writing anything.

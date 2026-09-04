@@ -11,6 +11,7 @@ Behavior:
 """
 
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
@@ -18,7 +19,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
 ARCH = ROOT / "docs" / "04-workflow" / "archive"
-CL = ROOT / "docs" / "04-workflow" / "changelog.md"
+CL = (ROOT / "docs" / "04-workflow" / "changelog.md") if (ROOT / "docs" / "04-workflow" / "changelog.md").is_file() else ROOT / "CHANGELOG.md"
 
 NOTE = (
     "> Full iteration records (archive volumes of the changelog ledger). Not read daily; "
@@ -55,6 +56,17 @@ def main() -> None:
         text += f"\n| Round | Date | Module | Conclusion | Archive |\n{sep}\n{row}\n"
     CL.write_text(text, encoding="utf-8")
     print(f"changelog row inserted: {row}")
+
+    # Keep the derived project home current at the iteration boundary.  The
+    # renderer is local and deterministic; a missing/legacy renderer must not
+    # prevent the ledger close-out.
+    renderer = ROOT / "tools" / "render_project_home.py"
+    if renderer.is_file():
+        try:
+            subprocess.run([sys.executable, str(renderer)], cwd=ROOT, check=True)
+            print("static project home regenerated: status.html")
+        except (OSError, subprocess.CalledProcessError) as exc:
+            print(f"warning: static project home was not regenerated ({exc})")
 
 
 if __name__ == "__main__":

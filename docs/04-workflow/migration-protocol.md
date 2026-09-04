@@ -11,7 +11,7 @@ author-owned `CHANGELOG.md`, `NOW.md`, and `docs/` content.
 1. Record the audit JSON outside the project.
 2. Classify each item as `keep`, `map`, or `managed`.
 3. Map without moving author content; manage only after user confirmation, hash verification, and
-   backup under `.vibecoding-manager/pre-adoption/`.
+   backup under `.guiyuan-vibecoding/pre-adoption/`.
 4. Re-run the audit and require zero unresolved conflicts before automatic writes.
 
 The process is incremental and never silently merges two authorities.

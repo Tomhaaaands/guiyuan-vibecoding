@@ -1,4 +1,4 @@
-# VibeCoding_Manager（中文说明）
+# Guiyuan Vibecoding（中文说明）
 
 ## 通过 Agent 安装
 
@@ -12,18 +12,18 @@ install.bat            # Windows
 ```
 
 仍要「发消息即装」：先用 `python tools/build_dist.py --verify` 打好
-`dist/vibecoding-manager-<version>.zip` 与 `.sha256`，自行托管后再把地址发给 Agent：
+`dist/guiyuan-vibecoding-<version>.zip` 与 `.sha256`，自行托管后再把地址发给 Agent：
 
 ```text
-请安装 VibeCoding_Manager Skill
-技能地址：<你自行托管的 vibecoding-manager-<version>.zip 地址>
+请安装 Guiyuan Vibecoding Skill
+技能地址：<你自行托管的 guiyuan-vibecoding-<version>.zip 地址>
 ```
 
 Agent 安装时会校验 SHA-256、检查压缩包结构、备份旧的同名 Skill，并自检安装结果。
 
 ## 这是什么
 
-VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把项目引入一套可持续的迭代管理方式：启动规则、状态卡、变更台账、归档、确定性门禁和项目类型模板。
+Guiyuan Vibecoding 是一个本地优先的 AI 编码研发管理 Skill。它把项目引入一套可持续的迭代管理方式：启动规则、状态卡、变更台账、归档、确定性门禁和项目类型模板。
 
 当前公开版本为 `0.1.0`，属于正式 1.0 之前的早期版本。早期内部标签 `v1.2.0` 只作为历史开发快照保留，不表示产品已达到 1.0。
 
@@ -38,13 +38,13 @@ VibeCoding_Manager 是一个本地优先的 AI 编码研发管理 Skill。它把
 ## 使用入口
 
 1. 安装完成后，打开目标项目的新对话。
-2. 显式调用 `$vibe-coding-manager`。
+2. 显式调用 `$guiyuan-vibecoding`。
 3. 告诉 Agent 项目位置、名称，并用一句话描述空目录项目想做什么。
 4. 按提示完成语义确认、评估、门禁选择和接管确认。
 5. 进入新对话开始第一轮真实任务。
 
 安装位置按用户选择：共享 skills 目录、某个 Agent 的 skills 目录，或项目内
-`.vibecoding-manager/skills/`。技能正文是通用的 `SKILL.md`；`agents/openai.yaml` 只是 Codex
+`.guiyuan-vibecoding/skills/`。技能正文是通用的 `SKILL.md`；`agents/openai.yaml` 只是 Codex
 适配器，因此豆包、Harness、Codex 等兼容 Agent 可以共用同一份技能。
 
 ## 下载与更新
