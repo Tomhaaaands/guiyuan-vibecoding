@@ -20,6 +20,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Build a release payload and validate release preconditions")
     ap.add_argument("--version", default=(ROOT / "VERSION").read_text(encoding="utf-8").strip())
     ap.add_argument("--out", default=str(ROOT / "dist"))
+    ap.add_argument("--create-tag", action="store_true", help="create an annotated tag after local validation")
     args = ap.parse_args()
     version = args.version.lstrip("v")
     tag = f"v{version}"
@@ -45,6 +46,17 @@ def main() -> int:
     if recorded.get("sha256") != digest or recorded.get("version") != version:
         print("[release] manifest/hash mismatch")
         return 1
+    existing_tag = subprocess.run(["git", "rev-parse", "--verify", tag], cwd=ROOT,
+                                  capture_output=True, text=True)
+    if existing_tag.returncode == 0:
+        tag_commit = subprocess.check_output(["git", "rev-list", "-n", "1", tag], cwd=ROOT, text=True).strip()
+        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        if tag_commit != head:
+            print(f"[release] tag {tag} already points to {tag_commit[:12]}, not HEAD")
+            return 1
+    elif args.create_tag:
+        subprocess.run(["git", "tag", "-a", tag, "-m", f"Guiyuan Vibecoding {tag}"], cwd=ROOT, check=True)
+        print(f"created annotated tag: {tag}")
     print(json.dumps({"version": version, "tag": tag, "asset": str(asset), "sha256": digest,
                       "checksum": str(checksum), "manifest": str(manifest)}, ensure_ascii=False, indent=2))
     return 0
