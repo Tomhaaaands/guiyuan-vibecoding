@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -27,7 +26,9 @@ def main() -> int:
     args = ap.parse_args()
     tag = args.tag if args.tag.startswith("v") else f"v{args.tag}"
     version = tag[1:]
-    asset_dir = Path(args.asset_dir)
+    asset_dir = Path(args.asset_dir).expanduser()
+    if not asset_dir.is_absolute():
+        asset_dir = ROOT / asset_dir
     assets = [asset_dir / f"guiyuan-vibecoding-{version}{suffix}" for suffix in (".zip", ".zip.sha256", ".zip.manifest.json")]
     missing = [str(p) for p in assets if not p.is_file()]
     if missing:
