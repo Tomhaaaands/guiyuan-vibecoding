@@ -1,0 +1,13 @@
+{
+  "name": "Guiyuan Vibecoding",
+  "version": "0.1.1",
+  "asset": "guiyuan-vibecoding-0.1.1.zip",
+  "sha256": "180ba819a40ed2443a7943dedef70373bed99245e22759046baeb614478ded76",
+  "size": 4810850,
+  "source_commit": "7a48db295bc4e27c6ccd51fb97f04182f6ae6efa",
+  "skills": [
+    "guiyuan-iteration-close-loop",
+    "guiyuan-vibecoding",
+    "guiyuan-vibecoding-install"
+  ]
+}

@@ -1,9 +1,14 @@
 # Release Sources (archived)
 
-> Status: archived (2026-09-03). The GitHub-published `v0.1.0` zip release is retired. The kit is
+> Status: current release `v0.1.1` (2026-09-05). The earlier GitHub-published `v0.1.0` zip release is retired. The kit is
 > installed from the repository (`git clone` + `install.bat`/`install.sh`) or as a user-built zip
 > that you host yourself. This file documents the retired distribution; it is not an active install
 > source.
+
+## Current published zip (v0.1.1)
+
+The installable asset is published in the GitHub `v0.1.1` Release as
+`guiyuan-vibecoding-0.1.1.zip`, with its `.sha256` companion and manifest.
 
 ## Retired published zip (v0.1.0)
 

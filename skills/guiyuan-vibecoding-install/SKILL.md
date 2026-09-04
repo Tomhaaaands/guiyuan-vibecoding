@@ -6,8 +6,8 @@ description: One-click installer for the Guiyuan Vibecoding kit. Installs reusab
 # Guiyuan Vibecoding · 安装与更新
 
 Install, update, self-check, or redeploy the Guiyuan Vibecoding kit skills, or scaffold an existing
-project folder with the iteration system. The published GitHub `v0.1.0` release zip is retired
-(archived); the convenience path is repo clone + `install.bat`/`install.sh`.
+project folder with the iteration system. The published GitHub `v0.1.1` release includes the
+installable zip; the convenience path is repo clone + `install.bat`/`install.sh`.
 
 ## Universal request protocol
 

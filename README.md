@@ -9,7 +9,7 @@
 > experience. The user makes product decisions — the butler carries the management burden.
 
 Guiyuan Vibecoding (repo `vibecoding_manager`) is an open-source,
-local-first **vibecoding R&D manager**. The shipped v0.1.0 foundation provides project adoption,
+local-first **vibecoding R&D manager**. The shipped v0.1.1 release provides project adoption,
 scaffolding, iteration records, deterministic gates, Git/GitHub setup, and the first pitfall
 distillation path. The public version line is pre-1.0 (`0.1.x`); the earlier `v1.2.0` tag remains
 as a historical development snapshot. The accepted vNext direction extends that foundation into a complete loop:
@@ -119,8 +119,8 @@ install.bat            # Windows
 
 ### 2. Install by message (archived)
 
-The published GitHub `v0.1.0` release zip is retired. If you want the one-message flow, build the zip
-yourself with `python tools/build_dist.py --verify` (writes `dist/guiyuan-vibecoding-<version>.zip`
+The published GitHub `v0.1.1` release includes the installable zip. If you want the one-message flow,
+download that release asset or build the zip yourself with `python tools/build_dist.py --verify` (writes `dist/guiyuan-vibecoding-<version>.zip`
 plus `.sha256` and a manifest), host it where you control it, then send that URL in a message. Verify
 the `.sha256` companion before install; an update backs up existing skills and restores them if
 verification fails. See [docs/03-reference/release-sources.md](docs/03-reference/release-sources.md).
@@ -214,7 +214,7 @@ operator (or a few agents) who want traceability without ceremony.
 vibecoding_manager/
 ├── README.md
 ├── LICENSE
-├── VERSION                     # single source of the kit version (0.1.0)
+├── VERSION                     # single source of the kit version (0.1.1)
 ├── CHANGELOG.md                # one-line round ledger
 ├── AGENTS.md                   # startup contract for this repo itself
 ├── llms.txt                    # machine-readable doc index (generated)
