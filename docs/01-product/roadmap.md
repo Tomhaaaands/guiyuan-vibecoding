@@ -23,6 +23,7 @@
 | P12 | human document registry and four confirmation anchors | implemented 2026-09-05 | a generated registry indexes product/technical modules and immutable REQ/PLAN/QA/RELEASE records preserve each user decision without coupling the loop to directory names |
 | P13 | intent-first intake, user-selected takeover, and whole-machine read-only preflight | implemented 2026-09-05 | startup asks for the product before template inference, presents candidate layouts and four takeover choices, and only scans Agent/runtime/Skill metadata after explicit authorization |
 | P14 | project-size-aware full takeover with confirmed migration | implemented 2026-09-05 | assessment reports small/medium/large scale and data candidates; full takeover uses an external two-phase migration plan, reversible path repair, template layout, and a completion marker; large projects are not recommended for full takeover |
+| P15 | responsibility-modular VCM runtime with one public Skill | implemented 2026-09-06 | `tools/vcm_*` packages expose stable v1 module results, workflow is the sole orchestrator, legacy CLI/import paths pass, and QA/package/drift gates remain green |
 
 Existing-project adoption is a compatibility layer, not a Creator OS migration.
 It may preserve, map, or manage one workflow at a time and never changes a project automatically.

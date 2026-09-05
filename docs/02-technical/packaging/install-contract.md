@@ -31,6 +31,9 @@ supports: [product/install]
 - **One public Skill, internal modules**: global discovery exposes only `guiyuan-vibecoding`.
   Install/update/uninstall and iteration close-out remain independently testable modules, but are
   routed through the main Skill. The close-loop `SKILL.md` is created only in a project that opts in.
+- **Responsibility packages**: the repo keeps lifecycle, requirement, planning, workflow, QA,
+  release, install, and uninstall code under `tools/vcm_*`; root scripts remain compatibility
+  wrappers and do not create additional discoverable Skills.
 - **Repo-internal runtime stays out of the template**: the product loop (`analysis`,
   `artifact_*`, `task_graph`, `receipt_loop`, `experience_loop`, `mvp_walkthrough`) plus
   packaging/QA/install (`check_package`, `build_dist`, `run_qa`, `sync_copies`, `install_skills`,

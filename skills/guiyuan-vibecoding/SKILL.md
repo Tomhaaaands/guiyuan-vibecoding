@@ -139,6 +139,26 @@ Never install anything before this choice is made.
 
 ### Internal lifecycle routes
 
+VCM keeps one discoverable Skill but separates implementation by responsibility. The workflow
+router is the only orchestration layer; modules exchange artifact references and the stable `v1`
+result envelope (`module_id`, `status`, `artifacts`, `evidence`, `blockers`, `next_action`).
+
+| User request | Internal route | Responsibility |
+| --- | --- | --- |
+| install, update, doctor, preflight | `vcm_install` | lifecycle install, update and project hook |
+| uninstall | `vcm_uninstall` | remove only manifest-owned VCM content |
+| requirement, PRD, scope, acceptance | `vcm_requirement` | human + machine requirement analysis and artifacts |
+| task breakdown, dependencies, next step, context | `vcm_planning` | dependency graph, readiness and context compilation |
+| continue, repair, end-to-end execution | `vcm_workflow` | resume the nine-state machine and coordinate receipts |
+| test, check, QA, regression | `vcm_qa` | unit/behavior/drift/package/architecture gates |
+| commit, push, tag, GitHub Release | `vcm_release` | local dry-run preparation and release receipts |
+| artifact/manifest/registry/anchor/budget primitives | `vcm_core` | shared authority and context primitives |
+
+Requirement and planning are separate gates: a plan cannot invent missing acceptance or inputs.
+Workflow cannot bypass requirement, planning, QA, or release gates. VCM deliberately has no design
+route; a future `guiyuan-design` may consume the requirement-pack and plan through this seam and
+return design assets or code suggestions, while VCM only validates the stable protocol.
+
 - **Install/update/uninstall/self-check** — when the user asks to install, update, preflight,
   doctor, or uninstall Guiyuan, use the repository/package installer flow. Do not ask the user
   to install a second Skill or expose an `install` Skill entry.

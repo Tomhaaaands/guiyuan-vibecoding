@@ -94,6 +94,19 @@ providers/
   agent/ git/ design/ browser/ deploy/ memory/
 ```
 
+### 4.1 VCM responsibility packages (implemented 2026-09-06)
+
+The repository runtime follows the same modular-monolith principle in `tools/`: `vcm_core`,
+`vcm_requirement`, `vcm_planning`, `vcm_workflow`, `vcm_qa`, `vcm_release`, `vcm_install`, and
+`vcm_uninstall`. `vcm_workflow` is the sole orchestrator and consumes only the v1 module result
+envelope and artifact references. Root-level `tools/*.py` files are compatibility wrappers, so
+existing imports, scripts, and automation remain valid while ownership is explicit. Requirement
+and planning are separate gates; release and uninstall are independent lifecycle routes.
+
+The public distribution still exposes one `guiyuan-vibecoding` Skill. Design is intentionally a
+provider seam, not a VCM package: a future `guiyuan-design` can consume requirement and planning
+artifacts and return optional design/code guidance without changing VCM's code-first acceptance.
+
 Keep one local runtime and repository-backed authority for the MVP. Introduce provider interfaces
 without splitting the product into services.
 

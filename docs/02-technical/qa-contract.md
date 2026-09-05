@@ -14,16 +14,17 @@ Guiyuan Vibecoding 把“验证”分成两层，职责与分发边界不同：*
 
 ## 内部测试套件（repo-only）
 
-入口：`tools/run_qa.py`。单条命令串起单元测试、行为回归和交付门禁，任一阻塞项失败即非零退出。
+入口：`tools/run_qa.py`（实现位于 `tools/vcm_qa/run_qa.py`）。单条命令串起单元测试、行为回归和
+交付门禁，任一阻塞项失败即非零退出。根目录旧路径仍是兼容包装入口。
 
 | 层 | 覆盖 | 运行 |
 | --- | --- | --- |
-| 单元 | `artifact_store` / `context_compiler` / `context_budget` / `analysis` / `analysis_provider` / `analysis_labels` / `artifact_consistency` / `artifact_generate` / `task_graph` / `receipt_loop` / `experience_loop` / `mvp_walkthrough` | `python -m unittest discover -s tests -t .` |
+| 单元 | `vcm_core` / `vcm_requirement` / `vcm_planning` / `vcm_workflow` 及兼容入口 | `python -m unittest discover -s tests -t .` |
 | 行为 | `behavior_harness.py` 的 P0-P8 场景 | 随 `run_qa.py` 一起跑；也可单跑 `python tools/behavior_harness.py` |
 | 交付 | `build_dist --verify` / `check_drift` / `architecture_audit` / `check_package` / `git_safety_gate` / `sync_copies --dry-run` / `gen_llms_txt` | 均被 `run_qa.py` 聚合 |
 | 安装 | `install_skills.py` 与发布版 `install.py` 的事务化回滚 | `tests/test_install.py` |
 
-CLI 工具（build_dist、check_package、gen_llms_txt、architecture_audit、sync_copies）通过子进程调用
+CLI 工具（`vcm_release/build_dist`、`vcm_qa/check_package`、`gen_llms_txt`、`vcm_qa/architecture_audit`、`vcm_release/sync_copies`）通过子进程调用
 真实 CLI 测试，不重构其内部逻辑；可导入模块（如 `artifact_store`、`context_compiler`）直接调用函数。
 
 在发布版里，随项目模板下发的 `tools/vcm_session_hook.py` 配合 `.codex/hooks.json` 提供
@@ -59,6 +60,9 @@ CLI 工具（build_dist、check_package、gen_llms_txt、architecture_audit、sy
 `fail` 检查会令退出码为 1；`warn` 仅提示，不阻塞。
 
 ## 边界
+
+跨模块调用必须使用 [VCM 内部职责模块契约](vcm-module-contract.md) 的 v1 结果外壳；QA
+只消费 artifact 引用与证据，不读取 workflow 的私有实现路径。
 
 - 内部套件不进入发布 zip；`selfqa.py` 通过 `templates/iteration-methodology/tools/`
   ↔ `skills/guiyuan-vibecoding/assets/project/tools/` 同步，随技能下发。

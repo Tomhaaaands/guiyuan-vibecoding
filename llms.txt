@@ -61,6 +61,7 @@
 - [security-gate-contract.md](docs/02-technical/security-gate-contract.md): Git 提交安全闸门
 - [template-contract.md](docs/02-technical/template-contract.md): Composable project template contract
 - [token-budget.md](docs/02-technical/token-budget.md): Token budget and efficiency contract
+- [vcm-module-contract.md](docs/02-technical/vcm-module-contract.md): VCM 内部职责模块契约
 
 ## 03-reference
 

@@ -34,11 +34,11 @@ use a one-line answer/verification plan.
 | startup intent / intake / takeover choice / environment authorization | [docs/02-technical/intake-and-adoption-contract.md](docs/02-technical/intake-and-adoption-contract.md), [skills/guiyuan-vibecoding/SKILL.md](skills/guiyuan-vibecoding/SKILL.md) | `skills/guiyuan-vibecoding/scripts/bootstrap.py` |
 | iteration close-out / changelog / archive / round wrap-up | [skills/guiyuan-iteration-close-loop/SKILL.md](skills/guiyuan-iteration-close-loop/SKILL.md) | `skills/guiyuan-iteration-close-loop/` |
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
-| registry / confirmation anchor / four gates | [docs/02-technical/project-registry-anchor-contract.md](docs/02-technical/project-registry-anchor-contract.md) | `tools/project_registry.py`, `tools/anchor.py` |
+| registry / confirmation anchor / four gates | [docs/02-technical/project-registry-anchor-contract.md](docs/02-technical/project-registry-anchor-contract.md) | `tools/vcm_core/` (legacy wrappers in `tools/`) |
 | project-type profiles / presets / dimensions | `skills/guiyuan-vibecoding/profiles/README.md` | `skills/guiyuan-vibecoding/profiles/` |
 | template contract / topology / manifest / scale / capability overlay | [docs/02-technical/template-contract.md](docs/02-technical/template-contract.md), [skills/guiyuan-vibecoding/profiles/README.md](skills/guiyuan-vibecoding/profiles/README.md) | `skills/guiyuan-vibecoding/scripts/bootstrap.py`, `tools/project_manifest.py` |
 | tooling / gates / retrieval / index | `tools/*.py` (their docstrings) | `tools/` |
-| QA / testing / self-check | [docs/02-technical/qa-contract.md](docs/02-technical/qa-contract.md) | `tools/run_qa.py`, `tests/`, `tools/selfqa.py` |
+| QA / testing / self-check | [docs/02-technical/qa-contract.md](docs/02-technical/qa-contract.md) | `tools/vcm_qa/`, `tests/`, `tools/selfqa.py` |
 | project hook / SessionStart / agent scope | [docs/02-technical/project-hook.md](docs/02-technical/project-hook.md), [docs/02-technical/agent-hook-methods.md](docs/02-technical/agent-hook-methods.md) | `tools/install_project_hook.py`, `tools/vcm_session_hook.py`, `.codex/hooks.json` |
 | methodology / principles / migration guide | [docs/iteration-methodology.md](docs/iteration-methodology.md) | `docs/` |
 | fact ownership / which manager / boundary | [docs/00-system/fact-ownership.md](docs/00-system/fact-ownership.md) | `docs/00-system/` |
@@ -47,7 +47,7 @@ use a one-line answer/verification plan.
 | artifacts / context builder / progressive disclosure | [docs/02-technical/artifact-context-contract.md](docs/02-technical/artifact-context-contract.md) | `docs/02-technical/` |
 | token budget / context cost / model routing | [docs/02-technical/token-budget.md](docs/02-technical/token-budget.md) | `docs/02-technical/` |
 | roadmap / delivery order / acceptance | [docs/01-product/roadmap.md](docs/01-product/roadmap.md) | `docs/01-product/` |
-| install / installer / scaffold | [docs/01-product/install/](docs/01-product/install/) + [docs/02-technical/packaging/](docs/02-technical/packaging/) | `skills/guiyuan-vibecoding-install/`, `skills/guiyuan-vibecoding/` |
+| install / installer / scaffold | [docs/01-product/install/](docs/01-product/install/) + [docs/02-technical/packaging/](docs/02-technical/packaging/) | `skills/guiyuan-vibecoding/` |
 | settings / admin UI | [docs/01-product/settings/](docs/01-product/settings/) + [docs/02-technical/frontend/](docs/02-technical/frontend/) | `skills/guiyuan-vibecoding/assets/frontend/admin/` |
 
 ## 2. Documentation discipline (non-negotiable)

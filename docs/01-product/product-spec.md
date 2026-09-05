@@ -20,6 +20,11 @@ relevant capability slices.
 | delivery | [delivery/prd.md](delivery/prd.md) | receipts, verification, packaging |
 | reflection | [reflection/prd.md](reflection/prd.md) | distillation, experience |
 
+Implementation responsibilities are intentionally finer-grained than the user-facing capability
+index: requirement, planning, workflow, QA, release, install, and uninstall are internal routes
+within the single public Skill. This keeps the interaction simple while allowing each route to be
+tested and evolved independently.
+
 ## 1. One-line promise
 
 The user describes what they want to build and confirms consequential choices; Guiyuan Vibecoding
@@ -106,6 +111,8 @@ Deferred until the core loop is stable:
 - autonomous production policy promotion;
 - cloud-hosted code execution, mobile clients, and multi-tenant service operation.
 - migration or replacement of Creator OS; it remains an independent product.
+- visual design generation; VCM is code-first and leaves an optional provider seam for a future
+  `guiyuan-design` product.
 
 ## 6. User-facing experience
 

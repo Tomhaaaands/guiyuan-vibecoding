@@ -1,71 +1,7 @@
-#!/usr/bin/env python3
-"""Prepare and verify a release payload without publishing it."""
-from __future__ import annotations
-
-import argparse
-import hashlib
-import json
-import subprocess
-import sys
-from pathlib import Path
-
-ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-
-
-def run(args: list[str]) -> None:
-    subprocess.run(args, cwd=ROOT, check=True)
-
-
-def main() -> int:
-    ap = argparse.ArgumentParser(description="Build a release payload and validate release preconditions")
-    ap.add_argument("--version", default=(ROOT / "VERSION").read_text(encoding="utf-8").strip())
-    ap.add_argument("--out", default=str(ROOT / "dist"))
-    ap.add_argument("--create-tag", action="store_true", help="create an annotated tag after local validation")
-    ap.add_argument("--no-update-catalog", action="store_true",
-                    help="skip the automatic release/update catalog refresh")
-    args = ap.parse_args()
-    version = args.version.lstrip("v")
-    tag = f"v{version}"
-    if (ROOT / "VERSION").read_text(encoding="utf-8").strip() != version:
-        print("[release] VERSION does not match requested version")
-        return 1
-    if not args.no_update_catalog:
-        subprocess.run([sys.executable, str(ROOT / "tools" / "update_catalog.py"), "--version", version],
-                       cwd=ROOT, check=True)
-    status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
-    if status:
-        print("[release] worktree is not clean; commit changes before preparing a release")
-        return 1
-    subprocess.run([sys.executable, str(ROOT / "tools" / "git_safety_gate.py")], cwd=ROOT, check=True)
-    subprocess.run([sys.executable, str(ROOT / "tools" / "check_package.py")], cwd=ROOT, check=True)
-    out = Path(args.out)
-    subprocess.run([sys.executable, str(ROOT / "tools" / "build_dist.py"), "--verify", "--out", str(out)], cwd=ROOT, check=True)
-    asset = out / f"guiyuan-vibecoding-{version}.zip"
-    checksum = asset.with_suffix(asset.suffix + ".sha256")
-    manifest = asset.with_suffix(asset.suffix + ".manifest.json")
-    if not asset.is_file() or not checksum.is_file() or not manifest.is_file():
-        print("[release] expected release assets are missing")
-        return 1
-    digest = hashlib.sha256(asset.read_bytes()).hexdigest()
-    recorded = json.loads(manifest.read_text(encoding="utf-8"))
-    if recorded.get("sha256") != digest or recorded.get("version") != version:
-        print("[release] manifest/hash mismatch")
-        return 1
-    existing_tag = subprocess.run(["git", "rev-parse", "--verify", tag], cwd=ROOT,
-                                  capture_output=True, text=True)
-    if existing_tag.returncode == 0:
-        tag_commit = subprocess.check_output(["git", "rev-list", "-n", "1", tag], cwd=ROOT, text=True).strip()
-        head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
-        if tag_commit != head:
-            print(f"[release] tag {tag} already points to {tag_commit[:12]}, not HEAD")
-            return 1
-    elif args.create_tag:
-        subprocess.run(["git", "tag", "-a", tag, "-m", f"Guiyuan Vibecoding {tag}"], cwd=ROOT, check=True)
-        print(f"created annotated tag: {tag}")
-    print(json.dumps({"version": version, "tag": tag, "asset": str(asset), "sha256": digest,
-                      "checksum": str(checksum), "manifest": str(manifest)}, ensure_ascii=False, indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+"""Legacy compatibility entry point."""
+try:
+    from tools._compat import expose, run_main
+except ModuleNotFoundError:
+    from _compat import expose, run_main
+expose("tools.vcm_release.release_prepare", globals())
+if __name__ == "__main__": run_main(_main)

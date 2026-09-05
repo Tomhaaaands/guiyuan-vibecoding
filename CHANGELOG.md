@@ -8,6 +8,12 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
+| R48 | 09-03 | qa | test suite added | [r48](archive/2026-09-03-r48.md) |
 | R73 | 09-05 | intent-first-intake | 启动流程改为先询问产品意图，再展示项目基础事实、候选模板/目录、四档接管选择；新增用户授权后的全机只读环境盘点（Agent、共享 Skill、Python/Node、UV、GitHub CLI），并将渐进接管作为正式选项；183 项测试、check_drift 与发布 ZIP 校验通过 | [r73](docs/04-workflow/archive/2026-09-05-r73.md) |
 | R74 | 09-05 | size-aware-takeover-migration | 接入项目体量与数据盘点；小/中体量可建议完全接管、大体量改为建议部分/渐进接管；完全接管改为外部迁移计划 + 明确确认的两阶段流程，支持可逆数据迁移、保守路径修复、模板布局和 takeover 标识 | [r74](docs/04-workflow/archive/2026-09-05-r74.md) |
 | R75 | 09-05 | release-update-catalog | 新增机器可读 update catalog；release_prepare 在版本发布准备时自动整合版本、tag、Release 与安装资产地址，publish_release 在 GitHub 写入前校验 catalog 一致性 | [r75](docs/04-workflow/archive/2026-09-05-r75.md) |
@@ -18,6 +24,12 @@
 | R68 | 09-05 | release-0.1.1 | 版本升级到 0.1.1，QA 六道门与发布包完整性通过，准备创建 v0.1.1 GitHub Release | [r68](archive/2026-09-05-r68.md) |
 | R67 | 09-05 | functional-module-directory | 新增中文功能模块目录与 status.html 数据引用；PB 明确仅 provider 桥且无 PB 独立 QA、虚拟 suanming_os 接管渲染、发布包完整性均通过 | [r67](archive/2026-09-05-r67.md) |
 | R66 | 09-05 | registry-confirmation-anchors | scaffold now creates a topology-independent machine layer and generated manifest registry; project_registry indexes human PRD/acceptance/technical docs, while immutable REQ/PLAN/QA/RELEASE anchors preserve user confirmation with hashes; 170 tests, check_drift and distribution verification pass | [r66](docs/04-workflow/archive/2026-09-05-r66.md) |
+
+## 2026-09-06
+
+| Round | Date | Module | One-line conclusion | Archive |
+| --- | --- | --- | --- | --- |
+| R76 | 09-06 | responsibility-modular-vcm | 物理拆分 vcm_core/requirement/planning/workflow/qa/release/install/uninstall，统一 v1 模块协议与唯一 workflow 编排；旧 tools CLI/import、191 项测试、漂移与打包门禁保持兼容 | [r76](docs/04-workflow/archive/2026-09-06-r76.md) |
 
 ## 2026-09-04
 
