@@ -8,6 +8,8 @@ Two entry paths, one outcome — a managed project with the iteration loop
                docs tree, tooling, .venv, git). The generator is the empty-folder
                default, not the core.
   * assess:    folder already has code -> inspect its workflow without writing
+               (pass --intent after the user describes the product; add
+               --environment-scan for the authorized whole-machine read-only check)
                files, installing dependencies, or touching Git.
   * adopt:     apply only workflow groups the user explicitly chose after an
                assessment. Existing files are hashed, backed up, and never deleted.
@@ -19,7 +21,8 @@ Usage:
       [--existing-system NAME] [--compat-policy POLICY] [--system-policy POLICY] \
       [--profile script|plugin|page|saas|c-end|vector-db|cli-tool|path/to.toml] \
       [--module "name=kw1,kw2"] [--code "name=dir"] [--template default] \
-      [--intent "one-sentence project description"] \
+      [--intent "one-sentence project description"] [--environment-scan] \
+      [--migration-plan PATH] [--migration-confirm] [--migrate-code] \
       [--python auto|system|install|<path>] [--env auto|shared|isolated|reuse|skip] \
       [--deps auto|commands|skip] [--github <repo-url>] [--push] \
       [--skills-dir PATH] [--skill-location auto|project|global|skip] \
@@ -61,8 +64,9 @@ GitHub (--github <url>): set the origin remote (never overwrites an existing ori
 
 For an existing project, `auto` is intentionally read-only and prints an assessment.  Save
 `--mode assess --json` output outside the project, then pass it back to `--mode adopt` with
-the workflow choices the user confirmed.  Adopt never installs dependencies, initializes Git,
-changes business code, or installs global Skills.
+the workflow choices the user confirmed. Adopt never silently overwrites business code, installs
+dependencies, initializes Git, or installs global Skills. Confirmed full takeover may rewrite only
+explicit path references from its migration plan.
 Global Skills are never written without an explicit user-chosen path.
 """
 
@@ -85,7 +89,10 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 ASSETS = SKILL_ROOT / "assets" / "project"
-SKILL_ASSETS = SKILL_ROOT / "assets" / "skills" / "guiyuan-iteration-close-loop"
+# Internal payloads deliberately do not use the discoverable SKILL.md filename.  The Agent
+# should expose one public entry point; bootstrap materializes the project-local close-loop
+# skill only after the project has opted into it.
+SKILL_ASSETS = SKILL_ROOT / "assets" / "internal" / "iteration-close-loop"
 FRONTEND_SKELETONS = {
     "web": SKILL_ROOT / "assets" / "frontend" / "web",
     "admin": SKILL_ROOT / "assets" / "frontend" / "admin",
@@ -142,7 +149,8 @@ if _gi_path.is_file():
 # not part of the map.
 WORKFLOWS = ("startup", "state", "ledger", "methodology", "tooling")
 ADOPTION_DIR = ".guiyuan-vibecoding"
-COMPAT_POLICIES = ("full-takeover", "takeover", "defer", "abandon")
+# ``defer`` remains a CLI compatibility alias; the user-facing name is progressive adoption.
+COMPAT_POLICIES = ("full-takeover", "takeover", "progressive", "defer", "abandon")
 SYSTEM_POLICIES = ("keep-map", "auto-takeover", "abandon")
 KNOWN_SYSTEM_DEFS = (
     {
@@ -186,6 +194,92 @@ KNOWN_SYSTEM_DEFS = (
         "markers": ("CHANGELOG.md", "docs/01-product/roadmap.md"),
     },
 )
+
+# These are intentionally recommendations, not decisions.  The conversation layer must
+# collect the product intent first and present these candidates for the user to choose.
+INTENT_TEMPLATE_HINTS = {
+    "script": [
+        {"template": "cli", "capabilities": [], "reason": "单一命令行/本地工具边界清晰"},
+        {"template": "python-service", "capabilities": [], "reason": "后续可能演进为可复用 Python 服务"},
+    ],
+    "cli-tool": [
+        {"template": "cli", "capabilities": [], "reason": "命令行入口与测试目录分离"},
+        {"template": "python-service", "capabilities": ["worker"], "reason": "需要后台任务或长流程时可扩展"},
+    ],
+    "plugin": [
+        {"template": "web-app", "capabilities": [], "reason": "前端/扩展界面与测试分层"},
+        {"template": "monorepo", "capabilities": [], "reason": "扩展、共享包和测试需要并列管理"},
+    ],
+    "page": [
+        {"template": "web-app", "capabilities": [], "reason": "网页、组件、工具库与测试分层"},
+        {"template": "web-app", "capabilities": ["content-pipeline"], "reason": "内容发布或文案流水线可选"},
+    ],
+    "content-site": [
+        {"template": "web-app", "capabilities": ["content-pipeline"], "reason": "内容生产与网页呈现分开"},
+        {"template": "monorepo", "capabilities": ["content-pipeline"], "reason": "站点、内容工具和共享包并列"},
+    ],
+    "saas": [
+        {"template": "composite", "capabilities": ["auth", "admin"], "reason": "网页、API 与管理面板需要独立边界"},
+        {"template": "monorepo", "capabilities": ["auth", "admin", "worker"], "reason": "多应用和异步任务并行演进"},
+    ],
+    "admin-dashboard": [
+        {"template": "web-app", "capabilities": ["auth", "admin"], "reason": "后台界面、权限与测试分层"},
+        {"template": "composite", "capabilities": ["auth", "admin"], "reason": "同时拥有独立 API 或任务服务时可选"},
+    ],
+    "ecommerce": [
+        {"template": "composite", "capabilities": ["auth", "payments", "worker"], "reason": "前台、订单/支付 API 与异步任务隔离"},
+        {"template": "monorepo", "capabilities": ["auth", "payments", "worker"], "reason": "多端和共享领域包需要并列管理"},
+    ],
+    "c-end": [
+        {"template": "composite", "capabilities": ["auth", "worker"], "reason": "用户端、API 与后台任务分开"},
+        {"template": "web-app", "capabilities": ["auth"], "reason": "先做单体用户端时边界更轻"},
+    ],
+    "vector-db": [
+        {"template": "python-service", "capabilities": ["rag", "vector-db"], "reason": "检索、知识处理与 API 以 Python 为主"},
+        {"template": "composite", "capabilities": ["rag", "vector-db", "worker"], "reason": "同时需要网页、API 和异步索引任务"},
+    ],
+    "bot": [
+        {"template": "python-service", "capabilities": ["worker"], "reason": "消息接入与后台任务分离"},
+        {"template": "composite", "capabilities": ["worker", "auth"], "reason": "需要控制台或多渠道接入时可选"},
+    ],
+    "default": [
+        {"template": "python-service", "capabilities": [], "reason": "通用服务型起点"},
+        {"template": "web-app", "capabilities": [], "reason": "通用网页型起点"},
+        {"template": "composite", "capabilities": [], "reason": "同时存在前端与服务端时可选"},
+    ],
+}
+
+AGENT_COMMANDS = (
+    ("Codex", "codex"), ("Claude Code", "claude"), ("Cursor", "cursor"),
+    ("Windsurf", "windsurf"), ("Aider", "aider"), ("Gemini CLI", "gemini"),
+    ("Cline", "cline"), ("OpenCode", "opencode"),
+)
+
+MIGRATION_EXCLUDE_PARTS = {
+    ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache",
+    ".mypy_cache", ".ruff_cache", ".next", "dist", "build", "target", "vendor",
+    ".guiyuan-vibecoding", ".codex",
+}
+MIGRATION_EXCLUDE_CASEFOLD = {part.casefold() for part in MIGRATION_EXCLUDE_PARTS}
+DATA_DIR_NAMES = {
+    "data", "database", "db", "storage", "uploads", "upload", "content", "knowledge",
+    "vector", "vectors", "media", "fixtures", "exports", "migrations", "datasets",
+}
+DATA_FILE_SUFFIXES = {
+    ".db", ".sqlite", ".sqlite3", ".jsonl", ".csv", ".tsv", ".parquet", ".feather",
+    ".pkl", ".pickle", ".npy", ".npz",
+}
+TEXT_PATH_SUFFIXES = {
+    ".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".json", ".toml", ".yaml",
+    ".yml", ".ini", ".cfg", ".conf", ".env", ".md", ".html", ".css", ".scss", ".sh",
+    ".bat", ".cmd", ".ps1", ".txt",
+}
+CODE_ROOT_ALIASES = {
+    "apps": "apps", "app": "app", "src": "src", "packages": "packages",
+    "components": "components", "lib": "lib", "workers": "workers", "worker": "workers",
+    "tests": "tests", "configs": "configs", "config": "configs", "scripts": "scripts",
+    "apps": "apps",
+}
 FULL_TAKEOVER_OVERLAYS = {
     "CLAUDE.md",
     "CHANGELOG.md",
@@ -276,7 +370,7 @@ def _compat_assessment(root: Path, groups: dict[str, list[dict]], known_systems:
     risks = [f"missing {name} management workflow" for name in WORKFLOWS if not groups[name]]
     risks.extend(f"existing system '{system['label']}' may already own management authority"
                  for system in known_systems + declared_systems)
-    return {
+    result = {
         "score": score,
         "level": level,
         "dimensions": [{"name": name, "matched_files": len(groups[name])} for name in WORKFLOWS],
@@ -295,17 +389,270 @@ def _compat_assessment(root: Path, groups: dict[str, list[dict]], known_systems:
             },
         },
     }
+    return result
 
 
-def _assessment(root: Path, detected: dict, declared_systems: list[str] | None = None) -> dict:
+def _functional_module_catalog() -> list[dict]:
+    """Return VCM's human-facing functional module catalog.
+
+    The source document is optional in an installed standalone Skill.  Keep a small
+    fallback so the intake report still explains the manager's own module boundaries.
+    """
+    source = SKILL_ROOT.parents[1] / "docs" / "00-system" / "functional-module-directory.md"
+    if source.is_file():
+        text = source.read_text(encoding="utf-8")
+        match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.S)
+        if match:
+            try:
+                value = json.loads(match.group(1))
+                modules = value.get("functionalModules")
+                if isinstance(modules, list):
+                    return [m for m in modules if isinstance(m, dict)]
+            except json.JSONDecodeError:
+                pass
+    return [
+        {"id": "intake", "name": "项目接入与生命周期", "plain": "把新项目或旧项目接入归园流程", "entry": "skills/guiyuan-vibecoding/scripts/bootstrap.py"},
+        {"id": "analysis", "name": "需求接收与分析", "plain": "把想法整理成可确认的事实与选择", "entry": "tools/analysis.py"},
+        {"id": "planning", "name": "规划与任务编排", "plain": "按依赖选出下一件能做的事", "entry": "tools/task_graph.py"},
+        {"id": "execution", "name": "执行、验证与交付", "plain": "做完就测试并留下回执", "entry": "tools/receipt_loop.py"},
+    ]
+
+
+def _project_structure(root: Path) -> dict:
+    """Summarize the visible root without reading business source contents."""
+    ignored = {".git", ".venv", "venv", "node_modules", "__pycache__", ".next", "dist", "build"}
+    entries: list[dict] = []
+    try:
+        children = sorted((p for p in root.iterdir() if p.name not in ignored), key=lambda p: (p.is_file(), p.name.casefold()))
+    except OSError:
+        children = []
+    for path in children[:40]:
+        entries.append({"name": path.name, "kind": "file" if path.is_file() else "directory"})
+    return {"entries": entries, "truncated": len(children) > len(entries)}
+
+
+def _iter_project_files(root: Path):
+    """Yield project files without following symlinked directories or cache trees."""
+    for base, dirs, files in os.walk(root, topdown=True, followlinks=False):
+        base_path = Path(base)
+        dirs[:] = [name for name in dirs if name.casefold() not in MIGRATION_EXCLUDE_CASEFOLD]
+        for name in files:
+            path = base_path / name
+            if path.is_symlink() or any(part.casefold() in MIGRATION_EXCLUDE_CASEFOLD for part in path.relative_to(root).parts):
+                continue
+            yield path
+
+
+def _path_stats(path: Path, root: Path) -> dict:
+    """Collect bounded, content-free stats for one data candidate."""
+    files = 0
+    total_bytes = 0
+    latest_ns = 0
+    if path.is_file():
+        candidates = [path]
+    elif path.is_dir():
+        candidates = []
+        for item in _iter_project_files(path):
+            candidates.append(item)
+    else:
+        candidates = []
+    for item in candidates:
+        try:
+            stat = item.stat()
+        except OSError:
+            continue
+        files += 1
+        total_bytes += stat.st_size
+        latest_ns = max(latest_ns, stat.st_mtime_ns)
+    try:
+        rel = path.relative_to(root).as_posix()
+    except ValueError:
+        rel = path.name
+    return {
+        "path": rel,
+        "kind": "file" if path.is_file() else "directory",
+        "files": files,
+        "bytes": total_bytes,
+        "latest_mtime_ns": latest_ns,
+    }
+
+
+def _data_inventory(root: Path) -> dict:
+    """Find likely user data without reading its contents."""
+    candidates: list[Path] = []
+    try:
+        children = list(root.iterdir())
+    except OSError:
+        children = []
+    for child in children:
+        if child.name.casefold() in MIGRATION_EXCLUDE_CASEFOLD:
+            continue
+        lower = child.name.casefold()
+        if child.is_dir() and lower in DATA_DIR_NAMES:
+            if lower == "data":
+                nested = [p for p in child.iterdir() if p.name.casefold() in DATA_DIR_NAMES]
+                candidates.extend(nested or [child])
+            else:
+                candidates.append(child)
+        elif child.is_file() and child.suffix.casefold() in DATA_FILE_SUFFIXES:
+            candidates.append(child)
+    seen: set[str] = set()
+    entries: list[dict] = []
+    for candidate in sorted(candidates, key=lambda p: p.as_posix().casefold()):
+        key = candidate.as_posix().casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        entries.append(_path_stats(candidate, root))
+    digest_input = "\n".join(
+        f"{item['path']}|{item['kind']}|{item['files']}|{item['bytes']}|{item['latest_mtime_ns']}"
+        for item in entries
+    )
+    total_files = sum(item["files"] for item in entries)
+    total_bytes = sum(item["bytes"] for item in entries)
+    return {
+        "entries": entries,
+        "count": len(entries),
+        "files": total_files,
+        "bytes": total_bytes,
+        "digest": hashlib.sha256(digest_input.encode("utf-8")).hexdigest(),
+        "read_only": True,
+    }
+
+
+def _project_size(root: Path, data: dict | None = None) -> dict:
+    """Classify project scale using transparent file/byte thresholds.
+
+    Small: <= 1,000 files and <= 100 MiB; medium: <= 10,000 files and <= 2 GiB;
+    anything larger is large. Caches and generated dependencies are excluded.
+    """
+    file_count = 0
+    total_bytes = 0
+    code_files = 0
+    capped = False
+    code_suffixes = {".py", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".go", ".rs", ".java", ".cs", ".cpp", ".c", ".h", ".html", ".css"}
+    for path in _iter_project_files(root):
+        try:
+            total_bytes += path.stat().st_size
+        except OSError:
+            continue
+        file_count += 1
+        code_files += int(path.suffix.casefold() in code_suffixes)
+        if file_count >= 100_000:
+            capped = True
+            break
+    if capped or file_count > 10_000 or total_bytes > 2 * 1024 * 1024 * 1024:
+        level = "large"
+    elif file_count > 1_000 or total_bytes > 100 * 1024 * 1024:
+        level = "medium"
+    else:
+        level = "small"
+    data = data or _data_inventory(root)
+    return {
+        "level": level,
+        "files": file_count,
+        "bytes": total_bytes,
+        "code_files": code_files,
+        "data_files": data.get("files", 0),
+        "data_bytes": data.get("bytes", 0),
+        "scan_capped": capped,
+        "thresholds": {
+            "small_max_files": 1000,
+            "small_max_bytes": 100 * 1024 * 1024,
+            "medium_max_files": 10000,
+            "medium_max_bytes": 2 * 1024 * 1024 * 1024,
+        },
+    }
+
+
+def _human_bytes(value: int | float) -> str:
+    """Format a byte count for the human intake report."""
+    number = float(value or 0)
+    for unit in ("B", "KiB", "MiB", "GiB", "TiB"):
+        if number < 1024 or unit == "TiB":
+            return f"{number:.1f} {unit}" if unit != "B" else f"{int(number)} B"
+        number /= 1024
+    return "0 B"
+
+
+def _directory_groups(directories: list[str]) -> dict[str, list[str]]:
+    """Group candidate physical directories by the human-facing functional area."""
+    groups: dict[str, list[str]] = {
+        "应用与服务": [], "数据与知识": [], "任务与集成": [],
+        "测试与质量": [], "配置与脚本": [], "文档与管理": [], "其他": [],
+    }
+    for raw in directories:
+        value = str(raw)
+        lower = value.casefold()
+        if lower == "tests" or lower.startswith("tests/") or "test" in lower:
+            bucket = "测试与质量"
+        elif lower.startswith(("data", "db", "knowledge", "vector")):
+            bucket = "数据与知识"
+        elif lower.startswith(("worker", "workers", "jobs", "queue", "integrations")):
+            bucket = "任务与集成"
+        elif lower.startswith(("config", "configs", "scripts", "tools")):
+            bucket = "配置与脚本"
+        elif lower.startswith(("docs", ".guiyuan", ".codex")):
+            bucket = "文档与管理"
+        elif lower.startswith(("src", "app", "apps", "packages", "components", "lib")):
+            bucket = "应用与服务"
+        else:
+            bucket = "其他"
+        groups[bucket].append(value)
+    return {name: values for name, values in groups.items() if values}
+
+
+def _template_recommendations(intent: str | None, detected: dict) -> dict:
+    """Build user-visible candidates; never select a template or write files."""
+    plan = _resolve_intent(intent, None) if intent else {
+        "profile": None, "confidence": "unknown", "score": 0, "signals": [], "description": ""
+    }
+    profile = plan.get("profile") or "default"
+    candidates = []
+    for item in INTENT_TEMPLATE_HINTS.get(profile, INTENT_TEMPLATE_HINTS["default"]):
+        try:
+            spec = _load_template_spec(item["template"], "medium", item.get("capabilities", []))
+            dirs = spec.get("dirs", [])
+        except (OSError, ValueError, tomllib.TOMLDecodeError):
+            dirs = []
+        candidates.append({
+            "template": item["template"],
+            "capabilities": list(item.get("capabilities", [])),
+            "reason": item["reason"],
+            "directories": dirs,
+            "directory_groups": _directory_groups(dirs),
+        })
+    return {
+        "requested_intent": intent or "",
+        "candidate_profile": plan.get("profile"),
+        "confidence": plan.get("confidence", "unknown"),
+        "signals": plan.get("signals", []),
+        "candidates": candidates,
+        "decision_required": True,
+        "detected_project": detected.get("label", "未知项目"),
+    }
+
+
+def _assessment(root: Path, detected: dict, declared_systems: list[str] | None = None,
+                intent: str | None = None, environment: dict | None = None,
+                project_name: str | None = None) -> dict:
     groups = _managed_candidates(root)
+    data_inventory = _data_inventory(root)
+    project_size = _project_size(root, data_inventory)
     known_systems = _detect_known_systems(root)
     declared = _declared_systems(declared_systems or [])
-    return {
+    result = {
         "schema_version": 2,
         "target": str(root),
+        "project_name": project_name or root.name,
         "assessed_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "detected": detected,
+        "project_structure": _project_structure(root),
+        "template_recommendations": _template_recommendations(intent, detected),
+        "functional_modules": _functional_module_catalog(),
+        "project_size": project_size,
+        "data_inventory": data_inventory,
+        "intent": intent or "",
         "known_systems": known_systems,
         "declared_systems": declared,
         "compatibility": _compat_assessment(root, groups, known_systems, declared),
@@ -318,6 +665,9 @@ def _assessment(root: Path, detected: dict, declared_systems: list[str] | None =
             for name in WORKFLOWS
         ],
     }
+    if environment is not None:
+        result["environment"] = environment
+    return result
 
 
 def _print_assessment(data: dict, as_json: bool) -> None:
@@ -325,32 +675,75 @@ def _print_assessment(data: dict, as_json: bool) -> None:
         print(json.dumps(data, ensure_ascii=False, indent=2))
         return
     detected = data["detected"]
-    compat = data["compatibility"]
-    print("== lossless adoption assessment ==")
-    print(f"  detected: {detected['label']} (runtime: {detected['runtime']})")
-    print(f"  match: {compat['score']}/100 ({compat['level']})")
-    for dim in compat["dimensions"]:
-        print(f"  - {dim['name']}: {dim['matched_files']} existing manager file(s)")
-    for risk in compat["risks"]:
-        print(f"  risk: {risk}")
-    if data["known_systems"]:
-        for system in data["known_systems"]:
-            print(f"  detected system: {system['label']} ({', '.join(system['markers'])})")
-    if data["declared_systems"]:
-        for system in data["declared_systems"]:
-            print(f"  declared system: {system['label']}")
-    if compat["policies"]["compatibility"]["required"]:
-        print("  [gate] low match: choose --compat-policy full-takeover|takeover|defer|abandon")
-    if compat["policies"]["systems"]["required"]:
-        print("  [gate] existing systems: choose --system-policy keep-map|auto-takeover|abandon")
-    print("  no project files, dependencies, Git settings, or skills were changed.")
-    print("  choose each workflow: keep (old remains authoritative), map (old is indexed), or managed.")
-    for item in data["workflows"]:
-        files = item["existing_files"]
-        summary = ", ".join(row["path"] for row in files[:3]) or "none found"
-        suffix = " …" if len(files) > 3 else ""
-        print(f"  - {item['name']}: {len(files)} existing file(s), recommend {item['recommended']} ({summary}{suffix})")
-    print("  next: save this JSON outside the project, then run --mode adopt --assessment <file> with the confirmed policies.")
+    recommendations = data["template_recommendations"]
+    print("== 项目接入只读评估 ==")
+    print(f"  项目：{data.get('project_name', '')}")
+    print(f"  位置：{data.get('target', '')}")
+    print(f"  当前目录可能像：{detected['label']}")
+    intent = data.get("intent", "").strip()
+    if intent:
+        print(f"  你的产品描述：{intent}")
+    else:
+        print("  尚未收到产品描述：请先说明想做什么，VCM 不会替你决定模板。")
+    overview = "、".join(
+        item["name"] for item in data.get("project_structure", {}).get("entries", [])[:16]
+    )
+    print("  现有目录概览：" + (overview or "空目录"))
+    if data.get("project_structure", {}).get("truncated"):
+        print("  （目录较多，仅展示前 16 项）")
+    size = data.get("project_size", {})
+    size_label = {"small": "小", "medium": "中", "large": "大"}.get(size.get("level"), "未知")
+    print(f"  项目体量：{size_label}（约 {size.get('files', 0)} 个文件，{_human_bytes(size.get('bytes', 0))}）")
+    inventory = data.get("data_inventory", {})
+    print(f"  已有数据：{inventory.get('count', 0)} 个候选目录或文件，总大小 {_human_bytes(inventory.get('bytes', 0))}")
+    print("  根据描述可考虑以下模板（仅供选择，不会自动套用）：")
+    if not intent:
+        print("    - 请先补充产品描述，再生成模板与目录建议。")
+    else:
+        for index, candidate in enumerate(recommendations.get("candidates", []), 1):
+            caps = "、".join(candidate["capabilities"]) or "无额外能力层"
+            print(f"    {index}. {candidate['template']}（{candidate['reason']}；能力：{caps}）")
+            print("       建议功能目录：")
+            for group, dirs in candidate.get("directory_groups", {}).items():
+                print(f"         - {group}：{'、'.join(dirs)}")
+    if data.get("known_systems") or data.get("declared_systems"):
+        print("  检测到已有管理约定：接管前请决定是否保留、映射或归档。")
+    print("  接管选择：")
+    print("    1. 完全接管：按你确认的模板建立管理结构，旧管理层归档；业务数据迁移另行确认。")
+    print("    2. 部分接管：只接管管理流程，不重构现有目录和业务代码。")
+    print("    3. 渐进接管：本轮继续老流程，从新需求开始并行记录。")
+    print("    4. 放弃接管：当前项目暂不使用 Guiyuan Vibecoding。")
+    if size.get("level") == "large":
+        print("  当前项目体量较大，不建议完全接管；建议部分接管或渐进接管。")
+    elif size.get("level") in {"small", "medium"}:
+        print("  当前项目体量适合考虑完全接管，但仍需确认模板和迁移计划。")
+    if data.get("environment"):
+        _print_environment_inventory(data["environment"])
+        print("  全机环境已完成只读盘点；安装、切换 Python/Node、安装 UV 均尚未执行。")
+    else:
+        print("  当前阶段仅查看项目目录；全机环境盘点需用户明确授权后再执行。")
+    print("  VCM 功能模块目录：" + "、".join(m.get("name", "") for m in data.get("functional_modules", [])))
+    print("  未写入项目文件、未安装依赖、未修改 Git 或 Skill。")
+    print("  下一步：确认模板/目录与接管方式后，再进行环境选择和执行。")
+
+
+def _print_scaffold_candidates(root: Path, name: str, intent: str) -> None:
+    """Show scaffold candidates without materializing a project."""
+    recommendations = _template_recommendations(intent, {
+        "label": DETECT_LABELS["generic"],
+    })
+    print("== 新项目模板建议（只读） ==")
+    print(f"  项目：{name}")
+    print(f"  位置：{root}")
+    print(f"  产品描述：{intent}")
+    print("  以下都是候选方案，请选择一个模板/能力后再执行 scaffold：")
+    for index, candidate in enumerate(recommendations["candidates"], 1):
+        caps = "、".join(candidate["capabilities"]) or "无额外能力层"
+        print(f"    {index}. {candidate['template']}（{candidate['reason']}；能力：{caps}）")
+        print("       建议功能目录：")
+        for group, dirs in candidate.get("directory_groups", {}).items():
+            print(f"         - {group}：{'、'.join(dirs)}")
+    print("  未写入任何文件；确认后请显式传入 --template 或 --profile。")
 
 
 def _load_assessment(path: Path, target: Path) -> dict:
@@ -365,12 +758,12 @@ def _load_assessment(path: Path, target: Path) -> dict:
 
 def _validate_gate(assessment: dict, compat_policy: str | None, system_policy: str | None) -> None:
     compat = assessment.get("compatibility", {})
-    if compat_policy in {"defer", "abandon"} or system_policy == "abandon":
+    if compat_policy in {"progressive", "defer", "abandon"} or system_policy == "abandon":
         return
     if compat_policy == "full-takeover" and system_policy == "keep-map":
         raise ValueError("full-takeover conflicts with keep-map; choose auto-takeover for existing systems or takeover for scoped adoption")
     if compat.get("level") == "low" and not compat_policy:
-        raise ValueError("compatibility gate: low match; choose --compat-policy full-takeover|takeover|defer|abandon")
+        raise ValueError("compatibility gate: choose --compat-policy full-takeover|takeover|progressive|abandon")
     if compat.get("systems_required") and not system_policy:
         raise ValueError("similar-system gate: existing systems found; choose --system-policy keep-map|auto-takeover|abandon")
     if compat_policy and compat_policy not in COMPAT_POLICIES:
@@ -412,10 +805,285 @@ def _verify_assessment(data: dict, root: Path) -> None:
             expected = item["sha256"]
             if not path.is_file() or _sha256(path) != expected:
                 raise ValueError(f"baseline changed: {item['path']}; rerun --mode assess before applying")
+    expected_data = data.get("data_inventory", {}).get("digest")
+    if expected_data and _data_inventory_digest(root) != expected_data:
+        raise ValueError("data inventory changed; rerun --mode assess before applying")
+
+
+def _data_inventory_digest(root: Path) -> str:
+    return _data_inventory(root).get("digest", "")
+
+
+def _validate_external_plan_path(path: Path, root: Path) -> None:
+    """Migration plans live outside the project so they cannot be adopted accidentally."""
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return
+    raise ValueError("--migration-plan must point outside the project directory")
+
+
+def _path_text_references(root: Path, source: str, target: str) -> list[dict]:
+    """Find deterministic text references to one planned path move."""
+    source_forms = {source.replace("/", "\\"), source}
+    if source.startswith("./"):
+        source_forms.update({source[2:], source[2:].replace("/", "\\")})
+    found: list[dict] = []
+    for path in _iter_project_files(root):
+        if path.suffix.casefold() not in TEXT_PATH_SUFFIXES:
+            continue
+        try:
+            raw = path.read_bytes()
+            text = raw.decode("utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        matches = []
+        for value in source_forms:
+            if not value:
+                continue
+            if "/" in value or "\\" in value:
+                if value in text:
+                    matches.append(value)
+            else:
+                # A bare directory name is only safe when used as a quoted config/path value;
+                # prose and identifiers remain manual-review territory.
+                if re.search(rf"(['\"]){re.escape(value)}\1", text):
+                    matches.append(value)
+        if not matches:
+            continue
+        value = max(matches, key=len)
+        try:
+            rel = path.relative_to(root).as_posix()
+        except ValueError:
+            continue
+        # References inside the item being moved are not stable source-code dependencies;
+        # after the move their relative path would no longer exist at ``rel``.
+        source_prefix = source.rstrip("/") + "/"
+        if rel == source or rel.startswith(source_prefix):
+            continue
+        found.append({
+            "file": rel,
+            "match": value,
+            "replacement": target.replace("/", "\\") if "\\" in value else target,
+            "count": len(re.findall(rf"(['\"]){re.escape(value)}\1", text)) if "/" not in value and "\\" not in value else text.count(value),
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        })
+    return found
+
+
+def _build_migration_plan(root: Path, assessment: dict, template_spec: dict,
+                          migrate_code: bool = False) -> dict:
+    """Create a read-only, explicit source-to-target migration plan."""
+    if not template_spec:
+        raise ValueError("full-takeover requires an explicitly confirmed --template")
+    entries = assessment.get("data_inventory", {}).get("entries", [])
+    template_dirs = {str(value).replace("\\", "/").strip("/") for value in template_spec.get("dirs", [])}
+    has_data_root = any(value == "data" or value.startswith("data/") for value in template_dirs)
+    mappings: list[dict] = []
+    unmapped: list[dict] = []
+    for entry in entries:
+        source = str(entry.get("path", "")).replace("\\", "/")
+        source_name = Path(source).name
+        lower = source_name.casefold()
+        target: str | None = None
+        if lower in {"knowledge", "knowledges"} and "data/knowledge" in template_dirs:
+            target = "data/knowledge"
+        elif lower in {"vector", "vectors"} and "data/vector" in template_dirs:
+            target = "data/vector"
+        elif lower in {"content", "contents"} and "data/content" in template_dirs:
+            target = "data/content"
+        elif has_data_root and (lower in {"database", "db", "storage", "uploads", "upload"} or Path(source_name).suffix.casefold() in DATA_FILE_SUFFIXES):
+            target = f"data/legacy/{source_name}"
+        if target and source.casefold() != target.casefold():
+            destination = root / target
+            if destination.exists():
+                unmapped.append({"source": source, "reason": "target_exists", "target": target})
+                continue
+            refs = _path_text_references(root, source, target)
+            mappings.append({
+                "source": source,
+                "target": target,
+                "kind": entry.get("kind", "directory"),
+                "files": entry.get("files", 0),
+                "bytes": entry.get("bytes", 0),
+                "references": refs,
+            })
+        else:
+            unmapped.append({"source": source, "reason": "not_safely_mapped"})
+
+    if migrate_code:
+        # Code relocation is opt-in. Only exact, well-known roots are considered.
+        for source_name, target_name in CODE_ROOT_ALIASES.items():
+            if source_name == target_name:
+                continue
+            source_path = root / source_name
+            target_path = root / target_name
+            if source_path.exists() and source_path != target_path and not target_path.exists():
+                mappings.append({
+                    "source": source_name, "target": target_name,
+                    "kind": "directory", "files": 0, "bytes": 0,
+                    "references": _path_text_references(root, source_name, target_name),
+                    "category": "code",
+                })
+
+    return {
+        "schema_version": 1,
+        "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "project": str(root),
+        "template": {
+            "id": template_spec.get("id"), "version": template_spec.get("version"),
+            "topology": template_spec.get("topology"), "scale": template_spec.get("scale"),
+            "capabilities": list(template_spec.get("capabilities", [])),
+        },
+        "project_size": assessment.get("project_size", {}),
+        "data_baseline": assessment.get("data_inventory", {}).get("digest", ""),
+        "mappings": mappings,
+        "unmapped": unmapped,
+        "manual_review": [ref for item in mappings for ref in item.get("references", [])],
+        "migrate_code": bool(migrate_code),
+        "business_code_overwritten": False,
+        "takeover_marker": f"{ADOPTION_DIR}/takeover.json",
+    }
+
+
+def _write_migration_plan(path: Path, plan: dict) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def _load_migration_plan(path: Path, root: Path) -> dict:
+    try:
+        plan = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid migration plan: {path} ({exc})") from exc
+    if plan.get("schema_version") != 1 or plan.get("project") != str(root):
+        raise ValueError("migration plan does not belong to this project")
+    return plan
+
+
+def _verify_migration_plan(plan: dict, root: Path, assessment: dict, template_spec: dict) -> None:
+    if plan.get("data_baseline") != assessment.get("data_inventory", {}).get("digest", ""):
+        raise ValueError("data inventory changed; rerun --mode assess and create a new migration plan")
+    expected = {
+        "id": template_spec.get("id"), "version": template_spec.get("version"),
+        "topology": template_spec.get("topology"), "scale": template_spec.get("scale"),
+        "capabilities": list(template_spec.get("capabilities", [])),
+    }
+    if plan.get("template") != expected:
+        raise ValueError("template selection changed; create a new migration plan")
+    for item in plan.get("mappings", []):
+        source = root / item["source"]
+        target = root / item["target"]
+        if not source.exists():
+            raise ValueError(f"migration source is missing: {item['source']}")
+        if target.exists():
+            raise ValueError(f"migration target already exists: {item['target']}")
+        for ref in item.get("references", []):
+            ref_path = root / ref["file"]
+            if not ref_path.is_file() or _sha256(ref_path) != ref.get("sha256"):
+                raise ValueError(f"path reference changed: {ref['file']}; rebuild migration plan")
+
+
+def _execute_migration(plan: dict, root: Path) -> dict:
+    """Apply a migration plan with reversible moves and text backups."""
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    backup_root = root / ADOPTION_DIR / "migration-backups" / stamp
+    moved: list[dict] = []
+    rewritten: list[dict] = []
+    created_dirs: list[str] = []
+    try:
+        for item in plan.get("mappings", []):
+            source = root / item["source"]
+            target = root / item["target"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(source), str(target))
+            moved.append({"source": item["source"], "target": item["target"]})
+        for item in plan.get("mappings", []):
+            for ref in item.get("references", []):
+                path = root / ref["file"]
+                raw = path.read_bytes()
+                if hashlib.sha256(raw).hexdigest() != ref.get("sha256"):
+                    raise ValueError(f"path reference changed during migration: {ref['file']}")
+                backup = backup_root / ref["file"]
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, backup)
+                old = ref["match"]
+                new = ref["replacement"]
+                text = raw.decode("utf-8")
+                if "/" not in old and "\\" not in old:
+                    text = re.sub(rf"(['\"]){re.escape(old)}\1", lambda match: f"{match.group(1)}{new}{match.group(1)}", text)
+                else:
+                    text = text.replace(old, new)
+                path.write_text(text, encoding="utf-8")
+                rewritten.append({"file": ref["file"], "backup": backup.relative_to(root).as_posix(), "old": old, "new": new})
+        receipt = {
+            "schema_version": 1, "created_at": stamp, "project": str(root),
+            "plan_path": plan.get("plan_path", ""),
+            "moved": moved, "rewritten": rewritten, "created_dirs": created_dirs,
+            "backup_root": backup_root.relative_to(root).as_posix(),
+        }
+        receipt_path = root / ADOPTION_DIR / "receipts" / f"migration-{stamp}.json"
+        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+        receipt_path.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return {"receipt": receipt_path.relative_to(root).as_posix(), **receipt}
+    except Exception:
+        for item in reversed(rewritten):
+            path = root / item["file"]
+            backup = root / item["backup"]
+            if backup.is_file():
+                shutil.copy2(backup, path)
+        for item in reversed(moved):
+            source = root / item["source"]
+            target = root / item["target"]
+            if target.exists() and not source.exists():
+                source.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(target), str(source))
+        raise
+
+
+def _rollback_migration(receipt: dict, root: Path) -> None:
+    """Undo a completed migration receipt in reverse order."""
+    for item in reversed(receipt.get("rewritten", [])):
+        path = root / item["file"]
+        backup = root / item["backup"]
+        if backup.is_file():
+            shutil.copy2(backup, path)
+    for item in reversed(receipt.get("moved", [])):
+        source = root / item["source"]
+        target = root / item["target"]
+        if target.exists() and not source.exists():
+            source.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(target), str(source))
+
+
+def _write_takeover_marker(root: Path, plan: dict, migration: dict, template_spec: dict) -> Path:
+    state_dir = root / ADOPTION_DIR
+    state_dir.mkdir(parents=True, exist_ok=True)
+    marker = state_dir / "takeover.json"
+    payload = {
+        "mode": "full-takeover", "status": "complete",
+        "template_id": template_spec.get("id"), "template_version": template_spec.get("version"),
+        "topology": template_spec.get("topology"), "scale": template_spec.get("scale"),
+        "capabilities": list(template_spec.get("capabilities", [])),
+        "migration_plan": str(plan.get("plan_path", "")),
+        "migration_receipt": str(migration.get("receipt", "")),
+        "created_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "business_code_overwritten": False,
+    }
+    marker.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    human = state_dir / "FULL_TAKEOVER.md"
+    human.write_text(
+        "# Full takeover\n\nThis project completed Guiyuan Vibecoding full takeover.\n"
+        "Business code was not overwritten. See `takeover.json` and the migration receipt for evidence.\n",
+        encoding="utf-8",
+    )
+    return marker
 
 
 def _adoption_receipt(root: Path, assessment: dict, choices: dict[str, str], backups: list[dict],
-                      copied: list[str], policies: dict | None = None, moved: list[dict] | None = None) -> Path:
+                      copied: list[str], policies: dict | None = None, moved: list[dict] | None = None,
+                      migration: dict | None = None, takeover_marker: str | None = None) -> Path:
     state_dir = root / ADOPTION_DIR
     state_dir.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -428,6 +1096,8 @@ def _adoption_receipt(root: Path, assessment: dict, choices: dict[str, str], bac
         "backups": backups,
         "copied": copied,
         "legacy_overlays": moved or [],
+        "migration": migration or {},
+        "takeover_marker": takeover_marker,
     }
     manifest = state_dir / "adoption.json"
     manifest.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -476,9 +1146,12 @@ def _archive_legacy_overlays(root: Path, assessment: dict, stamp: str) -> list[d
 
 
 def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, str],
-                    policies: dict | None = None, full_takeover: bool = False) -> tuple[list[str], Path]:
+                    policies: dict | None = None, full_takeover: bool = False,
+                    migration: dict | None = None, takeover_marker: str | None = None,
+                    verify_baseline: bool = True) -> tuple[list[str], Path]:
     """Copy only explicitly managed workflow files, restoring backups on failure."""
-    _verify_assessment(assessment, root)
+    if verify_baseline:
+        _verify_assessment(assessment, root)
     managed = {name for name, mode in choices.items() if mode == "managed"}
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     backup_root = root / ADOPTION_DIR / "backups" / stamp
@@ -512,7 +1185,7 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
             moved = _archive_legacy_overlays(root, assessment, stamp)
         # Do not generate an archive, index, Git hook, environment file, or dependency
         # side effect during adoption.  Those are separate workflow decisions.
-        receipt = _adoption_receipt(root, assessment, choices, backups, copied, policies, moved)
+        receipt = _adoption_receipt(root, assessment, choices, backups, copied, policies, moved, migration, takeover_marker)
         return copied, receipt
     except Exception:
         for item in reversed(moved):
@@ -533,22 +1206,43 @@ def _apply_adoption(root: Path, name: str, assessment: dict, choices: dict[str, 
 
 def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: list[str],
                compat_policy: str | None = None, system_policy: str | None = None,
-               install_hook: bool = True) -> None:
+               install_hook: bool = True, template_spec: dict | None = None,
+               migration_plan_path: Path | None = None, migration_confirm: bool = False,
+               migrate_code: bool = False, force: bool = False) -> None:
     if assessment_path is None:
         raise ValueError("adopt requires --assessment <json from --mode assess>")
     assessment = _load_assessment(assessment_path, root)
     _validate_gate(assessment, compat_policy, system_policy)
-    if compat_policy in {"defer", "abandon"}:
-        if compat_policy == "defer":
+    if compat_policy in {"progressive", "defer", "abandon"}:
+        if compat_policy in {"progressive", "defer"}:
             decision = _write_deferred_decision(root, assessment, compat_policy)
-            print(f"\nAdoption deferred: {root}")
-            print(f"  old content was not changed; future adoption decision saved at {decision.relative_to(root).as_posix()}")
+            print(f"\nProgressive adoption recorded: {root}")
+            print(f"  legacy workflow remains authoritative; decision saved at {decision.relative_to(root).as_posix()}")
         else:
             print(f"\nAdoption abandoned: {root} (Guiyuan Vibecoding will not be used in this project)")
         return
     if system_policy == "abandon":
         print(f"\nAdoption abandoned: {root} (Guiyuan Vibecoding will not be used in this project)")
         return
+
+    full_takeover = compat_policy == "full-takeover"
+    plan: dict | None = None
+    if full_takeover:
+        if not template_spec:
+            raise ValueError("full-takeover requires an explicitly confirmed --template")
+        if migration_plan_path is None:
+            raise ValueError("full-takeover requires --migration-plan outside the project")
+        _validate_external_plan_path(migration_plan_path, root)
+        if not migration_confirm:
+            plan = _build_migration_plan(root, assessment, template_spec, migrate_code=migrate_code)
+            plan["plan_path"] = str(migration_plan_path)
+            _write_migration_plan(migration_plan_path, plan)
+            print(f"\n迁移计划已生成（尚未执行）：{migration_plan_path}")
+            print(f"  数据候选：{len(plan.get('mappings', []))} 项可迁移，{len(plan.get('unmapped', []))} 项保留原位/待人工复核")
+            print("  未移动数据、未修改路径、未应用管理层；请审核计划后再次传入 --migration-confirm。")
+            return
+        plan = _load_migration_plan(migration_plan_path, root)
+        _verify_migration_plan(plan, root, assessment, template_spec)
 
     choices = _workflow_choices(workflows)
     if not workflows:
@@ -566,19 +1260,38 @@ def _run_adopt(root: Path, name: str, assessment_path: Path | None, workflows: l
             elif compat_adopt:
                 choices[name] = "managed"
     policies = {"compatibility": compat_policy, "systems": system_policy}
-    copied, receipt = _apply_adoption(
-        root,
-        name,
-        assessment,
-        choices,
-        policies=policies,
-        full_takeover=compat_policy == "full-takeover",
-    )
+    migration_receipt: dict | None = None
+    _verify_assessment(assessment, root)
+    if full_takeover and plan is not None:
+        migration_receipt = _execute_migration(plan, root)
+    try:
+        if full_takeover and template_spec:
+            _apply_template_layout(root, template_spec)
+        copied, receipt = _apply_adoption(
+            root,
+            name,
+            assessment,
+            choices,
+            policies=policies,
+            full_takeover=full_takeover,
+            migration=migration_receipt,
+            takeover_marker=f"{ADOPTION_DIR}/takeover.json" if full_takeover else None,
+            verify_baseline=False if full_takeover else True,
+        )
+        marker = None
+        if full_takeover and plan is not None and migration_receipt is not None:
+            marker = _write_takeover_marker(root, plan, migration_receipt, template_spec or {})
+    except Exception:
+        if migration_receipt is not None:
+            _rollback_migration(migration_receipt, root)
+        raise
     print(f"\nLossless adoption complete: {root}")
     print("  workflows: " + ", ".join(f"{key}={value}" for key, value in choices.items()))
-    print(f"  copied {len(copied)} explicitly managed file(s); source code was not touched")
+    print(f"  copied {len(copied)} explicitly managed file(s); business code was not overwritten")
     if compat_policy == "full-takeover":
         print("  full takeover: legacy management overlays archived under .guiyuan-vibecoding/pre-adoption/")
+        print("  migration: data moved according to the confirmed plan; path references were updated where unambiguous")
+        print("  marker: .guiyuan-vibecoding/takeover.json")
     print(f"  receipt: {receipt.relative_to(root).as_posix()}")
     hook_status = _install_project_hook(root) if install_hook else "skipped (--hook none)"
     print(f"  project hook: {hook_status}")
@@ -952,6 +1665,9 @@ def _copy_close_loop_skill(dest: Path, force: bool) -> Path | None:
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(SKILL_ASSETS, dest)
+    template = dest / "SKILL.md.template"
+    if template.is_file():
+        template.replace(dest / "SKILL.md")
     return dest
 
 
@@ -959,14 +1675,16 @@ def _handle_close_loop_install(root: Path, skills_dir: str | None,
                                location: str, force: bool) -> tuple[Path | None, str]:
     if location == "skip":
         return None, "skipped"
+    if location == "global":
+        # The public distribution intentionally has one discoverable Skill. Keep the explicit
+        # legacy option as a compatibility input, but materialize the close-loop payload locally
+        # instead of recreating a second global discovery entry.
+        location = "project"
     explicit_root = _resolve_skills_root(skills_dir)
-    if location == "global" or (location == "auto" and explicit_root):
-        if explicit_root is None:
-            raise ValueError("global skill install requires --skills-dir or VIBECODING_SKILLS_HOME")
-        dest = _copy_close_loop_skill(explicit_root / "guiyuan-iteration-close-loop", force)
-        return dest, f"global skills dir: {explicit_root}"
+    if location == "auto" and explicit_root:
+        location = "project"
     dest = _copy_close_loop_skill(root / ADOPTION_DIR / "skills" / "guiyuan-iteration-close-loop", force)
-    return dest, "project-local skills dir: .guiyuan-vibecoding/skills"
+    return dest, "project-local skills dir: .guiyuan-vibecoding/skills (public global entry remains singular)"
 
 
 def _parse_module(value: str) -> dict:
@@ -1421,6 +2139,151 @@ def _env_preflight(runtime: str) -> list[str]:
     return missing
 
 
+def _command_inventory(command: str, *args: str) -> dict:
+    """Read one executable's version/path without installing or changing state."""
+    path = shutil.which(command)
+    ok, output = _run_quiet([command, *args])
+    return {
+        "command": command,
+        "installed": bool(path or ok),
+        "path": path or "",
+        "version": output.splitlines()[0][:200] if ok and output else "",
+    }
+
+
+def _lines_from_command(command: list[str]) -> list[str]:
+    ok, output = _run_quiet(command)
+    if not ok or not output:
+        return []
+    return [line.strip() for line in output.splitlines() if line.strip()]
+
+
+def _existing_paths(candidates: list[tuple[str, Path]]) -> list[dict]:
+    found: list[dict] = []
+    seen: set[str] = set()
+    for label, path in candidates:
+        if not str(path):
+            continue
+        try:
+            resolved = str(path.expanduser().resolve())
+        except OSError:
+            resolved = str(path)
+        key = resolved.casefold()
+        if key in seen or not Path(resolved).exists():
+            continue
+        seen.add(key)
+        found.append({"label": label, "path": resolved})
+    return found
+
+
+def _environment_inventory() -> dict:
+    """Whole-machine metadata inventory for the post-intent, user-authorized preflight.
+
+    This intentionally checks only executable metadata, known shared roots, and environment
+    listings.  It does not read project source, install software, or alter PATH/configuration.
+    """
+    agents = []
+    for label, command in AGENT_COMMANDS:
+        item = _command_inventory(command, "--version")
+        roots = []
+        if label == "Codex":
+            roots.extend([Path(os.environ.get("CODEX_HOME", "~/.codex")).expanduser()])
+        elif label == "Claude Code":
+            roots.append(Path.home() / ".claude")
+        elif label == "Cursor":
+            roots.append(Path.home() / ".cursor")
+        elif label == "Windsurf":
+            roots.append(Path.home() / ".windsurf")
+        item["roots"] = _existing_paths([(label, root) for root in roots])
+        if item["installed"] or item["roots"]:
+            agents.append({"name": label, **item})
+
+    skill_candidates = list(_known_skill_roots())
+    for env_name in (VIBECODING_SKILLS_HOME, "CODEX_HOME", "CLAUDE_HOME"):
+        raw = os.environ.get(env_name)
+        if raw:
+            base = Path(raw).expanduser()
+            skill_candidates.append((env_name, base / "skills" if env_name != VIBECODING_SKILLS_HOME else base))
+    shared_skill_dirs = _existing_paths(skill_candidates)
+
+    python_versions = _lines_from_command(["py", "-0p"])
+    python_paths: list[str] = []
+    for line in python_versions:
+        candidate = line.split()[-1] if line.split() else ""
+        if re.search(r"([A-Za-z]:\\|/).*(python|Python)(?:\.exe)?$", candidate):
+            python_paths.append(candidate)
+    python_path_lines = _lines_from_command(["where", "python"])
+    python_paths.extend(python_path_lines)
+    virtual_envs = _existing_paths([
+        ("VIRTUAL_ENV", Path(os.environ["VIRTUAL_ENV"]))
+        for _ in [0] if os.environ.get("VIRTUAL_ENV")
+    ])
+    python_commands = {
+        "py": _command_inventory("py", "-3", "--version"),
+        "python": _command_inventory("python", "--version"),
+        "uv-python": _command_inventory("uv", "python", "find"),
+    }
+    uv_python_list = _lines_from_command(["uv", "python", "list"])
+
+    node_paths = _lines_from_command(["where", "node"])
+    node_commands = {
+        "node": _command_inventory("node", "--version"),
+        "npm": _command_inventory("npm", "--version"),
+        "nvm": _command_inventory("nvm", "version"),
+        "fnm": _command_inventory("fnm", "--version"),
+    }
+    shared_runtime_candidates = [
+        ("Python virtualenvs", Path.home() / ".virtualenvs"),
+        ("Conda environments", Path.home() / ".conda" / "envs"),
+    ]
+    for label, env_name, suffix in (
+        ("Python user installs", "LOCALAPPDATA", Path("Programs") / "Python"),
+        ("npm global", "APPDATA", Path("npm")),
+        ("NVM", "NVM_HOME", Path()),
+        ("FNM", "FNM_DIR", Path()),
+    ):
+        raw = os.environ.get(env_name)
+        if raw:
+            shared_runtime_candidates.append((label, Path(raw).expanduser() / suffix))
+    shared_runtime_roots = _existing_paths(shared_runtime_candidates)
+    return {
+        "read_only": True,
+        "agents": agents,
+        "shared_skill_dirs": shared_skill_dirs,
+        "python": {
+            "commands": python_commands,
+            "interpreters": list(dict.fromkeys(python_paths))[:20],
+            "uv_python_list": uv_python_list[:20],
+            "virtual_envs": virtual_envs,
+        },
+        "node": {"commands": node_commands, "install_paths": list(dict.fromkeys(node_paths))[:20]},
+        "shared_runtime_roots": shared_runtime_roots,
+        "uv": _command_inventory("uv", "--version"),
+        "github_cli": _command_inventory("gh", "--version"),
+    }
+
+
+def _print_environment_inventory(inventory: dict) -> None:
+    """Human summary for the authorized inventory; avoid dumping internal probe details."""
+    print("== 全机环境只读盘点 ==")
+    agent_names = [item["name"] for item in inventory.get("agents", [])]
+    print("  Agent：" + ("、".join(agent_names) if agent_names else "未发现已知命令/目录"))
+    skill_dirs = inventory.get("shared_skill_dirs", [])
+    print("  共享 Skill 目录：" + ("、".join(item["path"] for item in skill_dirs) if skill_dirs else "未发现"))
+    python = inventory.get("python", {})
+    interpreters = python.get("interpreters", [])
+    print("  Python：" + ("、".join(interpreters[:8]) if interpreters else "未发现独立解释器"))
+    if python.get("uv_python_list"):
+        print("  UV 管理的 Python：" + "、".join(python["uv_python_list"][:8]))
+    node_paths = inventory.get("node", {}).get("install_paths", [])
+    print("  Node：" + ("、".join(node_paths[:8]) if node_paths else "未发现 PATH 中的 node"))
+    uv = inventory.get("uv", {})
+    gh = inventory.get("github_cli", {})
+    print(f"  UV：{uv.get('version') or ('已安装' if uv.get('installed') else '未安装')}")
+    print(f"  GitHub CLI：{gh.get('version') or ('已安装' if gh.get('installed') else '未安装')}")
+    print("  以上仅为只读检查；尚未安装、切换或修改任何环境。")
+
+
 def _npm_install(root: Path) -> str:
     pkg = root / "package.json"
     if not pkg.is_file():
@@ -1552,6 +2415,12 @@ def main() -> None:
                     help="auto: empty folder -> scaffold, code present -> read-only assess (default)")
     ap.add_argument("--assessment", default=None,
                     help="JSON emitted by --mode assess; required before --mode adopt")
+    ap.add_argument("--migration-plan", default=None,
+                    help="external JSON migration plan for full-takeover (plan only unless confirmed)")
+    ap.add_argument("--migration-confirm", action="store_true",
+                    help="after reviewing --migration-plan, apply the reversible migration")
+    ap.add_argument("--migrate-code", action="store_true",
+                    help="include only exact known code-root aliases in a full-takeover plan")
     ap.add_argument("--workflow", action="append", default=[], metavar="name=keep|map|managed",
                     help="adoption choice (repeatable): startup/state/ledger/methodology/tooling")
     ap.add_argument("--existing-system", action="append", default=[], metavar="NAME",
@@ -1561,6 +2430,8 @@ def main() -> None:
     ap.add_argument("--system-policy", choices=list(SYSTEM_POLICIES), default=None,
                     help="similar-system decision: keep-map|auto-takeover|abandon")
     ap.add_argument("--json", action="store_true", help="print assessment JSON (assess mode only)")
+    ap.add_argument("--environment-scan", action="store_true",
+                    help="after user authorization, inspect whole-machine agent/runtime metadata read-only")
     ap.add_argument("--force", action="store_true", help="overwrite existing management files")
     ap.add_argument("--intent", default=None,
                     help="one-sentence project description used by scaffold intent resolution")
@@ -1570,7 +2441,7 @@ def main() -> None:
                     help="explicit global skills root; writes only when the user chose it")
     ap.add_argument("--skill-location", choices=["auto", "project", "global", "skip"], default="auto",
                     help="auto=project unless --skills-dir/VIBECODING_SKILLS_HOME; "
-                         "project=.guiyuan-vibecoding/skills; global=explicit path; skip=none")
+                         "project=.guiyuan-vibecoding/skills; global=legacy alias for project; skip=none")
     ap.add_argument("--discover-skills", action="store_true",
                     help="list known agent skill roots read-only and exit")
     ap.add_argument("--no-install-skill", action="store_true", help="alias for --skill-location skip")
@@ -1641,15 +2512,36 @@ def main() -> None:
 
     mode = args.mode
     if mode == "auto":
-        mode = "assess" if _has_content(target) else "scaffold"
+        if _has_content(target):
+            mode = "assess"
+        elif not args.intent:
+            # The conversation must ask what the user wants before a scaffold can be chosen.
+            print("== 初始化启动中... ==")
+            print("Hi，我是你的 AI 项目经理，可以创建新项目或接管已有项目。")
+            print(f"项目位置：{target}")
+            print(f"项目名称：{name}")
+            print("请先告诉我，你想做一个什么样的产品？例如：想做一个喝水微信小程序，提醒我每天喝水。")
+            print("当前未写入任何文件；收到产品描述后再生成模板建议。")
+            return
+        else:
+            mode = "scaffold"
     detected = {"type": "generic", "runtime": "none", "label": DETECT_LABELS["generic"]}
     if mode in {"assess", "adopt"}:
         detected = detect_project_type(target)
     if mode == "assess":
-        _print_assessment(_assessment(target, detected, args.existing_system), args.json)
+        environment = _environment_inventory() if args.environment_scan else None
+        _print_assessment(
+            _assessment(target, detected, args.existing_system, args.intent, environment, name),
+            args.json,
+        )
         return
     if mode == "adopt":
+        if args.environment_scan:
+            _print_environment_inventory(_environment_inventory())
         try:
+            adopt_template = None
+            if args.template:
+                adopt_template = _load_template_spec(args.template, args.scale, args.capability)
             _run_adopt(
                 target,
                 name,
@@ -1658,9 +2550,24 @@ def main() -> None:
                 args.compat_policy,
                 args.system_policy,
                 install_hook=args.hook == "advisory",
+                template_spec=adopt_template,
+                migration_plan_path=Path(args.migration_plan).resolve() if args.migration_plan else None,
+                migration_confirm=args.migration_confirm,
+                migrate_code=args.migrate_code,
+                force=args.force,
             )
         except ValueError as exc:
             ap.error(str(exc))
+        return
+
+    if mode == "scaffold" and not args.profile and not args.template:
+        if not args.intent:
+            print("== 初始化启动中... ==")
+            print(f"项目位置：{target}")
+            print(f"项目名称：{name}")
+            print("请先告诉我，你想做一个什么样的产品；VCM 不会用默认模板替你决定。")
+        else:
+            _print_scaffold_candidates(target, name, args.intent)
         return
 
     intent_plan = None
@@ -1675,6 +2582,8 @@ def main() -> None:
             ap.error(str(exc))
 
     # --- copy management files -------------------------------------------
+    if args.environment_scan:
+        _print_environment_inventory(_environment_inventory())
     copied, skipped = [], []
     for src in sorted(ASSETS.rglob("*")):
         if not src.is_file():

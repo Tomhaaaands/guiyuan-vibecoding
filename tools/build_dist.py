@@ -2,9 +2,8 @@
 """Build the distributable skill zip for install-by-message (Quark-style).
 
 The primary install path for the kit is a one-line message to an agent with a "技能地址"
-zip URL (see skills/guiyuan-vibecoding-install/SKILL.md). This tool produces that zip: three
-self-contained skills at the zip root, so unzipping into an agent's global skills root
-installs the kit (no wrapper dir).
+zip URL. This tool produces one public Skill at the zip root; lifecycle and close-loop
+implementation payloads stay inside it and are not discovered as extra Skills.
 
 Usage:
   python tools/build_dist.py            # build dist/guiyuan-vibecoding-<version>.zip
@@ -27,7 +26,7 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-SKILLS = ("guiyuan-iteration-close-loop", "guiyuan-vibecoding", "guiyuan-vibecoding-install")
+SKILLS = ("guiyuan-vibecoding",)
 EXCLUDE_PARTS = {"__pycache__", ".git"}
 EXCLUDE_SUFFIXES = {".pyc"}
 
@@ -113,7 +112,7 @@ def verify_zip(zip_path: Path) -> None:
             else:
                 print(f"  [bad] {name}: missing SKILL.md")
                 ok = False
-        bundled = root / "guiyuan-vibecoding-install" / "VERSION"
+        bundled = root / "guiyuan-vibecoding" / "VERSION"
         if bundled.is_file() and bundled.read_text(encoding="utf-8").strip() == version():
             print(f"  [ok] bundled VERSION == {version()}")
         else:
@@ -135,10 +134,17 @@ def verify_zip(zip_path: Path) -> None:
             ok = False
         else:
             print("  [ok] no legacy 8010 status server in payload")
-        # every top-level entry must be one of the three skills
+        nested = [p.relative_to(root).as_posix() for p in (root / "guiyuan-vibecoding").rglob("SKILL.md")
+                  if p != root / "guiyuan-vibecoding" / "SKILL.md"]
+        if nested:
+            print(f"  [bad] nested discoverable SKILL.md files remain: {nested}")
+            ok = False
+        else:
+            print("  [ok] no nested discoverable SKILL.md payloads")
+        # the zip root must contain only the public Skill
         tops = {p for p in root.iterdir() if p.is_dir()}
         if tops == {root / n for n in SKILLS}:
-            print(f"  [ok] zip root contains exactly the 3 skill dirs")
+            print("  [ok] zip root contains exactly the public skill dir")
         else:
             print(f"  [bad] unexpected zip root entries: {sorted(p.name for p in tops)}")
             ok = False

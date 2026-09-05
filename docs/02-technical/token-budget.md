@@ -9,8 +9,8 @@
 | --- | ---: | ---: |
 | project AGENTS.md | 2,767 | 500–800 |
 | project NOW.md | 279 | 50–100 |
-| guiyuan-vibecoding skill | 5,606 | 1,100–1,600 |
-| guiyuan-iteration-close-loop skill | 2,541 | 500–800 |
+| public guiyuan-vibecoding skill (routes internal modules) | 5,606 | 1,100–1,600 |
+| internal close-loop payload (loaded only at close-out) | 2,541 | 500–800 |
 | full reusable methodology | 11,965 | 2,300–3,200 |
 | all project-template Markdown | 22,848 | 5,000–7,000 |
 

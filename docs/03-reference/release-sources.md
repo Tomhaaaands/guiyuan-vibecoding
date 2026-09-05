@@ -1,14 +1,24 @@
 # Release Sources (archived)
 
-> Status: current release `v0.1.1` (2026-09-05). The earlier GitHub-published `v0.1.0` zip release is retired. The kit is
+> Status: current release `v0.1.2` (2026-09-05). The earlier GitHub-published `v0.1.0` zip release is retired. The kit is
 > installed from the repository (`git clone` + `install.bat`/`install.sh`) or as a user-built zip
 > that you host yourself. This file documents the retired distribution; it is not an active install
 > source.
 
-## Current published zip (v0.1.1)
+## Current published zip (v0.1.2)
 
-The installable asset is published in the GitHub `v0.1.1` Release as
-`guiyuan-vibecoding-0.1.1.zip`, with its `.sha256` companion and manifest.
+The installable asset is published in the GitHub `v0.1.2` Release as
+`guiyuan-vibecoding-0.1.2.zip`, with its `.sha256` companion and manifest. The archive root
+contains exactly one discoverable Skill, `guiyuan-vibecoding`; install and close-loop are internal
+payloads and do not create additional global entries.
+
+注意：GitHub 自动附带的 `Source code (zip)` / `Source code (tar.gz)` 是完整仓库源码快照，
+不是安装包；其中保留仓库侧的兼容性源码是正常的。对话安装只能使用上面的
+`guiyuan-vibecoding-0.1.2.zip` 资产。
+
+机器读取更新信息时使用仓库内的 [`update-catalog.json`](update-catalog.json)。每次发布准备
+检测到新版本时，发布脚本会自动整合并更新该 catalog；它不是安装包本身，也不会替代
+GitHub Release 的远端校验。
 
 ## Retired published zip (v0.1.0)
 

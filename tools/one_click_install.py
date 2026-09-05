@@ -8,8 +8,8 @@ Usage:
 
 Behavior:
   1. Verifies Python >= 3.11 (tomllib needed by profile loading);
-  2. Installs the three kit skills (guiyuan-iteration-close-loop, guiyuan-vibecoding, guiyuan-vibecoding-install)
-     into --skills-dir, VIBECODING_SKILLS_HOME, or the Codex fallback (idempotent; --force overwrites);
+  2. Installs the single public guiyuan-vibecoding Skill into --skills-dir, VIBECODING_SKILLS_HOME,
+     or the Codex fallback (idempotent; --force overwrites); close-loop/install remain internal routes;
   3. Runs the built-in --doctor self-check (no writes);
   4. With --target: scaffolds that project via bootstrap.py (pass-through args);
   5. Prints next steps.
@@ -180,10 +180,10 @@ def main() -> None:
     print()
     print("one-click install complete ✓")
     if args.target:
-        print("  next: open a NEW conversation in that project and start your first real task.")
+        print("  next: 记得在新对话中 @guiyuan-vibecoding，进行一次初始化，再开始第一个真实任务。")
     else:
-        print("  next: invoke $guiyuan-vibecoding in your project conversation (empty folder = scaffold,")
-        print("        existing code = adopt), or rerun with --target <folder> to manage it now.")
+        print("  next: 记得在新对话中 @guiyuan-vibecoding，进行一次初始化；")
+        print("        空目录会 scaffold，已有代码会先 assess/adopt；也可用 --target <folder> 管理。")
 
 
 if __name__ == "__main__":

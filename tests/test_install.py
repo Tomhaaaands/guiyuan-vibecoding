@@ -55,7 +55,7 @@ class InstallSkillsTest(unittest.TestCase):
             args, rc = install_skills._install_transactional(self.dest, self.src, names, True)
         self.assertEqual(rc, 0)
         self.assertTrue(args["backed_up"])
-        backups = list((self.dest / ".guiyuan-vibecoding-backups").glob("*/a/SKILL.md"))
+        backups = list((self.dest.parent / ".guiyuan-vibecoding-backups" / self.dest.name).glob("*/a/SKILL.md"))
         self.assertEqual(len(backups), 1)
         self.assertEqual(backups[0].read_text(encoding="utf-8"), "old")
         self.assertEqual((self.dest / "a" / "SKILL.md").read_text(encoding="utf-8"), "skill a")
@@ -110,6 +110,18 @@ class InstallLifecycleTest(unittest.TestCase):
             self.assertEqual(install_skills.preflight(root), 0)
             self.assertEqual(before, sorted(p.name for p in root.iterdir()))
 
+    def test_post_install_questions_surface_preserved_legacy_and_similar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._skill(root, "vibe-coding-manager")
+            self._skill(root, "other-skill")
+            with mock.patch("builtins.print") as output:
+                questions = install_skills.pending_questions(root)
+            self.assertEqual(len(questions), 2)
+            rendered = "\n".join(str(call.args[0]) for call in output.call_args_list)
+            self.assertIn("旧版目录暂未删除", rendered)
+            self.assertIn("检测到类似/其他 Skill", rendered)
+
     def test_uninstall_removes_owned_but_keeps_other_skill(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -129,6 +141,21 @@ class InstallLifecycleTest(unittest.TestCase):
             (skill / "SKILL.md").write_text("user edit", encoding="utf-8")
             self.assertEqual(install_skills.uninstall(root), 0)
             self.assertTrue(skill.exists())
+
+    def test_retire_auxiliary_moves_real_dirs_outside_discovery_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "skills"
+            root.mkdir()
+            for name in install_skills.AUXILIARY_SKILLS:
+                self._skill(root, name)
+            retired = install_skills._retire_auxiliary(root)
+            self.assertEqual(retired, list(install_skills.AUXILIARY_SKILLS))
+            self.assertFalse((root / "guiyuan-iteration-close-loop").exists())
+            self.assertFalse((root / "guiyuan-vibecoding-install").exists())
+            bundles = list((Path(tmp) / ".guiyuan-vibecoding-retired" / root.name).glob("*/"))
+            self.assertEqual(len(bundles), 1)
+            for name in install_skills.AUXILIARY_SKILLS:
+                self.assertTrue((bundles[0] / name / "SKILL.md").is_file())
 
 
 if __name__ == "__main__":

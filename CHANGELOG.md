@@ -8,6 +8,12 @@
 
 | Round | Date | Module | One-line conclusion | Archive |
 | --- | --- | --- | --- | --- |
+| R73 | 09-05 | intent-first-intake | 启动流程改为先询问产品意图，再展示项目基础事实、候选模板/目录、四档接管选择；新增用户授权后的全机只读环境盘点（Agent、共享 Skill、Python/Node、UV、GitHub CLI），并将渐进接管作为正式选项；183 项测试、check_drift 与发布 ZIP 校验通过 | [r73](docs/04-workflow/archive/2026-09-05-r73.md) |
+| R74 | 09-05 | size-aware-takeover-migration | 接入项目体量与数据盘点；小/中体量可建议完全接管、大体量改为建议部分/渐进接管；完全接管改为外部迁移计划 + 明确确认的两阶段流程，支持可逆数据迁移、保守路径修复、模板布局和 takeover 标识 | [r74](docs/04-workflow/archive/2026-09-05-r74.md) |
+| R75 | 09-05 | release-update-catalog | 新增机器可读 update catalog；release_prepare 在版本发布准备时自动整合版本、tag、Release 与安装资产地址，publish_release 在 GitHub 写入前校验 catalog 一致性 | [r75](docs/04-workflow/archive/2026-09-05-r75.md) |
+| R72 | 09-05 | github-installer-asset-boundary | GitHub Release 发布前再次校验安装 ZIP 的 manifest、SHA-256、单一根入口与无嵌套 `SKILL.md`，确保远端资产继续只暴露 `guiyuan-vibecoding`；新增发布校验门禁与回归验证 | [r72](docs/04-workflow/archive/2026-09-05-r72.md) |
+| R71 | 09-05 | public-skill-boundary | 将全局可发现入口收敛为 `guiyuan-vibecoding`；install/close-loop 改为显式内部路由，close-loop 载荷改名避免嵌套 `SKILL.md` 被重复发现；旧全局入口迁移到发现根目录外并保留备份；33 项定向测试、177 项全量测试、check_drift 与 ZIP verify 通过 | [r71](docs/04-workflow/archive/2026-09-05-r71.md) |
+| R70 | 09-05 | installer-follow-up-and-hash | 安装报告现在显式列出未解决事项并询问旧版/类似 Skill 的后续处理；下一步统一提醒新对话 `@guiyuan-vibecoding` 初始化；发布校验明确采用 zip 外置 `.sha256` sidecar（压缩包内不嵌入自引用整包哈希） | [r70](docs/04-workflow/archive/2026-09-05-r70.md) |
 | R69 | 09-05 | secure-git-release-loop | 项目创建/接管按拓扑、规模与能力生成分层 .gitignore；staged 安全闸门阻断密钥/缓存/构建污染并接入 pre-commit、CI、QA；release_prepare/publish_release 固化单 tag+单 Release、安装包哈希回读；207 个历史缓存/产物已移出索引 | [r69](docs/04-workflow/archive/2026-09-05-r69.md) |
 | R68 | 09-05 | release-0.1.1 | 版本升级到 0.1.1，QA 六道门与发布包完整性通过，准备创建 v0.1.1 GitHub Release | [r68](archive/2026-09-05-r68.md) |
 | R67 | 09-05 | functional-module-directory | 新增中文功能模块目录与 status.html 数据引用；PB 明确仅 provider 桥且无 PB 独立 QA、虚拟 suanming_os 接管渲染、发布包完整性均通过 | [r67](archive/2026-09-05-r67.md) |

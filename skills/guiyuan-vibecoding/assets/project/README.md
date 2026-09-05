@@ -63,8 +63,9 @@ rules or overwrite them without an explicit managed workflow choice.
 ## Optional: behavior packaging
 
 The template can be used with global skills installed once, or with a project-local copy under
-`.guiyuan-vibecoding/skills/`. `$guiyuan-iteration-close-loop` closes out rounds when the client supports
-skill triggers; otherwise the project rules point to the local close-loop `SKILL.md` and scripts.
+`.guiyuan-vibecoding/`. `$guiyuan-vibecoding` is the only public entry point and routes close-out
+when the client supports skill triggers; otherwise the project rules point to the local close-loop
+`SKILL.md` and scripts.
 
 ## Relationship to the full methodology
 

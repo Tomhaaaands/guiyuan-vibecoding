@@ -9,7 +9,7 @@
 > experience. The user makes product decisions — the butler carries the management burden.
 
 Guiyuan Vibecoding (repo `vibecoding_manager`) is an open-source,
-local-first **vibecoding R&D manager**. The shipped v0.1.1 release provides project adoption,
+local-first **vibecoding R&D manager**. The shipped v0.1.2 release provides project adoption,
 scaffolding, iteration records, deterministic gates, Git/GitHub setup, and the first pitfall
 distillation path. The public version line is pre-1.0 (`0.1.x`); the earlier `v1.2.0` tag remains
 as a historical development snapshot. The accepted vNext direction extends that foundation into a complete loop:
@@ -80,8 +80,8 @@ heavier, more general tools; this kit deliberately isn't.
 - **Upfront environment disclosure** — a read-only preflight shows what's installed, then every
   proposed install (Python, `.venv`, `npm install`) is announced in plain language with three
   choices: auto-install / commands-only / skip.
-- **Iteration close-loop skill** — one-line changelog rows, archive round files, NOW state cards,
-  doc sync, drift checks, and static project-home regeneration.
+- **Iteration close-loop route** — one-line changelog rows, archive round files, NOW state cards,
+  doc sync, drift checks, and static project-home regeneration, routed through the public Skill.
 - **Reusable project template** — `templates/iteration-methodology/`: AGENTS.md skeleton, docs
   five-piece skeleton, deterministic retrieval/budget/drift tools, the visual
   `templates/guiyuan-vibecoding-home.html` project-home template, and `.gitignore`.
@@ -99,9 +99,9 @@ heavier, more general tools; this kit deliberately isn't.
   analysis-to-authority-artifact generator, a task graph dispatcher, a receipt loop, an
   experience-candidate loop, an end-to-end MVP walkthrough, and a working pitfalls→red-lines distillation
   (other directions stubbed).
-- **Portable agent skills** — `$guiyuan-vibecoding-install` (explicit-only) installs/updates reusable
-  `SKILL.md` files in a user-selected shared or agent skills directory. Codex, Doubao, Harness,
-  and compatible agents can use the same payload; `agents/openai.yaml` is only a Codex adapter.
+- **Portable agent skill** — `$guiyuan-vibecoding` is the only public entry point. It routes
+  explicit install/update/uninstall and iteration close-out requests; Codex, Doubao, Harness,
+  and compatible agents can use the same payload. `agents/openai.yaml` is only a Codex adapter.
 
 ## Quick start
 
@@ -119,7 +119,7 @@ install.bat            # Windows
 
 ### 2. Install by message (archived)
 
-The published GitHub `v0.1.1` release includes the installable zip. If you want the one-message flow,
+The published GitHub `v0.1.2` release includes the installable zip. If you want the one-message flow,
 download that release asset or build the zip yourself with `python tools/build_dist.py --verify` (writes `dist/guiyuan-vibecoding-<version>.zip`
 plus `.sha256` and a manifest), host it where you control it, then send that URL in a message. Verify
 the `.sha256` companion before install; an update backs up existing skills and restores them if
@@ -137,8 +137,11 @@ Empty folder → describe what you want in one sentence; the manager resolves th
 it, and scaffolds. Existing code or a GitHub URL → it first produces a read-only workflow
 assessment. You select `keep`, `map`, or `managed` for each workflow before anything is written.
 
-Already installed? Invoke `$guiyuan-vibecoding-install` anytime to update the skills, run the doctor
-self-check, or adopt/scaffold a project folder.
+记得在新对话中 `@guiyuan-vibecoding`，进行一次初始化。
+
+Already installed? Invoke `$guiyuan-vibecoding` with an explicit install/update/doctor/uninstall
+request, or to adopt/scaffold a project folder. The close-loop route is likewise handled by this
+single public entry point.
 
 Answer the guided questions. The skill scaffolds new projects immediately; existing projects are
 adopted only after a confirmed workflow plan. At milestone boundaries it offers a small,
@@ -168,7 +171,7 @@ python skills/guiyuan-vibecoding/scripts/bootstrap.py <folder> --name <project> 
 
 | Tool | Purpose |
 | --- | --- |
-| `tools/install_skills.py` | Install skills into `--skills-dir`, `VIBECODING_SKILLS_HOME`, or Codex fallback; `--discover` lists candidates read-only; `--doctor` self-checks the kit |
+| `tools/install_skills.py` | Install the public Skill into `--skills-dir`, `VIBECODING_SKILLS_HOME`, or Codex fallback; `--discover` lists candidates read-only; `--doctor` self-checks the kit |
 | `tools/one_click_install.py` | One-click install: skills + doctor + optional project scaffold (`install.bat` / `install.sh` wrappers) |
 | `tools/rollup_round.py` | Create an archive round file + insert the changelog row |
 | `tools/hydrate.py` | Keyword-retrieve relevant docs; PB-backed `--semantic` backend |
@@ -214,7 +217,7 @@ operator (or a few agents) who want traceability without ceremony.
 vibecoding_manager/
 ├── README.md
 ├── LICENSE
-├── VERSION                     # single source of the kit version (0.1.1)
+├── VERSION                     # single source of the kit version (0.1.2)
 ├── CHANGELOG.md                # one-line round ledger
 ├── AGENTS.md                   # startup contract for this repo itself
 ├── llms.txt                    # machine-readable doc index (generated)
@@ -225,13 +228,12 @@ vibecoding_manager/
 │   ├── 03-reference/           # research, competitors, tutorials, environments
 │   └── 04-workflow/             # NOW, ledger, methodology, archive
 ├── skills/
-│   ├── guiyuan-iteration-close-loop/   # round close-out skill (source)
-│   ├── guiyuan-vibecoding/    # guided manager skill (source)
+│   ├── guiyuan-iteration-close-loop/   # internal canonical close-out source
+│   ├── guiyuan-vibecoding/    # only public/discoverable skill
 │   │   └── assets/
 │   │       ├── project/        # project template payload (mirror of templates/)
-│   │       └── skills/guiyuan-iteration-close-loop/  # close-loop payload for scaffolding
-│   └── guiyuan-vibecoding-install/    # self-contained installer
-│       └── assets/skills/      # bundles both skills as deploy payloads
+│   │       └── internal/iteration-close-loop/  # non-discoverable close-loop payload
+│   └── guiyuan-vibecoding-install/    # legacy installer source (not installed globally)
 ├── templates/
 │   └── iteration-methodology/  # skeleton copied into new projects
 └── tools/                      # deterministic helpers (all cross-platform Python)
@@ -239,12 +241,11 @@ vibecoding_manager/
 
 ## Distribution & sync
 
-The kit ships several **self-contained payload copies**: the manager skill carries the project
-template (`assets/project` ↔ `templates/`) and a close-loop copy (for scaffolding new projects),
-and the install skill bundles both skills (so `$guiyuan-vibecoding-install` can install/update from any
-Agent). Sources are the repo copies; payloads must stay identical — `tools/check_drift.py` gates
-the 4 sync pairs plus the single-sourced version, and `tools/sync_copies.py` propagates source →
-payload in one command:
+The kit ships one public self-contained Skill. It carries the project template
+(`assets/project` ↔ `templates/`) and a renamed internal close-loop payload for scaffolding new
+projects. Sources are the repo copies; `tools/check_drift.py` gates the template and internal
+payload plus the single-sourced version, and `tools/sync_copies.py` propagates source → payload
+in one command:
 
 ```bash
 python tools/sync_copies.py            # propagate (edit a source, then run this)

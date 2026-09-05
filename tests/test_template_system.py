@@ -53,7 +53,13 @@ class TemplateSystemTest(unittest.TestCase):
             (root / "state" / "current.md").write_text("state", encoding="utf-8")
             self.assertEqual(artifact_path(root, "project_state"), root / "state" / "current.md")
 
+    def test_close_loop_internal_payload_materializes_as_skill(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "guiyuan-iteration-close-loop"
+            self.assertIsNotNone(bootstrap._copy_close_loop_skill(dest, force=False))
+            self.assertTrue((dest / "SKILL.md").is_file())
+            self.assertFalse((dest / "SKILL.md.template").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
-

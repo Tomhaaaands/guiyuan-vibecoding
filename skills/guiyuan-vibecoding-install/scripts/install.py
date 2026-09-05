@@ -164,6 +164,32 @@ def preflight(dest: Path) -> int:
     return 0
 
 
+def pending_questions(dest: Path) -> list[str]:
+    """Report post-install decisions without changing preserved user-owned content."""
+    if not dest.is_dir():
+        return []
+    legacy = [name for name in LEGACY_SKILLS if (dest / name).exists()]
+    similar = [
+        p.name for p in dest.iterdir()
+        if p.is_dir() and p.name not in set(SKILLS) | set(LEGACY_SKILLS)
+        and (p / "SKILL.md").is_file()
+    ]
+    questions: list[str] = []
+    if legacy:
+        questions.append(
+            "旧版目录暂未删除（" + ", ".join(sorted(legacy)) + "），是否需要我在你确认后处理？"
+        )
+    if similar:
+        questions.append(
+            "检测到类似/其他 Skill（" + ", ".join(sorted(similar)) + "），是否保持现状并仅建立映射？"
+        )
+    if questions:
+        print("\npending user decisions:")
+        for question in questions:
+            print(f"  question: {question}")
+    return questions
+
+
 def uninstall(dest: Path) -> int:
     preflight(dest)
     removed, preserved = [], []
@@ -440,11 +466,11 @@ def main() -> None:
 
     print()
     print("one-click install complete ✓")
+    pending_questions(dest)
     if args.target:
-        print("  next: open a NEW conversation in that project and start your first real task.")
+        print("  next: 记得在新对话中 @guiyuan-vibecoding，进行一次初始化，再开始第一个真实任务。")
     else:
-        print("  next: invoke $guiyuan-vibecoding in a new project conversation, or")
-        print("        rerun with --target <folder> to scaffold an existing project.")
+        print("  next: 记得在新对话中 @guiyuan-vibecoding，进行一次初始化；或用 --target <folder> 管理项目。")
 
 
 if __name__ == "__main__":

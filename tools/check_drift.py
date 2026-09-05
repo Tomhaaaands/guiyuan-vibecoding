@@ -31,12 +31,8 @@ SKIP_PARTS = {"archive", "_archive"}
 SYNC_PAIRS = (
     (ROOT / "templates" / "iteration-methodology",
      ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "project"),
-    (ROOT / "skills" / "guiyuan-iteration-close-loop",
-     ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
-    (ROOT / "skills" / "guiyuan-iteration-close-loop",
-     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
-    (ROOT / "skills" / "guiyuan-vibecoding",
-     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-vibecoding"),
+    # The project-local close-loop payload is intentionally renamed so an Agent does not
+    # discover it as a second global Skill. bootstrap restores SKILL.md on materialization.
 )
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",
@@ -46,10 +42,11 @@ SKIP_FILES = {
     "docs/iteration-methodology.md",
     "docs/02-technical/qa-contract.md",
 }
-# Single-source version gate: the self-contained install skill carries its own VERSION
-# (it travels with the installed skill and cannot read the repo root), so it must stay equal to root.
+# Single-source version gate: the public Skill carries its own VERSION when installed,
+# so it must stay equal to the repository root.
 VERSION_FILE = ROOT / "VERSION"
-BUNDLED_VERSION = ROOT / "skills" / "guiyuan-vibecoding-install" / "VERSION"
+PUBLIC_VERSION = ROOT / "skills" / "guiyuan-vibecoding" / "VERSION"
+INTERNAL_CLOSE_LOOP = ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "internal" / "iteration-close-loop" / "SKILL.md.template"
 STALE_RE = re.compile(r"\[OUTDATED\]|\bTODO\b|\bTBD\b|\bFIXME\b")
 SOFT_RE = re.compile(r"待补(?:充)?")
 LINK_RE = re.compile(r"\]\(([^)#]+?)\)")
@@ -126,21 +123,31 @@ def check_sync() -> int:
         print("  [fail] template/asset copies are out of sync")
     else:
         print("  [ok] template + asset copies are in sync")
+    canonical = ROOT / "skills" / "guiyuan-iteration-close-loop" / "SKILL.md"
+    if canonical.is_file() and INTERNAL_CLOSE_LOOP.is_file():
+        if canonical.read_bytes() == INTERNAL_CLOSE_LOOP.read_bytes():
+            print("  [ok] internal close-loop payload matches canonical Skill")
+        else:
+            print("  [sync] differs: internal close-loop payload vs canonical Skill")
+            issues += 1
+    else:
+        print("  [sync] missing canonical or internal close-loop payload")
+        issues += 1
     return issues
 
 
 def check_version() -> int:
-    """Version single-source gate: root VERSION must equal the bundled install-skill VERSION."""
+    """Version single-source gate: root VERSION must equal the public Skill VERSION."""
     if not VERSION_FILE.is_file():
         print("  [version] missing root VERSION file")
         return 1
     root_v = VERSION_FILE.read_text(encoding="utf-8").strip()
-    if not BUNDLED_VERSION.is_file():
-        print(f"  [version] missing bundled VERSION: {BUNDLED_VERSION.relative_to(ROOT).as_posix()}")
+    if not PUBLIC_VERSION.is_file():
+        print(f"  [version] missing public VERSION: {PUBLIC_VERSION.relative_to(ROOT).as_posix()}")
         return 1
-    bundled_v = BUNDLED_VERSION.read_text(encoding="utf-8").strip()
-    if root_v != bundled_v:
-        print(f"  [version] mismatch: root VERSION {root_v} vs bundled VERSION {bundled_v}")
+    public_v = PUBLIC_VERSION.read_text(encoding="utf-8").strip()
+    if root_v != public_v:
+        print(f"  [version] mismatch: root VERSION {root_v} vs public VERSION {public_v}")
         return 1
     print(f"  [ok] version single-sourced: {root_v}")
     return 0

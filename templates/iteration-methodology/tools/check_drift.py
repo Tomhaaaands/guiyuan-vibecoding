@@ -31,12 +31,6 @@ SKIP_PARTS = {"archive", "_archive"}
 SYNC_PAIRS = (
     (ROOT / "templates" / "iteration-methodology",
      ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "project"),
-    (ROOT / "skills" / "guiyuan-iteration-close-loop",
-     ROOT / "skills" / "guiyuan-vibecoding" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
-    (ROOT / "skills" / "guiyuan-iteration-close-loop",
-     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-iteration-close-loop"),
-    (ROOT / "skills" / "guiyuan-vibecoding",
-     ROOT / "skills" / "guiyuan-vibecoding-install" / "assets" / "skills" / "guiyuan-vibecoding"),
 )
 SKIP_FILES = {
     "docs/04-workflow/review-checklist.md",

@@ -31,6 +31,7 @@ use a one-line answer/verification plan.
 | Keywords | Required reading | Code |
 | --- | --- | --- |
 | guided bootstrap / scaffold / one-click deploy | [skills/guiyuan-vibecoding/SKILL.md](skills/guiyuan-vibecoding/SKILL.md) | `skills/guiyuan-vibecoding/` |
+| startup intent / intake / takeover choice / environment authorization | [docs/02-technical/intake-and-adoption-contract.md](docs/02-technical/intake-and-adoption-contract.md), [skills/guiyuan-vibecoding/SKILL.md](skills/guiyuan-vibecoding/SKILL.md) | `skills/guiyuan-vibecoding/scripts/bootstrap.py` |
 | iteration close-out / changelog / archive / round wrap-up | [skills/guiyuan-iteration-close-loop/SKILL.md](skills/guiyuan-iteration-close-loop/SKILL.md) | `skills/guiyuan-iteration-close-loop/` |
 | project template / skeleton | `templates/iteration-methodology/README.md` | `templates/iteration-methodology/` |
 | registry / confirmation anchor / four gates | [docs/02-technical/project-registry-anchor-contract.md](docs/02-technical/project-registry-anchor-contract.md) | `tools/project_registry.py`, `tools/anchor.py` |

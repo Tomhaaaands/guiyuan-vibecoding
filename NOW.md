@@ -1,6 +1,9 @@
 # NOW - Guiyuan Vibecoding state card (2026-09-05)
 
 ## Focus
+- R73 intent-first intake: startup now asks for the product before any template inference; assessment
+  presents basic project facts, candidate layouts, four takeover choices, and the VCM functional-module
+  directory; the optional `--environment-scan` performs an authorized whole-machine read-only inventory.
 - R69 secure-git-release-loop: scaffold/adopt now materializes profile-aware `.gitignore`; staged
   `git_safety_gate.py` is a fail-closed pre-commit/CI/QA gate; release preparation and remote asset
   verification are scripted as one-tag/one-Release flow. Existing cache/dist history was removed

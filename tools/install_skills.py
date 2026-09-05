@@ -9,10 +9,11 @@ Usage:
   python tools/install_skills.py --discover
 
 Behavior:
-  Copies reusable skills/guiyuan-iteration-close-loop and skills/guiyuan-vibecoding into
-  the explicit --skills-dir, VIBECODING_SKILLS_HOME, or the local agent fallback;
-  skips existing skills, --force overwrites.
-  --doctor prints the kit version, checks both skills are installed intact, and runs
+  Installs the single public skills/guiyuan-vibecoding entry point into the explicit
+  --skills-dir, VIBECODING_SKILLS_HOME, or the local agent fallback; skips an existing
+  skill, --force overwrites. The close-loop payload is internal and materialized only
+  inside managed projects.
+  --doctor prints the kit version, checks the public skill is installed intact, and runs
   tools/check_drift.py to prove the distribution is healthy.
   --discover lists known agent skill roots read-only without writing.
 """
@@ -30,7 +31,12 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
-SKILLS = ("guiyuan-iteration-close-loop", "guiyuan-vibecoding", "guiyuan-vibecoding-install")
+PUBLIC_SKILL = "guiyuan-vibecoding"
+SKILLS = (PUBLIC_SKILL,)
+# These names were public in <=0.1.x.  They are retired from the global discovery root but
+# remain recognized for safe migration/uninstall; their contents are preserved outside that root.
+AUXILIARY_SKILLS = ("guiyuan-iteration-close-loop", "guiyuan-vibecoding-install")
+OWNED_SKILLS = SKILLS + AUXILIARY_SKILLS
 LEGACY_SKILLS = {
     "vibe-coding-manager": "guiyuan-vibecoding",
     "vibe-coding-install": "guiyuan-vibecoding-install",
@@ -61,8 +67,10 @@ def _validate_installed(dest_root: Path) -> list[str]:
     # ...and the project-scoped SessionStart hook runner.
     if not (mgr / "assets" / "project" / "tools" / "vcm_session_hook.py").is_file():
         errors.append("guiyuan-vibecoding: assets/project/tools/vcm_session_hook.py missing")
-    if not (dest_root / "guiyuan-vibecoding-install" / "VERSION").is_file():
-        errors.append("guiyuan-vibecoding-install: missing VERSION")
+    if not (mgr / "VERSION").is_file():
+        errors.append("guiyuan-vibecoding: missing VERSION")
+    if not (mgr / "assets" / "internal" / "iteration-close-loop" / "SKILL.md.template").is_file():
+        errors.append("guiyuan-vibecoding: missing internal close-loop payload")
     return errors
 
 
@@ -151,11 +159,16 @@ def preflight(skills_root: Path) -> int:
         if path.exists():
             found = True
             print(f"  [legacy] {old} -> {new}: {_skill_frontmatter_name(path) or 'unverified'}")
+    for name in AUXILIARY_SKILLS:
+        path = skills_root / name
+        if path.exists():
+            found = True
+            print(f"  [retired-public] {name}: will be hidden from the discovery root")
     manifest = skills_root / MANIFEST_NAME
     print(f"  manifest: {'present' if manifest.is_file() else 'absent (legacy/untracked install)'}")
     others = []
     for child in skills_root.iterdir():
-        if child.is_dir() and child.name not in set(SKILLS) | set(LEGACY_SKILLS):
+        if child.is_dir() and child.name not in set(OWNED_SKILLS) | set(LEGACY_SKILLS):
             if (child / "SKILL.md").is_file():
                 others.append(child.name)
     if others:
@@ -165,12 +178,75 @@ def preflight(skills_root: Path) -> int:
     return 0
 
 
+def _is_reparse_point(path: Path) -> bool:
+    """Detect Windows junctions without following them (safe migration/uninstall)."""
+    try:
+        attrs = getattr(path.stat(follow_symlinks=False), "st_file_attributes", 0)
+    except OSError:
+        return False
+    return bool(attrs & 0x400)  # FILE_ATTRIBUTE_REPARSE_POINT
+
+
+def _retire_auxiliary(skills_root: Path) -> list[str]:
+    """Move old public auxiliary entries outside the scanned skills root.
+
+    Real directories are preserved in a sibling retirement bundle. Windows junctions are
+    unlinked only, leaving their target directory untouched. This is intentionally separate
+    from uninstall: an update hides old entries but never destroys their contents.
+    """
+    retired: list[str] = []
+    if not skills_root.is_dir():
+        return retired
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    retirement_root = skills_root.parent / ".guiyuan-vibecoding-retired" / skills_root.name / stamp
+    for name in AUXILIARY_SKILLS:
+        src = skills_root / name
+        if not src.exists():
+            continue
+        if _is_reparse_point(src) or src.is_symlink():
+            src.unlink()
+        else:
+            retirement_root.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(src), str(retirement_root / name))
+        retired.append(name)
+    if retired:
+        print("retired public auxiliary entries: " + ", ".join(retired))
+        print(f"preserved outside skills root: {retirement_root}")
+    return retired
+
+
+def pending_questions(skills_root: Path) -> list[str]:
+    """Report post-install decisions without changing preserved user-owned content."""
+    if not skills_root.is_dir():
+        return []
+    legacy = [name for name in LEGACY_SKILLS if (skills_root / name).exists()]
+    similar = [
+        child.name for child in skills_root.iterdir()
+        if child.is_dir() and child.name not in set(OWNED_SKILLS) | set(LEGACY_SKILLS)
+        and (child / "SKILL.md").is_file()
+    ]
+    questions: list[str] = []
+    if legacy:
+        questions.append(
+            "旧版目录暂未删除（" + ", ".join(sorted(legacy)) + "），是否需要我在你确认后处理？"
+        )
+    if similar:
+        questions.append(
+            "检测到类似/其他 Skill（" + ", ".join(sorted(similar)) + "），是否保持现状并仅建立映射？"
+        )
+    if questions:
+        print("\npending user decisions:")
+        for question in questions:
+            print(f"  question: {question}")
+    return questions
+
+
 def uninstall(skills_root: Path) -> int:
     """Remove only Guiyuan-owned skills; never touch other skills or project files."""
     preflight(skills_root)
     removed: list[str] = []
     preserved: list[str] = []
-    expected = set(SKILLS) | set(LEGACY_SKILLS)
+    expected = set(OWNED_SKILLS) | set(LEGACY_SKILLS)
     if skills_root.exists():
         for name in sorted(expected):
             path = skills_root / name
@@ -191,7 +267,10 @@ def uninstall(skills_root: Path) -> int:
                     except (OSError, ValueError):
                         preserved.append(name)
                         continue
-            shutil.rmtree(path)
+            if _is_reparse_point(path) or path.is_symlink():
+                path.unlink()
+            else:
+                shutil.rmtree(path)
             removed.append(name)
     manifest = skills_root / MANIFEST_NAME
     if manifest.is_file() and not preserved:
@@ -235,6 +314,7 @@ def doctor(skills_root: Path) -> int:
 
 
 def install(force: bool, dest_root: Path) -> None:
+    _retire_auxiliary(dest_root)
     args, rc = _install_transactional(dest_root, ROOT / "skills", SKILLS, force)
     if rc != 0:
         raise SystemExit(rc)
@@ -242,25 +322,31 @@ def install(force: bool, dest_root: Path) -> None:
         print(f"backup: {args['backup_root']} ({', '.join(backed_up)})")
     _write_manifest(dest_root)
     print(f"Guiyuan Vibecoding v{version()} installed.")
-    print("next: open your project folder (empty or existing), start a new conversation, invoke $guiyuan-vibecoding.")
+    pending_questions(dest_root)
+    print("next: 记得在新对话中 @guiyuan-vibecoding，进行一次初始化，再开始第一个真实任务。")
 
 
 def _install_transactional(dest_root: Path, src_root: Path, names: tuple[str, ...], force: bool) -> tuple[dict, int]:
     """Back up, atomically swap, validate, and roll back on failure."""
     dest_root.mkdir(parents=True, exist_ok=True)
-    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    backup_root = dest_root / ".guiyuan-vibecoding-backups" / stamp
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    # Backups live beside the discovery root. Keeping SKILL.md files out of the root prevents
+    # the Agent from indexing historical copies as active Skills.
+    backup_root = dest_root.parent / ".guiyuan-vibecoding-backups" / dest_root.name / stamp
     plan: list[tuple[str, Path, Path, bool]] = []
     for name in names:
         src = src_root / name
         dst = dest_root / name
+        # Global roots may expose a skill through a Windows junction. Update the target tree
+        # in place and keep the junction, rather than replacing the link itself.
+        effective_dst = Path(os.path.realpath(dst)) if _is_reparse_point(dst) else dst
         if not src.is_dir():
             print(f"[error] missing source skill: {src}")
             return {"backup_root": backup_root, "backed_up": []}, 1
         if dst.exists() and not force:
             print(f"already installed, skipped: {name} (--force to overwrite)")
             continue
-        plan.append((name, src, dst, dst.exists()))
+        plan.append((name, src, effective_dst, effective_dst.exists()))
 
     if not plan:
         return {"backup_root": backup_root, "backed_up": []}, _install_finish(dest_root, force)
@@ -287,9 +373,17 @@ def _install_transactional(dest_root: Path, src_root: Path, names: tuple[str, ..
             if existed:
                 backup = backup_root / name
                 backup.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copytree(dst, backup)
+                if _is_reparse_point(dst) or dst.is_symlink():
+                    # A junction is a link, not a user-owned tree to recursively copy.
+                    # Leave it in place until the staged replacement is ready.
+                    pass
+                else:
+                    shutil.copytree(dst, backup)
                 backed_up.append(name)
-                shutil.rmtree(dst)
+                if _is_reparse_point(dst) or dst.is_symlink():
+                    dst.unlink()
+                else:
+                    shutil.rmtree(dst)
             os.replace(tmp, dst)
             installed.append((name, dst, existed))
             print(f"installed: {dst}")
@@ -309,7 +403,10 @@ def _rollback(installed: list[tuple[str, Path, bool]], backup_root: Path) -> Non
     for name, dst, existed in reversed(installed):
         backup = backup_root / name
         if existed and backup.is_dir():
-            shutil.rmtree(dst, ignore_errors=True)
+            if _is_reparse_point(dst) or dst.is_symlink():
+                dst.unlink()
+            else:
+                shutil.rmtree(dst, ignore_errors=True)
             shutil.copytree(backup, dst)
             print(f"  restored: {name}")
         elif not existed:

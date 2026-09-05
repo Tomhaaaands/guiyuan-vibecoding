@@ -414,8 +414,8 @@ var PROJECT = {
   archLayers:[
     {cls:"l-ch",name:"入口 / 通道层 · Channels",mods:[
       {id:"skills",name:"三个 Skill",sub:"对话入口",duty:"一个技能管一场对话：主管家、安装器、迭代收口；把任意脚本/插件/页面/应用或空目录纳入本地迭代管理。",
-        steps:["guiyuan-vibecoding：主管家（接管 / 脚手架）","guiyuan-vibecoding-install：安装与自托管","guiyuan-iteration-close-loop：轮次收口 / changelog / 归档"],
-        docs:[["产品/技能","skills/guiyuan-vibecoding/SKILL.md"],["产品/技能","skills/guiyuan-vibecoding-install/SKILL.md"],["产品/技能","skills/guiyuan-iteration-close-loop/SKILL.md"]]},
+        steps:["guiyuan-vibecoding：唯一对外入口（接管 / 脚手架）","内部 install 路由：安装 / 更新 / 自检 / 卸载","内部 close-loop 路由：轮次收口 / changelog / 归档"],
+        docs:[["产品/技能","skills/guiyuan-vibecoding/SKILL.md"]]},
       {id:"hook",name:"项目钩子",sub:"SessionStart 意图闸门",duty:"非阻断、只读取：识别 managed / vcm-shaped / coding / ambiguous 并注入意图闸门，adopt/scaffold 自动落地 .codex/hooks.json。",
         steps:["会话开始识别项目状态","按需注入意图闸门（不阻断）","adopt/scaffold 时写入 hooks.json"],
         docs:[["技术文档","docs/02-technical/project-hook.md"],["技术文档","docs/02-technical/agent-hook-methods.md"],["实现代码","tools/vcm_session_hook.py"],["实现代码","tools/install_project_hook.py"],["配置",".codex/hooks.json"]]},

@@ -1,12 +1,15 @@
 ---
 name: guiyuan-vibecoding-install
-description: One-click installer for the Guiyuan Vibecoding kit. Installs reusable, agent-neutral skills into a shared or agent-selected skills directory, runs a self-check, and can scaffold an existing project folder. Codex uses the optional agents/openai.yaml adapter; other agents may load SKILL.md directly. The published GitHub release zip is retired; install from the repo or a user-hosted zip. Explicit-only: invoke with $guiyuan-vibecoding-install.
+description: Legacy compatibility installer documentation for the Guiyuan Vibecoding kit. The public entry point is now $guiyuan-vibecoding; install/update/uninstall/self-check are routed through that Skill and this source directory is not installed as a discoverable Skill.
 ---
 
-# Guiyuan Vibecoding · 安装与更新
+# Guiyuan Vibecoding · 安装与更新（内部兼容文档）
+
+> This directory is retained as repository-side compatibility material. New distributions expose
+> only `guiyuan-vibecoding`; the lifecycle flow is routed from that public Skill.
 
 Install, update, self-check, or redeploy the Guiyuan Vibecoding kit skills, or scaffold an existing
-project folder with the iteration system. The published GitHub `v0.1.1` release includes the
+project folder with the iteration system. The published GitHub `v0.1.2` release includes the
 installable zip; the convenience path is repo clone + `install.bat`/`install.sh`.
 
 ## Universal request protocol
@@ -36,26 +39,32 @@ plus `.sha256` and a manifest), host it where you control it, then send a messag
 ```
 请安装 Guiyuan Vibecoding Skill
 技能地址：<URL of a separately hosted guiyuan-vibecoding-<version>.zip>
+校验地址：<URL of the matching .sha256 sidecar>
 ```
 
 The agent receiving the message must:
 
 1. Download the zip from the 技能地址, verify its published `.sha256` companion file, and extract it.
-2. Confirm the zip root contains exactly three skill directories:
-   `guiyuan-iteration-close-loop/`, `guiyuan-vibecoding/`, `guiyuan-vibecoding-install/`.
-3. Back up any existing same-named directories, then copy the three directories into the **user-selected shared or agent skills directory**.
+2. Confirm the zip root contains exactly one public skill directory: `guiyuan-vibecoding/`.
+3. Back up the existing `guiyuan-vibecoding/` directory, then copy the public skill into the
+   **user-selected shared or agent skills directory**. Do not create global install or close-loop
+   entries; those flows are routed internally by the public Skill.
    The directory may be used by Codex, Doubao, Harness, or another compatible agent.
-4. Verify: each skill has `SKILL.md`; `agents/openai.yaml` is an optional Codex adapter. Check
-   the bundled `guiyuan-vibecoding-install/VERSION` matches the kit version printed in the zip name.
-5. Report the installed version and that the kit is ready
-   (a new project conversation can invoke `$guiyuan-vibecoding`).
+4. Verify the public `SKILL.md`, optional `agents/openai.yaml` adapter, bundled
+   `guiyuan-vibecoding/VERSION`, and internal close-loop template under `assets/internal/`.
+5. Report the installed version, doctor result, and every unresolved item. If legacy directories
+   or similar/other Skills were preserved, ask the user explicitly whether they want Guiyuan to
+   handle them; never silently mark those items resolved. Remind the user: **记得在新对话中
+   `@guiyuan-vibecoding`，进行一次初始化**。
 
-Every hosted zip must carry a matching `.sha256`; never skip checksum verification. If the URL fails or
-returns a mismatched checksum, restore the backup. Gitee raw returned `Access denied` in a browser test
-and is not an install source.
+Every hosted zip must carry a matching sidecar `.sha256`; never skip checksum verification. The
+archive cannot contain its own whole-archive hash because adding that file would change the hash.
+Publish the zip and its sidecar (and optionally the generated `.manifest.json`) together at the
+same host. If the URL fails or returns a mismatched checksum, restore the backup. Gitee raw returned
+`Access denied` in a browser test and is not an install source.
 
-**Update**: resend the same message with the newer zip URL — verify the checksum, back up the
-three old directories, replace them, then re-verify. If verification fails, restore the backup.
+**Update**: resend the same message with the newer zip URL — verify the checksum, back up the old
+public directory, replace it, then re-verify. If verification fails, restore the backup.
 
 **No account authorization is needed** (unlike Quark); the "并授权账号" clause is not part of the
 Guiyuan Vibecoding install message.
@@ -101,8 +110,9 @@ scaffold an existing project folder with the iteration system.
      read-only before choosing one;
    - add `--target <folder>` to also scaffold that project;
    - add `--force` to overwrite existing skill copies; `--no-doctor` skips the self-check.
-3. Report the outcome: which skills were installed/updated, doctor result, and (when scaffolded)
-   the project path plus next step — open a NEW conversation in that project.
+3. Report the outcome: which skills were installed/updated, doctor result, and every unresolved
+   item. Ask explicitly about preserved legacy directories or similar/other Skills. When scaffolded,
+   remind the user: **记得在新对话中 `@guiyuan-vibecoding`，进行一次初始化**。
 
 ## Rules
 
@@ -112,5 +122,6 @@ scaffold an existing project folder with the iteration system.
   or project-local installation under `.guiyuan-vibecoding/skills/`. Scaffolding touches only the
   target folder.
 - `--target` manages that folder via the installed guiyuan-vibecoding skill's `bootstrap.py`
-  (pass-through: `--name/--intent/--profile/--module/--dimension/--python/--env/--no-venv/--mode/--assessment/--workflow/--existing-system/--compat-policy/--system-policy/--deps/--github/--push/--skills-dir/--skill-location`).
+  (pass-through also includes `--migration-plan/--migration-confirm/--migrate-code` for the
+  two-phase full-takeover migration gate).
 - Build the distributable zip with `python tools/build_dist.py --verify` in the repo.

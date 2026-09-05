@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Propagate source-of-truth files to their distribution payload copies.
 
-The kit ships several self-contained payload copies: the manager skill carries a project
-template (assets/project) and a close-loop copy (assets/skills/guiyuan-iteration-close-loop); the
-install skill bundles both skills (assets/skills/*) so it can install/update from any Agent.
-check_drift detects drift; this script fixes it by copying source -> payload for the same
-SYNC_PAIRS (imported from check_drift to keep one definition), plus the version file.
+The kit ships a project template plus one internal close-loop payload. The payload is renamed
+from SKILL.md so the Agent does not discover it as a second global Skill; bootstrap restores
+that filename when materializing a project-local loop. check_drift detects drift and this script
+propagates source -> payload, plus the public Skill version.
 
 Usage:
   python tools/sync_copies.py            # propagate source -> payloads, then run check_drift
@@ -21,7 +20,7 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-from check_drift import BUNDLED_VERSION, ROOT, SYNC_PAIRS, VERSION_FILE
+from check_drift import INTERNAL_CLOSE_LOOP, ROOT, SYNC_PAIRS, PUBLIC_VERSION, VERSION_FILE
 
 
 def _sync_tree(src: Path, dst: Path, dry_run: bool) -> list[str]:
@@ -66,11 +65,23 @@ def _sync_tree(src: Path, dst: Path, dry_run: bool) -> list[str]:
 def _sync_version(dry_run: bool) -> list[str]:
     if not VERSION_FILE.is_file():
         return ["  [version] missing root VERSION; cannot sync"]
-    if BUNDLED_VERSION.is_file() and BUNDLED_VERSION.read_text(encoding="utf-8").strip() == VERSION_FILE.read_text(encoding="utf-8").strip():
+    if PUBLIC_VERSION.is_file() and PUBLIC_VERSION.read_text(encoding="utf-8").strip() == VERSION_FILE.read_text(encoding="utf-8").strip():
         return []
     if not dry_run:
-        BUNDLED_VERSION.write_text(VERSION_FILE.read_text(encoding="utf-8"), encoding="utf-8")
-    return ["  [version] root VERSION -> skills/guiyuan-vibecoding-install/VERSION"]
+        PUBLIC_VERSION.write_text(VERSION_FILE.read_text(encoding="utf-8"), encoding="utf-8")
+    return ["  [version] root VERSION -> skills/guiyuan-vibecoding/VERSION"]
+
+
+def _sync_internal_close_loop(dry_run: bool) -> list[str]:
+    src = ROOT / "skills" / "guiyuan-iteration-close-loop" / "SKILL.md"
+    if not src.is_file():
+        return ["  [sync] missing canonical close-loop Skill"]
+    if INTERNAL_CLOSE_LOOP.is_file() and INTERNAL_CLOSE_LOOP.read_bytes() == src.read_bytes():
+        return []
+    if not dry_run:
+        INTERNAL_CLOSE_LOOP.parent.mkdir(parents=True, exist_ok=True)
+        INTERNAL_CLOSE_LOOP.write_bytes(src.read_bytes())
+    return ["  [sync] canonical close-loop Skill -> internal SKILL.md.template"]
 
 
 def main() -> None:
@@ -93,6 +104,10 @@ def main() -> None:
     for a in va:
         print(a)
     changed += len(va)
+    ia = _sync_internal_close_loop(args.dry_run)
+    for a in ia:
+        print(a)
+    changed += len(ia)
 
     if args.dry_run:
         print(f"\n{changed} item(s) out of sync; run `python tools/sync_copies.py` to apply.")

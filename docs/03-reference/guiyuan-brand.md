@@ -24,7 +24,7 @@
 ## 3. 命名规则
 
 - 展示名、Agent Skill 名称与 MCP 前缀统一使用 `guiyuan` 前缀；仓库文件夹、Python 包名与 import 标识保留为兼容标识。
-- VCM 对外 Skill 固定为 `guiyuan-vibecoding`、`guiyuan-vibecoding-install`、`guiyuan-iteration-close-loop`；旧名称仅用于迁移识别。
+- VCM 对外只暴露 `guiyuan-vibecoding`；install 与 iteration-close-loop 是由它显式路由的内部模块。旧名称仅用于迁移识别。
 - PB 的安装/更新适配器对外名称为 `guiyuan-butler-install`；其源码实现目录
   `packaging/one-line-install/` 是 PB 内部构建路径，不是用户项目配置目录。
 - `guiyuan_butler` ↔ PB（`private_butler`）；`guiyuan_wemedia` ↔ Creator OS（`tom_creator_os`）；

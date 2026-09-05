@@ -109,6 +109,25 @@ Rules: red-line judgment is model-routed (`judge_red_line`), provider boundary i
 ([docs/02-technical/provider-boundary.md](docs/02-technical/provider-boundary.md)), and every engine step is covered by
 `tools/behavior_harness.py` scenarios (the manager's own gate before it gates a project).
 
+### 5b. Intent-first project intake
+
+The manager's first conversation is a user-decision gate, not a filesystem classifier:
+
+1. ask what product the user wants to build; location and project name are defaults that may be corrected;
+2. inspect the project and present basic facts, a likely shape, candidate templates, and a functional-module directory;
+3. wait for one of full takeover, partial takeover, progressive adoption, or abandon;
+4. only after explicit authorization, inventory the whole machine read-only (Agents, shared Skills,
+   Python/Node environments, UV, and GitHub CLI), then ask which runtime/dependency action to take.
+
+Intent resolution and directory fingerprints produce recommendations only. They never silently choose
+a profile, topology, interpreter, installer, or takeover policy.
+
+For existing-project adoption, the read-only gate also classifies project size and inventories likely
+data. Small/medium projects may be offered full takeover; large projects should be guided toward
+partial or progressive adoption. Full takeover is a two-phase operation: write an external migration
+plan first, then execute only after explicit confirmation with baseline hashes, reversible moves, and
+a completion marker.
+
 ## 6. Three-layer record model + current-focus card
 
 The core design — it resolves "record cost vs traceability":
@@ -228,9 +247,9 @@ instead of logs; delta instead of replay; script instead of prompt; reference in
 | `tools/one_click_install.py` | one-click install (skills + doctor + optional scaffold) | first setup / new project |
 | `tools/workflow_optimize.py` | receipt-backed workflow suggestion bundle; never applies changes | milestone review |
 | `tools/check_package.py` | tracked source/history secret scan before public release | release gate |
-| skill `guiyuan-vibecoding-install` | one-click install (skills + doctor + optional scaffold, explicit-only) | first setup / new project |
-| skill `guiyuan-vibecoding` | guided manager: assess an existing project before confirmed, scoped adoption; scaffold a new one | any project's first conversation |
-| skill `guiyuan-iteration-close-loop` | round close-out | every round wrap-up |
+| public skill `guiyuan-vibecoding` | guided manager plus explicit install/update/uninstall and close-out routes | any project's first conversation / maintenance |
+| internal install module | one-click install, doctor, update and safe uninstall | first setup / kit maintenance |
+| internal close-loop module | round close-out | every round wrap-up |
 
 ## 11. Reuse & migration guide (how to apply elsewhere)
 
@@ -249,11 +268,11 @@ rollup/hydrate/check_drift/gen_llms_txt scripts; replace placeholders and you're
 
 ### Full set (+ behavior packaging)
 
-Install the skills globally (user-chosen agent/shared directory) or project-locally under
-`.guiyuan-vibecoding/skills/`: `guiyuan-iteration-close-loop` closes rounds in any project;
-`guiyuan-vibecoding` first assesses an existing project without writing it, then applies only
-user-confirmed workflow layers, or deploys the kit into a new project. Existing-project adoption
-does not auto-install the close-loop skill.
+Install the public Skill globally (user-chosen agent/shared directory) or project-locally under
+`.guiyuan-vibecoding/`. `guiyuan-vibecoding` first assesses an existing project without writing it,
+then applies only user-confirmed workflow layers, or deploys the kit into a new project. Its
+internal close-loop route materializes a project-local `guiyuan-iteration-close-loop/SKILL.md` only
+when the project opts into that workflow; the global discovery root remains one Skill wide.
 
 ### Steps
 

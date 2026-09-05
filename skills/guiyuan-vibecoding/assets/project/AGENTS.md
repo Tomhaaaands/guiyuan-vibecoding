@@ -63,5 +63,5 @@ before its required user gate.
 | Current focus / blockers / next | [NOW.md](docs/04-workflow/NOW.md) |
 | Machine-readable doc index | [llms.txt](llms.txt) |
 | Project status page | `status.html` (derived, static); rebuild `tools/render_project_home.py` and open the file directly (no local port listener) |
-| Round close-out (skill/scripts) | `$guiyuan-iteration-close-loop` when the client supports it; otherwise read `.guiyuan-vibecoding/skills/guiyuan-iteration-close-loop/SKILL.md` and run `tools/rollup_round.py` |
-| Kit install/update | `$guiyuan-vibecoding-install` when the client supports it; otherwise use the repo installer or project-local skill copy |
+| Round close-out (skill/scripts) | Route through `$guiyuan-vibecoding`; it may materialize `.guiyuan-vibecoding/skills/guiyuan-iteration-close-loop/SKILL.md` and run `tools/rollup_round.py` |
+| Kit install/update | Route through `$guiyuan-vibecoding` explicit install/update/uninstall flow; use the repo installer when no public Skill is available |

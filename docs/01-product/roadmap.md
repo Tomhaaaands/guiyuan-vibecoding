@@ -21,6 +21,8 @@
 | P10 | Guiyuan naming, universal request protocol, install preflight/update/uninstall lifecycle | complete 2026-09-04 | every public Skill uses the `guiyuan-` namespace, every request exposes understanding → solution → plan, and install/uninstall only changes manifest-owned VCM components while preserving user data and Butler MCP |
 | P11 | composable project templates and manifest-based layout compatibility | implemented 2026-09-04 | four topology templates, three scale profiles, and capability overlays generate a machine-readable artifact map so the iteration loop survives code-layout changes |
 | P12 | human document registry and four confirmation anchors | implemented 2026-09-05 | a generated registry indexes product/technical modules and immutable REQ/PLAN/QA/RELEASE records preserve each user decision without coupling the loop to directory names |
+| P13 | intent-first intake, user-selected takeover, and whole-machine read-only preflight | implemented 2026-09-05 | startup asks for the product before template inference, presents candidate layouts and four takeover choices, and only scans Agent/runtime/Skill metadata after explicit authorization |
+| P14 | project-size-aware full takeover with confirmed migration | implemented 2026-09-05 | assessment reports small/medium/large scale and data candidates; full takeover uses an external two-phase migration plan, reversible path repair, template layout, and a completion marker; large projects are not recommended for full takeover |
 
 Existing-project adoption is a compatibility layer, not a Creator OS migration.
 It may preserve, map, or manage one workflow at a time and never changes a project automatically.

@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 import architecture_audit as arch
@@ -15,6 +16,8 @@ import build_dist
 import check_drift
 import check_package
 from gen_llms_txt import _desc, ROOT as GEN_ROOT
+import publish_release
+import update_catalog
 
 PY = sys.executable
 
@@ -39,11 +42,50 @@ class BuildDistTest(unittest.TestCase):
         manifest = json.loads(zip_path.with_suffix(zip_path.suffix + ".manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(manifest["sha256"], sha)
         self.assertIn("version", manifest)
+        self.assertEqual(manifest["skills"], ["guiyuan-vibecoding"])
 
     def test_verify_cli_passes(self):
         r = _run_cli([PY, str(GEN_ROOT / "tools" / "build_dist.py"), "--verify", "--out", str(self.out)])
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("verify passed", r.stdout)
+
+
+class PublishReleaseTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.out = Path(self.tmp.name)
+
+    def test_publish_validator_accepts_single_public_skill_asset(self):
+        asset = build_dist.build(self.out, verify=False)
+        digest = publish_release.validate_installer_asset(
+            asset,
+            asset.with_suffix(asset.suffix + ".sha256"),
+            asset.with_suffix(asset.suffix + ".manifest.json"),
+        )
+        self.assertEqual(digest, hashlib.sha256(asset.read_bytes()).hexdigest())
+
+    def test_publish_validator_rejects_nested_skill_asset(self):
+        asset = self.out / "guiyuan-vibecoding-0.1.1.zip"
+        with zipfile.ZipFile(asset, "w") as zf:
+            zf.writestr("guiyuan-vibecoding/SKILL.md", "---\nname: guiyuan-vibecoding\n---\n")
+            zf.writestr("guiyuan-vibecoding/assets/skills/old/SKILL.md", "old")
+        digest = hashlib.sha256(asset.read_bytes()).hexdigest()
+        checksum = asset.with_suffix(asset.suffix + ".sha256")
+        checksum.write_text(f"{digest} *{asset.name}\n", encoding="utf-8")
+        manifest = asset.with_suffix(asset.suffix + ".manifest.json")
+        manifest.write_text(json.dumps({"skills": ["guiyuan-vibecoding"], "sha256": digest}), encoding="utf-8")
+        with self.assertRaises(ValueError):
+            publish_release.validate_installer_asset(asset, checksum, manifest)
+
+
+class UpdateCatalogTest(unittest.TestCase):
+    def test_catalog_build_uses_version_and_release_assets(self):
+        catalog = update_catalog.build("9.9.9", status="pending")
+        self.assertEqual(catalog["current"]["version"], "9.9.9")
+        self.assertEqual(catalog["current"]["tag"], "v9.9.9")
+        self.assertEqual(catalog["current"]["status"], "pending")
+        self.assertTrue(catalog["current"]["assets"]["installer"].endswith("guiyuan-vibecoding-9.9.9.zip"))
 
 
 class ArchitectureAuditTest(unittest.TestCase):
@@ -105,7 +147,8 @@ class CheckDriftTest(unittest.TestCase):
 
 class CheckPackageTest(unittest.TestCase):
     def test_scan_text_detects_tokens(self):
-        hits = check_package.scan_text("x", "key=sk-abcdefghijklmnopqrstuvwxyz0123456789")
+        fixture = "key=" + "sk-" + "abcdefghijklmnopqrstuvwxyz0123456789"
+        hits = check_package.scan_text("x", fixture)
         self.assertGreater(hits, 0)
 
     def test_scan_text_clean(self):

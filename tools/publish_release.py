@@ -7,15 +7,40 @@ import hashlib
 import json
 import subprocess
 import tempfile
+import zipfile
 from pathlib import Path
 
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
+PUBLIC_SKILL = "guiyuan-vibecoding"
+CATALOG = ROOT / "docs" / "03-reference" / "update-catalog.json"
 
 
 def gh(*args: str, capture: bool = False) -> str:
     p = subprocess.run(["gh", *args], cwd=ROOT, check=True, text=True, capture_output=capture,
                        encoding="utf-8", errors="replace")
     return p.stdout if capture else ""
+
+
+def validate_installer_asset(asset: Path, checksum: Path, manifest: Path) -> str:
+    """Validate the exact public installer contract before any GitHub mutation."""
+    digest = hashlib.sha256(asset.read_bytes()).hexdigest()
+    sidecar = checksum.read_text(encoding="utf-8", errors="replace").strip().split()
+    if not sidecar or sidecar[0] != digest:
+        raise ValueError(".sha256 sidecar does not match installer ZIP")
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    if data.get("skills") != [PUBLIC_SKILL]:
+        raise ValueError("manifest must declare exactly one public Skill: guiyuan-vibecoding")
+    if data.get("sha256") != digest:
+        raise ValueError("manifest hash does not match installer ZIP")
+    with zipfile.ZipFile(asset) as zf:
+        names = [name.rstrip("/") for name in zf.namelist() if name.rstrip("/")]
+    tops = {name.split("/", 1)[0] for name in names}
+    if tops != {PUBLIC_SKILL}:
+        raise ValueError(f"installer ZIP root must contain only {PUBLIC_SKILL}, found {sorted(tops)}")
+    nested = [name for name in names if name.endswith("SKILL.md") and name != f"{PUBLIC_SKILL}/SKILL.md"]
+    if nested:
+        raise ValueError(f"installer ZIP contains nested discoverable SKILL.md files: {nested}")
+    return digest
 
 
 def main() -> int:
@@ -34,6 +59,23 @@ def main() -> int:
     if missing:
         print("missing assets: " + ", ".join(missing))
         return 1
+    try:
+        local_hash = validate_installer_asset(assets[0], assets[1], assets[2])
+    except (OSError, ValueError, json.JSONDecodeError, zipfile.BadZipFile) as exc:
+        print(f"invalid installer assets: {exc}")
+        return 1
+    if not CATALOG.is_file():
+        print(f"missing update catalog: {CATALOG}")
+        return 1
+    try:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"invalid update catalog: {exc}")
+        return 1
+    current = catalog.get("current", {})
+    if current.get("version") != version or current.get("tag") != tag:
+        print("update catalog does not match the release tag/version; run release_prepare first")
+        return 1
     if not args.publish:
         print("dry-run: would publish " + tag + " with " + ", ".join(p.name for p in assets))
         return 0
@@ -48,7 +90,6 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         gh("release", "download", tag, "--pattern", assets[0].name, "--dir", tmp)
         remote_hash = hashlib.sha256((Path(tmp) / assets[0].name).read_bytes()).hexdigest()
-    local_hash = hashlib.sha256(assets[0].read_bytes()).hexdigest()
     if remote_hash != local_hash:
         raise SystemExit("remote release verification failed: installer hash mismatch")
     print(f"release {tag} published and verified ✓")

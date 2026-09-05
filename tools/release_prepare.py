@@ -21,12 +21,17 @@ def main() -> int:
     ap.add_argument("--version", default=(ROOT / "VERSION").read_text(encoding="utf-8").strip())
     ap.add_argument("--out", default=str(ROOT / "dist"))
     ap.add_argument("--create-tag", action="store_true", help="create an annotated tag after local validation")
+    ap.add_argument("--no-update-catalog", action="store_true",
+                    help="skip the automatic release/update catalog refresh")
     args = ap.parse_args()
     version = args.version.lstrip("v")
     tag = f"v{version}"
     if (ROOT / "VERSION").read_text(encoding="utf-8").strip() != version:
         print("[release] VERSION does not match requested version")
         return 1
+    if not args.no_update_catalog:
+        subprocess.run([sys.executable, str(ROOT / "tools" / "update_catalog.py"), "--version", version],
+                       cwd=ROOT, check=True)
     status = subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
     if status:
         print("[release] worktree is not clean; commit changes before preparing a release")
