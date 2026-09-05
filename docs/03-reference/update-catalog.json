@@ -4,8 +4,8 @@
   "current": {
     "version": "0.1.2",
     "tag": "v0.1.2",
-    "status": "ready",
-    "tag_exists": false,
+    "status": "published",
+    "tag_exists": true,
     "release_url": "https://github.com/Tomhaaaands/guiyuan-vibecoding/releases/tag/v0.1.2",
     "assets": {
       "installer": "https://github.com/Tomhaaaands/guiyuan-vibecoding/releases/download/v0.1.2/guiyuan-vibecoding-0.1.2.zip",
@@ -18,8 +18,8 @@
     {
       "version": "0.1.2",
       "tag": "v0.1.2",
-      "status": "ready",
-      "tag_exists": false,
+      "status": "published",
+      "tag_exists": true,
       "release_url": "https://github.com/Tomhaaaands/guiyuan-vibecoding/releases/tag/v0.1.2",
       "assets": {
         "installer": "https://github.com/Tomhaaaands/guiyuan-vibecoding/releases/download/v0.1.2/guiyuan-vibecoding-0.1.2.zip",
@@ -42,5 +42,5 @@
       "source": "VERSION + tools/update_catalog.py"
     }
   ],
-  "generated_at": "2026-09-05T06:12:38+00:00"
+  "generated_at": "2026-09-05T06:16:48+00:00"
 }

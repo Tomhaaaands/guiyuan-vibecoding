@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -13,6 +14,7 @@ from pathlib import Path
 ROOT = next(p for p in (Path(__file__).resolve(), *Path(__file__).resolve().parents) if (p / "README.md").is_file())
 PUBLIC_SKILL = "guiyuan-vibecoding"
 CATALOG = ROOT / "docs" / "03-reference" / "update-catalog.json"
+sys.stdout.reconfigure(encoding="utf-8")
 
 
 def gh(*args: str, capture: bool = False) -> str:
